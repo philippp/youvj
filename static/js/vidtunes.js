@@ -1,10 +1,24 @@
+$(document).ready(function(){
+  $('#queryForm').dialog({ autoOpen: false,
+                           title : 'Search Artists',
+                           buttons: { "Ok": function() { parseArtists(); $(this).dialog("close"); } }});
+  $('#queryForm').dialog('open');
+  $('#search').click(function(){
+                       $('#queryForm').dialog('open');
+                     });
+  $('#search').hide();
+  $('#videos').css({'height':$(document).height()});
+});
+
 var parseArtists = function(){
-    splitNames = $('#artistnames').val().split(",");
-    for( var i = 0; i < splitNames.length; i++ ){
+  $('#artistlisting').empty();
+  splitNames = $('#artistnames').val().split(",");
+  for( var i = 0; i < splitNames.length; i++ ){
 	var artistName = splitNames[i].trim();
 	var artistEntry = makeArtist(artistName, "artist"+i);
-	$('#artists').append(artistEntry);
-    }
+	$('#artistlisting').append(artistEntry);
+  }
+  $('#search').show();
 };
 
 var makeArtist = function(artistName, artistID){
@@ -15,6 +29,7 @@ var makeArtist = function(artistName, artistID){
 
 
 var loadVideos = function(artistName, artistID){
+  $('#queryForm').dialog('close');
   jsonPost('/findvideos',
            {'artist':artistName},
            function(resp){loadVideosCallback(resp, artistID);}
@@ -25,7 +40,10 @@ var loadVideosCallback = function(resp, artistID){
   $('#videos').empty();
   for( var i=0; i < resp[0].length; i++){
       $('#videos').append(renderVideo(resp[0][i]));
-    }
+  }
+  if( resp[0].length == 0 ){
+    $('#videos').text("Sorry, nothing found.");
+  }
 };
 
 var renderVideo = function(videoInfo){
