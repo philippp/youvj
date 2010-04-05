@@ -1,0 +1,27 @@
+#extends base
+
+#def head()
+    <script src="/js/vidtunes.js" type="text/javascript"></script>
+    <link href="/css/vidtunes.css" type="text/css" rel="stylesheet">
+#end def
+
+#def title()
+Look for videos
+#end def
+
+#def body()
+    <form onsubmit="return false;">
+      <textarea id="artistnames" name="artistnames"></textarea>
+      <button onclick="parseArtists()">Parse</button>
+    </form>
+    
+    <div id="media">
+      <div id="artists">
+      </div>
+      <div id="videos">
+      </div>
+      <div id="featureVideo">
+      </div>
+
+    </div>
+#end def

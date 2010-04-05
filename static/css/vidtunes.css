@@ -1,0 +1,35 @@
+o.screencaps {
+   width: 130px;
+   height: 97px;
+}
+
+
+body{
+   font-family: arial, helvetica;
+   font-size: 13px;
+}
+
+.title{
+   font-size: 18px;
+}
+
+#artists{
+   float:left;
+   height:100%;
+   width:150px;
+}
+
+#videos{
+   height:100%;
+   width:300px;
+   padding-left:150px;
+   float:left;
+}
+#media{
+   height:100%;
+}
+
+#featureVideo{
+   width:500px;
+   float:right;
+}

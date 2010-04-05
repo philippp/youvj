@@ -1,0 +1,45 @@
+#extends base
+
+#def title()
+Your choons
+#end def
+
+#def body()
+  #set $idx = 0
+  #for $artist,$entries in $artist_entries.iteritems():
+
+    <h2>$artist</h2>
+    #for $entry in $entries:
+      #set $idx = $idx + 1
+        $artist_entry($entry, $idx)
+    #end for
+  #end for
+#end def
+
+#def artist_entry($entry, $id):
+<div>
+  <h3>$entry.title ($entry.view_count views)</h3>
+  <h4>$entry.description</h4>
+  <div>
+    #for $th in $entry.thumbnails[:-1]:
+      <img src="$th" class="thumbnail"/>
+    #end for
+      <a name="mv$id"></a>
+      <a href="#mv$id" onclick="\$('.music-video').hide();\$('#mv$id').show();return false;">Show video</a>
+      <div class="music-video" id="mv$id" style="display:none;">
+	<object width="640" height="385">
+	  <param name="movie" value="$entry.flash_url"></param>
+	  <param name="allowFullScreen" value="true"></param>
+	  <param name="allowscriptaccess" value="always"></param>
+	  <embed src="$entry.flash_url"
+		 type="application/x-shockwave-flash"
+		 allowscriptaccess="always" 
+		 allowfullscreen="true" 
+		 width="640" 
+		 height="385">
+	  </embed>
+	</object>
+      </div>
+  </div>
+</div>
+#end def
