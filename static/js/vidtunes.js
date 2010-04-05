@@ -22,7 +22,7 @@ var parseArtists = function(){
 };
 
 var makeArtist = function(artistName, artistID){
-    var artistDiv = $('<div id="'+artistID+'"></div>').append(artistName);
+    var artistDiv = $('<div id="'+artistID+'" class="menu-artist"></div>').append(artistName);
     artistDiv.click(function(){loadVideos(artistName, artistID);});
     return artistDiv;
 };
