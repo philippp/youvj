@@ -19,11 +19,22 @@ var parseArtists = function(){
 	$('#artistlisting').append(artistEntry);
   }
   $('#search').show();
+  if($('#artistlisting a').length > 0){
+    $($('#artistlisting a')[0]).click();
+  }
 };
 
 var makeArtist = function(artistName, artistID){
-    var artistDiv = $('<div id="'+artistID+'" class="menu-artist"></div>').append(artistName);
-    artistDiv.click(function(){loadVideos(artistName, artistID);});
+    var artistDiv = $('<div id="'+artistID+'" class="menu-artist"></div>').append(
+                      $('<div class="menu-artist-indicator">&#8594;</div>')).append(
+                      $('<a href="#">'+artistName+'</a>'));
+    artistDiv.click(function(e){
+      loadVideos(artistName, artistID);
+      $('.menu-artist').removeClass('menu-artist-selected');
+      $(e.currentTarget).addClass('menu-artist-selected');
+      $('.menu-artist-indicator').hide();
+      $('.menu-artist-indicator', e.currentTarget).show();
+    });
     return artistDiv;
 };
 

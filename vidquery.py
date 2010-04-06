@@ -13,11 +13,11 @@ def fetchVideos(artistName):
     musicEntries = []
     ytService = gdata.youtube.service.YouTubeService()
     query = gdata.youtube.service.YouTubeVideoQuery()
-    query.vq = artistName
+    query.vq = artistName+"+music+video"
     query.orderby = 'viewCount'
     query.racy = 'include'
+    query.max_results=50
     feed = ytService.YouTubeQuery(query)
-
     for entry in feed.entry:
         vidTitle = entry.media.title.text
         if not vidTitle:
