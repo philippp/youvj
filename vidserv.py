@@ -3,7 +3,7 @@ import json
 import os.path, time
 from twisted.web2 import server, http, resource, channel
 from twisted.web2 import static, http_headers, responsecode
-
+import lastfm
 import vidquery
 
 class Controller(resource.Resource):
@@ -56,11 +56,22 @@ class FindVideos(Controller, resource.PostableResource):
       {'last-modified': self.creation_time,
       'content-type': self.content_type},
       json.dumps(artistVids))
+
+class FindSimilar(Controller, resource.PostableResource):
+  creation_time = time.time()
+  content_type = http_headers.MimeType('text','json')
+  
+  def render(self, ctx):
+    artist = ctx.args.get('artist')[0]
+    similar_artists = lastfm.get_similar(artist)
+    return http.Response(
+      responsecode.OK,
+      {'last-modified': self.creation_time,
+      'content-type': self.content_type},
+      json.dumps(similar_artists))
     
 class Toplevel(Controller):
   addSlash = True
-  child_monkey = static.File(os.path.dirname(static.__file__)+'/static.py')
-  #child_findvideos = FindVideos()
 
   def render(self, ctx):
     return http.Response(
@@ -71,6 +82,7 @@ class Toplevel(Controller):
 
 root = Toplevel()
 root.putChild("findvideos", FindVideos())
+root.putChild("findsimilar", FindSimilar())
 site = server.Site(root)
 
 

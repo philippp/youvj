@@ -1,7 +1,17 @@
 .screencaps {
-   width: 130px;
-   height: 97px;
-   cursor: pointer;
+   background-color:black;
+   border:2px solid black;
+   cursor:pointer;
+   height:90px;
+   margin-bottom:5px;
+   overflow:hidden;
+   text-align:center;
+   width:128px;
+}
+
+.screenspace {
+   width: 128px;
+   height: 90px;
 }
 
 
@@ -12,13 +22,16 @@ body{
 }
 
 .title{
-   font-size: 18px;
+   font-size:15px;
+   height:21px;
+   overflow:hidden;
+   width:145px;
 }
 
 #artists{
    float:left;
-   height:100%;
    width:150px;
+   margin-right:25px;
 }
 
 #videos{
@@ -34,8 +47,27 @@ body{
 }
 
 #featureVideo{
-   width:500px;
-   float:right;
+-moz-border-radius-bottomleft:2px;
+-moz-border-radius-bottomright:1px;
+-moz-border-radius-topleft:1px;
+-moz-border-radius-topright:2px;
+background-color:#EFEFEF;
+display:none;
+float:right;
+height:590px;
+margin-bottom:6px;
+padding:20px;
+width:480px;
+}
+
+.message{
+background-color:#EFEFEF;
+border-bottom:2px solid white;
+border-right:2px solid white;
+float:left;
+font-size:18px;
+margin:0;
+padding:10px;
 }
 
 textarea#artistnames {
@@ -52,12 +84,17 @@ cursor:pointer;
 display:block;
 height:20px;
 padding:5px 5px 0;
+overflow:hidden;
+width: 145px;
 }
 
 .menu-artist a{
    color: #333333;
 }
 
+.menu-artist-selected {
+   background-color:#FFFF8F;
+}
 .menu-artist-selected a{
    text-decoration: none;
    color: #333333;
@@ -67,8 +104,29 @@ padding:5px 5px 0;
    text-decoration:none;
 }
 .menu-artist .menu-artist-indicator{
+   font-size:20px;
+   margin-top:-6px;
    float: right;
    display: none;
+}
+
+.similar-artist {
+background-color:#EFEFEF;
+border-bottom:2px solid #FFFFFF;
+border-right:2px solid #FFFFFF;
+cursor:pointer;
+display:block;
+height:20px;
+margin-bottom:7px;
+margin-right:15px;
+overflow:hidden;
+padding:5px 5px 0;
+width:150px;
+float: left;
+-moz-border-radius-bottomleft:2px;
+-moz-border-radius-bottomright:1px;
+-moz-border-radius-topleft:1px;
+-moz-border-radius-topright:2px;
 }
 
 a{
@@ -84,11 +142,33 @@ a:hover{
 background-color:#EFEFEF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
-margin-bottom:10px;
-margin-right:10px;
-padding:14px;
+float:left;
+height:150px;
+margin-bottom:30px;
+margin-right:15px;
+padding:6px 14px;
+width:132px;
+-moz-border-radius: 2px;
+-moz-border-radius-bottomleft:2px;
+-moz-border-radius-bottomright:1px;
+-moz-border-radius-topleft:1px;
+-moz-border-radius-topright:2px;
 }
 
+.videoInfo .ui-button-text-only .ui-button-text {
+   padding: 0.2em 0.5em;
+}
+
+.videoInfo .ui-button-text {
+   line-height: 1em;
+   font-size: 12px;
+   font-weight: normal;
+}
+
+#artistlisting{
+margin-right:50px;
+width:150px;
+}
 
 .description{
 
