@@ -48,8 +48,10 @@ class FindVideos(Controller, resource.PostableResource):
   def render(self, ctx):
     artists = ctx.args.get('artist',[])
     artistVids = []
+
+    ip_addr = ctx.remoteAddr.host
     for artist in artists:
-      artistVids.append( vidquery.fetchVideos(artist) )
+      artistVids.append( vidquery.fetchVideos(artist, ip_addr) )
 
     return http.Response(
       responsecode.OK,
