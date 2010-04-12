@@ -83,8 +83,8 @@ var renderVideo = function(videoInfo){
   $('.screencaps .t0',vid).show();
   $(vid).mouseenter(function(e){flipImages.start(e);});
   $(vid).mouseleave(flipImages.stop);
-  $('a',vid).click(function(){renderPlayer(videoInfo['flash_url']);});
-  $('.screencaps',vid).click(function(){renderPlayer(videoInfo['flash_url']);});
+  $('a',vid).click(function(){renderPlayer(videoInfo);});
+  $('.screencaps',vid).click(function(){renderPlayer(videoInfo);});
   $('a',vid).button();
   return vid;
 };
@@ -115,7 +115,8 @@ var renderSimilar = function(pairing){
   return(similarArtist);
 };
 
-var renderPlayer = function(purl){
+var renderPlayer = function(videoInfo){
+  purl = videoInfo['flash_url'];
   purl += '&autoplay=1';
   var pstr = '<object width="480" height="385">'
     + '<param name="movie" value="'+purl+'"></param>'
@@ -125,6 +126,15 @@ var renderPlayer = function(purl){
     + '</object>';
   $('#featureVideo').html(pstr);
   $('#featureVideo').show();
+  $('#featureVideo').append(
+    $('<div class="player-title">'+videoInfo['title']+'</div>')
+  ).append(
+    $('<div class="player-description">'+videoInfo['description']+'</div>')
+  ).append(
+    $('<a href="#">Post to Facebook</a>').click(
+      function(){ FBCPostStream(videoInfo); }
+    )
+  ).append($(''));
 };
 
 var flipImages = function(e){
@@ -167,6 +177,46 @@ var jsonPost = function(path, params, success, fail){
 	   fail,
 	   'json'
 	   );
+};
+
+
+FBCLogin = function(){
+  var user_box = document.getElementById("header");
+  // add in some XFBML. note that we set useyou=false so it doesn't display "you"
+  user_box.innerHTML = "<span>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic>" +
+  "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>. You are signed in with your Facebook account." +
+  "</span>";
+  FB.XFBML.Host.parseDomTree();
+};
+
+FBCPostStream = function(vidEntry){
+
+  var media = {
+    "type":"flash",
+    "swfsrc" : vidEntry['flash_url'],
+    "imgsrc" : vidEntry['thumbnails'][0],
+    "width" : "130",
+    "height" : "97",
+    "expanded_width" : "480",
+    "expanded_height" : "385"
+
+    };
+
+  var message = 'Check out this video';
+  var attachment = { 'name': vidEntry['title'],
+                     'href': ' http://bit.ly/187gO1',
+                     'caption': '{*actor*} found this video',
+                     'description': vidEntry['description'],
+                     'properties': {
+                       'category': {
+                         'text': 'humor',
+                         'href': 'http://bit.ly/KYbaN'}
+                       },
+                     'media': [ media ]
+                   };
+  var action_links = [{'text':'Find music videos',
+                       'href':'http://notphil.com:8080'}];
+  FB.Connect.streamPublish(message, attachment, action_links);
 };
 
 String.prototype.ltrim = function() {

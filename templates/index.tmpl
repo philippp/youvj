@@ -1,5 +1,5 @@
 #extends base
-
+#import config
 #def head()
     <link href="/css/vidtunes.css" type="text/css" rel="stylesheet">
     <link href="/css/ui-lightness/jquery.ui.base.css" type="text/css" rel="stylesheet">
@@ -18,7 +18,11 @@ Look for videos
 	<textarea id="artistnames" name="artistnames">Beatles, Lady Gaga, Aphex Twin</textarea>
       </form>
     </div>
+    <div id="header">
+      <fb:login-button onlogin="FBCLogin();"></fb:login-button> 
+    </div>
     <div id="media">
+      
       <div id="artists">
 	<div id="artistlisting"></div>
 	<a id="search" href="#">Search again</a>
@@ -29,5 +33,25 @@ Look for videos
       <div id="similar-artist-divider"></div>
 
     </div>
-
+    <script type="text/javascript" src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php"></script>
+    <script type="text/javascript">
+    FB_RequireFeatures(["Api"], function() {  
+    	// Create an ApiClient object, passing app's API key and  
+	// a site relative URL to xd_receiver.htm  
+	FB.init("$config.FB_API_KEY","xd_receiver.htm",{"ifUserConnected":FBCLogin});
+        var api = FB.Facebook.apiClient;  
+   
+       // require user to login  
+       api.requireLogin(function(exception) {  
+         console.log("Current user id is " + api.get_session().uid);  
+         // Get friends list  
+         api.friends_get(null, function(result) {  
+           console.log(result, 'friendsResult from non-batch execution ');  
+           FB.Facebook.apiClient.users_getInfo(result,
+	   ['name','pic_square','music'],
+	   function(res){console.log(res);});
+         });  
+       });
+    });
+    </script> 
 #end def

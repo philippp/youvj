@@ -1,4 +1,5 @@
 import re
+import pdb
 import gdata.youtube
 import gdata.youtube.service
 from pprint import pprint 
@@ -15,7 +16,6 @@ def fetchVideos(artistName, ip_addr):
     videos_popularity = _fetchVideos(artistName, ip_addr, orderby='viewCount')
     videos = videos_relevance + videos_popularity
     videos = filterSimilar(videos)
-    pprint(videos)
     return videos
 
 def filterSimilar(allVideos):
@@ -49,7 +49,7 @@ def _fetchVideos(artistName,
     query.racy = 'include'
     query.max_results=50
     query.format = '5'
-    query.restriction = ip_addr
+    #query.restriction = ip_addr
     feed = ytService.YouTubeQuery(query)
     for entry in feed.entry:
         vidTitle = entry.media.title.text.lower()
