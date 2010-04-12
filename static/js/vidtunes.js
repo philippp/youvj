@@ -12,9 +12,9 @@ $(document).ready(function(){
 
 var parseArtists = function(){
   $('#artistlisting').empty();
-  splitNames = $('#artistnames').val().split(",");
-  for( var i = 0; i < splitNames.length; i++ ){
-	var artistName = splitNames[i].trim();
+  artistNames = parseArtistNames( $('#artistnames').val() );
+  for( var i = 0; i < artistNames.length; i++ ){
+	var artistName = artistNames[i];
 	var artistEntry = makeArtist(artistName);
 	$('#artistlisting').append(artistEntry);
   }
@@ -22,6 +22,14 @@ var parseArtists = function(){
   if($('#artistlisting a').length > 0){
     $($('#artistlisting a')[0]).click();
   }
+};
+
+var parseArtistNames = function(textVal){
+  var splitNames = textVal.split(",");
+  for( var i = 0; i < splitNames.length; i++ ){
+	splitNames[i] = splitNames[i].trim();
+  }
+  return splitNames;
 };
 
 var makeArtist = function(artistName){
@@ -179,6 +187,7 @@ var jsonPost = function(path, params, success, fail){
 	   );
 };
 
+FBC = {};
 
 FBCLogin = function(){
   var user_box = document.getElementById("header");
@@ -187,6 +196,35 @@ FBCLogin = function(){
   "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>. You are signed in with your Facebook account." +
   "</span>";
   FB.XFBML.Host.parseDomTree();
+};
+
+FBCGetFriends = function(){
+  var api = FB.Facebook.apiClient;
+
+  // require user to login
+  api.requireLogin(function(exception) {
+    console.log("Current user id is " + api.get_session().uid);
+    // Get friends list
+    api.friends_get(null, function(result) {
+      console.log(result, 'friendsResult from non-batch execution ');
+      FB.Facebook.apiClient.users_getInfo(result,
+        ['name','pic_square','music'],
+	function(res){
+          FBC.fbFriends = [];
+          for( var i=0; i < res.length; i++ ){
+            if( res['music'].length == 0 ){
+              continue;
+            }
+            var mFriend = {};
+            mFriend['artists'] = parseArtistNames(res['music']);
+            mFriend['name'] = res['name'];
+            mFriend['pic_square'] = res['pic_square'];
+            FBC.fbFriends[FBC.fbFriends.length] = mFriend;
+          }
+          console.log(res);
+        });
+      });
+    });
 };
 
 FBCPostStream = function(vidEntry){
@@ -218,6 +256,7 @@ FBCPostStream = function(vidEntry){
                        'href':'http://notphil.com:8080'}];
   FB.Connect.streamPublish(message, attachment, action_links);
 };
+
 
 String.prototype.ltrim = function() {
     return this.replace(/^\s+/,"");
