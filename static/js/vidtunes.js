@@ -28,7 +28,7 @@ var renderArtists = function(artistNames, headerElement){
   }
   for( var i = 0; i < artistNames.length; i++ ){
 	var artistName = artistNames[i];
-	var artistEntry = makeArtist(artistName);
+	var artistEntry = makeArtistMenuItem(artistName);
 	$('#artistlisting').append(artistEntry);
   }
   $('#search').show();
@@ -45,28 +45,81 @@ var parseArtistNames = function(textVal){
   return splitNames;
 };
 
-var makeArtist = function(artistName){
+var makeArtistMenuItem = function(artistName){
     var artistDiv = $('<div class="menu-artist"></div>').append(
                       $('<div class="menu-artist-indicator">&#8594;</div>')).append(
                       $('<a href="#">'+artistName+'</a>'));
     artistDiv.click(function(e){
       loadVideos(artistName);
       loadSimilar(artistName);
+      renderArtistBox(artistName);
       document.location.hash = artistName;
-      $('.menu-artist').removeClass('menu-artist-selected');
       $(e.currentTarget).addClass('menu-artist-selected');
-      $('.menu-artist-indicator').hide();
       $('.menu-artist-indicator', e.currentTarget).show();
     });
     return artistDiv;
 };
 
+var renderArtistBox = function(artistName){
+  var artistBox = $("<div id='videoInfo-artist'></div>").append(
+    $("<div id='videoInfo-artistName'>"+artistName+"</div>")
+  ).append(
+    $("<div id='videoInfo-artistFriends'></div>")
+  ).append(
+    $("<div id='videoInfo-similar'></div>")
+  );
+  artistBox.insertBefore($("#video-loader"));
+  var shFriends = [];
+  var friendLimit = 3;
+  var found = 0;
+  for( i = 0; i < FBC.fbFriends.length; i++ ){
+    var friend = FBC.fbFriends[i];
+    var regexp = new RegExp(artistName,'i');
+    if( regexp.test(friend['music_str'])){
+      found++;
+      var extraCls = "";
+      if(found > friendLimit){
+        extraCls = "extra-content";
+      }
+      $("#videoInfo-similar", artistBox).append(
+          $("<a href='#' class='videoInfo-friend "+extraCls+"'>"+friend['name']+"</span>").click(
+
+            (function(f){ return function(e){
+              renderArtists(f['artists'],
+              $('<div class="menu-artist-title">'+f['name']+'</div>'));
+              return false;
+            }; })(friend)
+          )
+        );
+    }
+  }
+  if( found > 0 ){
+    $("#videoInfo-similar", artistBox).prepend(
+      $("<span class='videoInfo-friend'> &lt;3 by </span>")
+    );
+
+  }
+  if( found > friendLimit ){
+    $("#videoInfo-similar", artistBox).append(
+      $("<a class='videoInfo-friend show-more'> and "+(found-friendLimit)+" others.</a>").click(
+        function(){
+          $(".extra-content",artistBox).show();
+          $(".show-more", artistBox).hide();
+          artistBox.css({'height':'auto'});
+        }
+      )
+    );
+  }
+
+};
 
 var loadVideos = function(artistName){
+  $('.menu-artist').removeClass('menu-artist-selected');
+  $('.menu-artist-indicator').hide();
   $('#queryForm').dialog('close');
-  $('.videoInfo, .message, #video-loader').remove();
+  $('.videoInfo, .message, #video-loader, #videoInfo-artist').remove();
   var loader = $("<div id='video-loader'></div>").append(
-                 $("<img src='/spin_loader.gif'/>")
+                 $("<img src='/images/spin_loader.gif'/>")
   ).append(
     $("<div id='video-loader-msg'>Please wait while we search for videos by "+artistName+"</div>")
     );
@@ -139,6 +192,7 @@ var renderSimilar = function(pairing){
   $('a',similarArtist).click(function(){
                                loadVideos(pairing[0]);
                                loadSimilar(pairing[0]);
+                               renderArtistBox(pairing[0]);
                                document.location.hash = pairing[0];
                              });
   return(similarArtist);
@@ -298,6 +352,7 @@ FBCGetFriends = function(callback){
               continue;
             }
             var mFriend = {};
+            mFriend['music_str'] = res[i]['music'];
             mFriend['artists'] = parseArtistNames(res[i]['music']);
             if( mFriend['artists'].length < 4 ){
               continue;

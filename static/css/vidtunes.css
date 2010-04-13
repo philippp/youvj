@@ -153,16 +153,17 @@ a:hover{
 
 }
 
-.videoInfo-artist {
+#videoInfo-artist {
 background-color:#EFEFEF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
 float:left;
 height:150px;
+min-height:150px;
 margin-bottom:30px;
 margin-right:15px;
 padding:6px 14px;
-width:279px;
+width:131px;
 -moz-border-radius: 2px;
 -moz-border-radius-bottomleft:2px;
 -moz-border-radius-bottomright:1px;
@@ -170,6 +171,18 @@ width:279px;
 -moz-border-radius-topright:2px;
 }
 
+.videoInfo-friend{
+font-size:10px;
+margin-right: 3px;
+}
+
+.extra-content{
+display:none;
+}
+#videoInfo-artistName{
+font-size: 15px;
+font-weight: bolder;
+}
 .videoInfo {
 background-color:#EFEFEF;
 border-bottom:2px solid #FFFFFF;
