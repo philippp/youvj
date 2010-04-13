@@ -4,6 +4,7 @@ import os.path, time
 from twisted.web2 import server, http, resource, channel
 from twisted.web2 import static, http_headers, responsecode
 import lastfm
+import pylast
 import vidquery
 import minifb
 import config
@@ -85,8 +86,12 @@ class FindVideos(JSONController):
 class FindSimilar(JSONController):  
   def respond(self, ctx):
     artist = ctx.args.get('artist')[0]
-    return lastfm.get_similar(artist)
-   
+    try:
+      similar = lastfm.get_similar(artist)
+    except pylast.WSError:
+      similar = []
+    return similar
+
 class Toplevel(Controller):
   addSlash = True
   def render(self, ctx):

@@ -18,14 +18,19 @@ Look for videos
 	<textarea id="artistnames" name="artistnames">Beatles, Lady Gaga, Aphex Twin</textarea>
       </form>
     </div>
-    <div id="header">
-      <fb:login-button onlogin="FBCLogin();"></fb:login-button> 
+    <div id="friendForm">
     </div>
-    <div id="media">
-      
+    <div id="header">
+      <fb:login-button size="medium" v="2" onlogin="FBCLogin();"></fb:login-button> 
+      <a href="#" onclick="FBCLogout(); return false;" ><img id="fb_logout_image" src="http://static.ak.fbcdn.net/images/fbconnect/logout-buttons/logout_medium.gif" alt="Connect"/></a>
+    </div>
+    <div id="media">      
       <div id="artists">
+	<ul id="artists-menu">
+	<li onclick="renderSearch()">Search</li>
+	<li class="artists-menu-friends"onclick="browseFriends();">Friends</li>
+	</ul>
 	<div id="artistlisting"></div>
-	<a id="search" href="#">Search again</a>
       </div>
       <div id="featureVideo">
       </div>

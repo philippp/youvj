@@ -68,6 +68,7 @@ def _fetchVideos(artistName,
         else:
             continue
         entryDict = {
+            'artist':artistName,
             'title':vidTitle,
             'description':entry.media.description.text,
             'page_url':entry.media.player.url,

@@ -16,7 +16,7 @@
 
 
 body{
-   background-color: #3399ff;
+   background-color: #2992D4;
    font-family: arial, helvetica;
    font-size: 13px;
 }
@@ -70,6 +70,10 @@ margin:0;
 padding:10px;
 }
 
+#artists-menu li.artists-menu-friends {
+   display: none;
+}
+
 textarea#artistnames {
    width:100%;
    height:80%;
@@ -88,6 +92,17 @@ overflow:hidden;
 width: 145px;
 }
 
+.menu-artist-title {
+background-color:#BFBFBF;
+border-bottom:2px solid #FFFFFF;
+border-right:2px solid #FFFFFF;
+display:block;
+height:20px;
+margin-bottom:2px;
+overflow:hidden;
+padding:5px 5px 0;
+width:145px;
+}
 .menu-artist a{
    color: #333333;
 }
@@ -138,6 +153,23 @@ a:hover{
 
 }
 
+.videoInfo-artist {
+background-color:#EFEFEF;
+border-bottom:2px solid #FFFFFF;
+border-right:2px solid #FFFFFF;
+float:left;
+height:150px;
+margin-bottom:30px;
+margin-right:15px;
+padding:6px 14px;
+width:279px;
+-moz-border-radius: 2px;
+-moz-border-radius-bottomleft:2px;
+-moz-border-radius-bottomright:1px;
+-moz-border-radius-topleft:1px;
+-moz-border-radius-topright:2px;
+}
+
 .videoInfo {
 background-color:#EFEFEF;
 border-bottom:2px solid #FFFFFF;
@@ -155,6 +187,21 @@ width:132px;
 -moz-border-radius-topright:2px;
 }
 
+#video-loader{
+float:left;
+height:150px;
+margin-bottom:30px;
+margin-right:15px;
+padding:6px 14px;
+width:132px;
+text-align:center;
+}
+#video-loader-msg{
+font-size:10px;
+color:#333333;
+margin-top:10px;
+}
+
 .videoInfo .ui-button-text-only .ui-button-text {
    padding: 0.2em 0.5em;
 }
@@ -165,12 +212,58 @@ width:132px;
    font-weight: normal;
 }
 
+.videoInfo .description{
+   display: none;
+}
+
 #artistlisting{
 margin-right:50px;
 width:150px;
 }
 
-.description{
+#queryForm{
+   display:none;
+}
+#friendForm{
+   display:none;
+}
 
-display:none;
+#friendForm .friend img{
+   margin-right: 5px;
+}
+
+#friendForm a, #friendForm span{
+   display: inline-block;
+   margin-right: 5px;
+}
+#friendForm .friend{
+   width: 162px;
+   float: left;
+   font-size: 12px;
+   margin: 5px;
+}
+ul#artists-menu {
+   list-style:none;
+   margin:0;
+   padding:0;
+}
+
+ul#artists-menu li {
+   background-color:#EFEFEF;
+   border-bottom:2px solid #FFFFFF;
+   border-right:2px solid #FFFFFF;
+   cursor:pointer;
+   height:20px;
+   margin-bottom:2px;
+   overflow:hidden;
+   padding:5px 5px 0;
+   display: inline-block;
+}
+
+.clear {
+   clear: both;
+}
+
+#fb_logout_image {
+   display:none;
 }

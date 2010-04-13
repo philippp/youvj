@@ -1,18 +1,31 @@
 $(document).ready(function(){
   $('#queryForm').dialog({ autoOpen: false,
                            title : 'Search Artists',
-                           buttons: { "Ok": function() { parseArtists(); $(this).dialog("close"); } }});
-  $('#queryForm').dialog('open');
+                           buttons: { "OK": function() { renderArtists(parseArtistNames( $('#artistnames').val() )); $(this).dialog("close"); } }});
+
+  $('#friendForm').dialog({ autoOpen: false,
+                            width: '560px',
+                            title : "Browse your Friends' Favorites"});
+
+
   $('#search').click(function(){
+                       $('#queryForm').show();
                        $('#queryForm').dialog('open');
                      });
   $('#search').hide();
   $('#videos').css({'height':$(document).height()});
 });
 
-var parseArtists = function(){
+var renderSearch = function(){
+  $('#queryForm').show();
+  $('#queryForm').dialog('open');
+};
+
+var renderArtists = function(artistNames, headerElement){
   $('#artistlisting').empty();
-  artistNames = parseArtistNames( $('#artistnames').val() );
+  if( headerElement ){
+    $('#artistlisting').append(headerElement);
+  }
   for( var i = 0; i < artistNames.length; i++ ){
 	var artistName = artistNames[i];
 	var artistEntry = makeArtist(artistName);
@@ -51,6 +64,14 @@ var makeArtist = function(artistName){
 
 var loadVideos = function(artistName){
   $('#queryForm').dialog('close');
+  $('.videoInfo, .message, #video-loader').remove();
+  var loader = $("<div id='video-loader'></div>").append(
+                 $("<img src='/spin_loader.gif'/>")
+  ).append(
+    $("<div id='video-loader-msg'>Please wait while we search for videos by "+artistName+"</div>")
+    );
+  loader.insertBefore($("#similar-artist-divider"));
+
   jsonPost('/findvideos',
            {'artist':artistName},
            loadVideosCallback
@@ -58,12 +79,12 @@ var loadVideos = function(artistName){
 };
 
 var loadVideosCallback = function(resp){
-  $('.videoInfo, .message').remove();
+  $("#video-loader").hide();
   for( var i=0; i < resp[0].length; i++){
     renderVideo(resp[0][i]).insertBefore($("#similar-artist-divider"));
   }
   if( resp[0].length == 0 ){
-    $('#media').append("<div class='message'>Sorry, nothing found.</>");
+    $("<div class='message'>Sorry, nothing found.</>").insertBefore($("#similar-artist-divider"));
   }
 };
 
@@ -98,6 +119,7 @@ var renderVideo = function(videoInfo){
 };
 
 var loadSimilar = function(artistName){
+  $('.similar-artist').remove();
   jsonPost('/findsimilar',
            {'artist':artistName},
            loadSimilarCallback
@@ -105,7 +127,6 @@ var loadSimilar = function(artistName){
 };
 
 var loadSimilarCallback = function(resp){
-  $('.similar-artist').remove();
   for( var i=resp.length-1; i >= 0; i--){
     renderSimilar(resp[i]).insertAfter($("#similar-artist-divider"));
   }
@@ -157,7 +178,6 @@ flipImages.timer = null;
 flipImages.start = function(e){
   if(flipImages.timer) return false;
   flipImages(e);
-  console.log('starting thumbnail image timer');
   flipImages.timer = setInterval(function(){flipImages(e);},500);
   return false;
 };
@@ -166,7 +186,6 @@ flipImages.stop = function(){
 
   clearInterval(flipImages.timer);
   flipImages.timer = null;
-  console.log('clearing thumbnail image timer');
   return false;
 };
 
@@ -187,41 +206,110 @@ var jsonPost = function(path, params, success, fail){
 	   );
 };
 
+var browseFriends = function(pageNum){
+  var pageSize = 9;
+  try{
+    pageNum = parseInt(pageNum);
+    if( !pageNum ) pageNum = 0;
+  }catch(e){
+    pageNum = 0;
+  }
+
+  var maxPages = Math.floor(FBC.fbFriends.length / pageSize);
+  var navigationList = $('<div class="navigation"></div>');
+  for( var page = 0; page < maxPages; page++ ){
+    if( page != pageNum ){
+      navigationList.append(
+        $("<a href='#'>"+page+"</a>").click(
+          function(p){ return function(){ browseFriends(p); }; }(page)
+        )
+      );
+    }else{
+      navigationList.append(
+        $("<span>"+page+"</span>")
+      );
+    }
+  }
+  var startIdx = pageSize * pageNum;
+  $('#friendForm').empty();
+  var friendsList = $("<div class='friends'></div>");
+  for( var i = startIdx; i < FBC.fbFriends.length && i < startIdx+9; i++ ){
+    var friend = FBC.fbFriends[i];
+      friendsList.append(
+        $("<div class='friend'></div>").append(
+          $("<img src='"+friend['pic_square']+"' align='left'/>")
+        ).append(
+          $("<span class='name'>"+friend['name']+"</span><br/>")
+        ).append(
+          $("<span class='info'>"+friend['artists'].length+"</span>")
+        ).click(
+          function(f){return function(){
+            renderArtists(f['artists'], $('<div class="menu-artist-title">'+f['name']+'</div>'));
+            $('#friendForm').dialog('close');
+          };}(friend)
+        )
+      );
+  }
+  $('#friendForm').append(
+    friendsList
+  ).append(
+    $("<br class='clear'/>")
+  ).append(
+    navigationList
+  );
+
+  $('#friendForm').show();
+  $('#friendForm').dialog('open');
+};
+
 FBC = {};
+
+FBCLogout = function(){
+  FB.Connect.logout(function() { reload();  });
+};
 
 FBCLogin = function(){
   var user_box = document.getElementById("header");
   // add in some XFBML. note that we set useyou=false so it doesn't display "you"
   user_box.innerHTML = "<span>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic>" +
-  "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>. You are signed in with your Facebook account." +
+  "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>." +
   "</span>";
   FB.XFBML.Host.parseDomTree();
+  $("#fb_logout_image").show();
+  FBCGetFriends( function(){
+		   $('.artists-menu-friends').css({'display':'inline-block'});
+  });
+
 };
 
-FBCGetFriends = function(){
+FBCGetFriends = function(callback){
   var api = FB.Facebook.apiClient;
 
   // require user to login
   api.requireLogin(function(exception) {
-    console.log("Current user id is " + api.get_session().uid);
     // Get friends list
     api.friends_get(null, function(result) {
-      console.log(result, 'friendsResult from non-batch execution ');
       FB.Facebook.apiClient.users_getInfo(result,
         ['name','pic_square','music'],
 	function(res){
           FBC.fbFriends = [];
           for( var i=0; i < res.length; i++ ){
-            if( res['music'].length == 0 ){
+            if( !res[i]['music'] || res[i]['music'].length == 0 ){
               continue;
             }
             var mFriend = {};
-            mFriend['artists'] = parseArtistNames(res['music']);
-            mFriend['name'] = res['name'];
-            mFriend['pic_square'] = res['pic_square'];
+            mFriend['artists'] = parseArtistNames(res[i]['music']);
+            if( mFriend['artists'].length < 4 ){
+              continue;
+            }
+            mFriend['name'] = res[i]['name'];
+            mFriend['pic_square'] = res[i]['pic_square'];
             FBC.fbFriends[FBC.fbFriends.length] = mFriend;
           }
-          console.log(res);
+          FBC.fbFriends = FBC.fbFriends.sort(function(a,b){
+            return b['artists'].length - a['artists'].length;
+          });
+          callback();
         });
       });
     });
@@ -242,13 +330,13 @@ FBCPostStream = function(vidEntry){
 
   var message = 'Check out this video';
   var attachment = { 'name': vidEntry['title'],
-                     'href': ' http://bit.ly/187gO1',
+                     'href': ' http://notphil.com:8080',
                      'caption': '{*actor*} found this video',
                      'description': vidEntry['description'],
                      'properties': {
                        'category': {
-                         'text': 'humor',
-                         'href': 'http://bit.ly/KYbaN'}
+                         'text': vidEntry['artist'],
+                         'href': 'http://notphil.com:8080#'+vidEntry['artist']}
                        },
                      'media': [ media ]
                    };
