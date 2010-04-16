@@ -60,6 +60,9 @@ padding:20px;
 width:480px;
 }
 
+.small {
+   font-size: 10px;
+}
 .message{
 background-color:#EFEFEF;
 border-bottom:2px solid white;
@@ -97,7 +100,7 @@ background-color:#BFBFBF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
 display:block;
-height:20px;
+height:55px;
 margin-bottom:2px;
 overflow:hidden;
 padding:5px 5px 0;

@@ -86,7 +86,7 @@ var renderArtistBox = function(artistName){
 
             (function(f){ return function(e){
               renderArtists(f['artists'],
-              $('<div class="menu-artist-title">'+f['name']+'</div>'));
+              FBC.makeMenuArtistTitle(f));
               return false;
             }; })(friend)
           )
@@ -95,7 +95,7 @@ var renderArtistBox = function(artistName){
   }
   if( found > 0 ){
     $("#videoInfo-similar", artistBox).prepend(
-      $("<span class='videoInfo-friend'> &lt;3 by </span>")
+      $("<span class='videoInfo-friend'><img src='/images/heart.gif' alt='heart'/> by </span>")
     );
 
   }
@@ -158,7 +158,9 @@ var renderVideo = function(videoInfo){
     )
   ).append(
     $('<div class="video"></div>').append(
-      $('<a href="#">View Video</a>')
+      $('<a href="#">Play Video</a>')
+    ).append(
+      $("<span class='small'>"+videoInfo['view_count']+"</span>")
     )
   );
   $('.screencaps img',vid).hide();
@@ -200,12 +202,13 @@ var renderSimilar = function(pairing){
 
 var renderPlayer = function(videoInfo){
   purl = videoInfo['flash_url'];
-  purl += '&autoplay=1';
+  purl += '&autoplay=1&fs=1';
   var pstr = '<object width="480" height="385">'
     + '<param name="movie" value="'+purl+'"></param>'
-    + '<param name="allowFullScreen" value="true"></param>'
+    + '<param name="fs" value="1"></param>'
+    + '<param name="allowfullscreen" value="true"></param>'
     + '<param name="allowscriptaccess" value="always"></param>'
-    + '<embed src="'+purl+'" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed>'
+    + '<embed src="'+purl+'" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" fs="1" width="480" height="385"></embed>'
     + '</object>';
   $('#featureVideo').html(pstr);
   $('#featureVideo').show();
@@ -298,7 +301,7 @@ var browseFriends = function(pageNum){
           $("<span class='info'>"+friend['artists'].length+"</span>")
         ).click(
           function(f){return function(){
-            renderArtists(f['artists'], $('<div class="menu-artist-title">'+f['name']+'</div>'));
+            renderArtists(f['artists'], FBC.makeMenuArtistTitle(f));
             $('#friendForm').dialog('close');
           };}(friend)
         )
@@ -318,20 +321,35 @@ var browseFriends = function(pageNum){
 
 FBC = {};
 
+FBC.fbFriends = [];
+FBC.session = {};
+
+FBC.makeMenuArtistTitle = function(f){
+  return $('<div class="menu-artist-title"></div>').append(
+  $("<img src='"+f['pic_square']+"' alt='profile pic'/>")
+  ).append(
+    $("<span class='small'>"+f['name']+"</span>")
+  );
+};
+
 FBCLogout = function(){
   FB.Connect.logout(function() { reload();  });
 };
 
 FBCLogin = function(){
-  var user_box = document.getElementById("header");
+  var user_box = document.getElementById("fb_login");
   // add in some XFBML. note that we set useyou=false so it doesn't display "you"
-  user_box.innerHTML = "<span>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic>" +
-  "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>." +
-  "</span>";
+  user_box.innerHTML = "<div style='float:left;'>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic></div>" +
+  "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>.<br/>" +
+  "<a href='#' onclick='browseFriends(0)'>Click here to browse your Facebook friends' music!</a>" +
+  "</span><br style='clear:both;'/>";
   FB.XFBML.Host.parseDomTree();
   $("#fb_logout_image").show();
   FBCGetFriends( function(){
 		   $('.artists-menu-friends').css({'display':'inline-block'});
+
+                   renderArtists(FBC.owner['artists'],
+                                 FBC.makeMenuArtistTitle(FBC.owner));
   });
 
 };
@@ -341,25 +359,21 @@ FBCGetFriends = function(callback){
 
   // require user to login
   api.requireLogin(function(exception) {
+    FBC.session = api.get_session();
     // Get friends list
     api.friends_get(null, function(result) {
+      result[result.length] = FBC.session.uid;
       FB.Facebook.apiClient.users_getInfo(result,
         ['name','pic_square','music'],
 	function(res){
+          FBC.owner = FBCGetFriends_parseUser(res[res.length-1]);
           FBC.fbFriends = [];
+          res.length--;
           for( var i=0; i < res.length; i++ ){
-            if( !res[i]['music'] || res[i]['music'].length == 0 ){
-              continue;
+            var friend_user = FBCGetFriends_parseUser(res[i]);
+            if( friend_user ){
+              FBC.fbFriends[FBC.fbFriends.length] = friend_user;
             }
-            var mFriend = {};
-            mFriend['music_str'] = res[i]['music'];
-            mFriend['artists'] = parseArtistNames(res[i]['music']);
-            if( mFriend['artists'].length < 4 ){
-              continue;
-            }
-            mFriend['name'] = res[i]['name'];
-            mFriend['pic_square'] = res[i]['pic_square'];
-            FBC.fbFriends[FBC.fbFriends.length] = mFriend;
           }
           FBC.fbFriends = FBC.fbFriends.sort(function(a,b){
             return b['artists'].length - a['artists'].length;
@@ -370,6 +384,20 @@ FBCGetFriends = function(callback){
     });
 };
 
+FBCGetFriends_parseUser = function( res ){
+  if( !res['music'] || res['music'].length == 0 ){
+    return false;
+  }
+  var mFriend = {};
+  mFriend['music_str'] = res['music'];
+  mFriend['artists'] = parseArtistNames(res['music']);
+  if( mFriend['artists'].length < 4 ){
+    return false;
+  }
+  mFriend['name'] = res['name'];
+  mFriend['pic_square'] = res['pic_square'];
+  return mFriend;
+};
 FBCPostStream = function(vidEntry){
 
   var media = {

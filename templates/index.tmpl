@@ -21,15 +21,17 @@ Look for videos
     <div id="friendForm">
     </div>
     <div id="header">
-      <fb:login-button size="medium" v="2" onlogin="FBCLogin();"></fb:login-button> 
-      <a href="#" onclick="FBCLogout(); return false;" ><img id="fb_logout_image" src="http://static.ak.fbcdn.net/images/fbconnect/logout-buttons/logout_medium.gif" alt="Connect"/></a>
+      <div id="fb_login">
+	<fb:login-button size="medium" v="2" onlogin="FBCLogin();"></fb:login-button> 
+	<a href="#" onclick="FBCLogout(); return false;" ><img id="fb_logout_image" src="http://static.ak.fbcdn.net/images/fbconnect/logout-buttons/logout_medium.gif" alt="Connect"/></a>
+      </div>
+      <ul id="artists-menu">
+      <li onclick="renderSearch()">Search</li>
+	<li class="artists-menu-friends"onclick="browseFriends();">Friends</li>
+	</ul>
     </div>
     <div id="media">      
       <div id="artists">
-	<ul id="artists-menu">
-	<li onclick="renderSearch()">Search</li>
-	<li class="artists-menu-friends"onclick="browseFriends();">Friends</li>
-	</ul>
 	<div id="artistlisting"></div>
       </div>
       <div id="featureVideo">

@@ -2,6 +2,7 @@ import re
 import pdb
 import gdata.youtube
 import gdata.youtube.service
+import lastfm
 from pprint import pprint 
 
 def runJob(fileName):
@@ -14,8 +15,10 @@ def runJob(fileName):
 def fetchVideos(artistName, ip_addr):
     videos_relevance = _fetchVideos(artistName, ip_addr, orderby='relevance')
     videos_popularity = _fetchVideos(artistName, ip_addr, orderby='viewCount')
+    hits = lastfm.getHits(artistName)
     videos = videos_relevance + videos_popularity
     videos = filterSimilar(videos)
+    videos = orderPopular(videos, hits)
     return videos
 
 def filterSimilar(allVideos):
@@ -37,6 +40,32 @@ def filterSimilar(allVideos):
         vidByTitle[minTitle] = sorted(videos, key = lambda v: v['view_count'])
     return sorted([ v[0] for v in vidByTitle.values() ],
                   key = lambda v: v['view_count'])
+
+def _makeMinTitle(videoTitle):
+    junkWords = [
+        'official',
+        'hq',
+        'music video',
+        ]
+    minTitle = videoTitle.lower()
+    for word in junkWords:
+        minTitle = minTitle.replace(word,"")
+    minTitle = re.sub("\(.*\)", "", minTitle, count=0)
+    minTitle = re.sub("[^a-zA-Z]", "", minTitle, count=0)
+    return minTitle
+
+def orderPopular(videos, hitNames):
+    print hitNames
+    print [video['title'] for video in videos]
+    ordered_videos = []
+    for hitName in hitNames:
+        for video in list(videos):
+            if _makeMinTitle(hitName) == _makeMinTitle(video['title']):
+                ordered_videos.append(video)
+    for video in list(videos):
+        if video not in ordered_videos:
+            ordered_videos.append(video)
+    return ordered_videos
 
 def _fetchVideos(artistName,
                  ip_addr,
