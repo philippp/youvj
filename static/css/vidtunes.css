@@ -26,9 +26,10 @@ body{
    height:21px;
    overflow:hidden;
    width:145px;
+   text-show: white 1px 1px 0;
 }
 
-#artists{
+#browser{
    float:left;
    width:150px;
    margin-right:25px;
@@ -87,6 +88,7 @@ background-color:#EFEFEF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
 margin-bottom:2px;
+margin-left: 10px;
 cursor:pointer;
 display:block;
 height:20px;
@@ -95,17 +97,27 @@ overflow:hidden;
 width: 145px;
 }
 
+#menu-friends{
+   display:none;
+}
+
 .menu-artist-title {
 background-color:#BFBFBF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
 display:block;
-height:55px;
+height:35px;
 margin-bottom:2px;
 overflow:hidden;
 padding:5px 5px 0;
 width:145px;
 }
+
+.menu-artist-title-pic { 
+   width: 30px;
+   height: 30px;
+}
+
 .menu-artist a{
    color: #333333;
 }
@@ -282,4 +294,8 @@ ul#artists-menu li {
 
 #fb_logout_image {
    display:none;
+}
+
+.right{
+   float: right;
 }

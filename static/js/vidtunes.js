@@ -22,20 +22,48 @@ var renderSearch = function(){
 };
 
 var renderArtists = function(artistNames, headerElement){
-  $('#artistlisting').empty();
+  renderArtists.id++;
+  var aid = renderArtists.id;
+  //$('#artistlisting').empty();
+  var artistGrouping = $('<div id="artistGrouping'+aid+'"></div>');
   if( headerElement ){
-    $('#artistlisting').append(headerElement);
+    headerElement = $("<div class='menu-artist-title'></div>").append(
+      $('<a href="#" class="toggle_off-'+aid+'"></a>').append(
+        $('<span>[-]</span>')
+      ).click(
+        (function(i){return function(){
+          $('.artistBatch'+i).hide();
+          $('.toggle_off-'+i).hide();
+          $('.toggle_on-'+i).show();
+        };})(aid)
+      )
+    ).append(
+      $('<a href="#" class="toggle_on-'+aid+'" style="display:none;"></a>').append(
+        $('<span>[+]</span>')
+      ).click(
+        (function(i){return function(){
+          $('.artistBatch'+i).show();
+          $('.toggle_off-'+i).show();
+          $('.toggle_on-'+i).hide();
+        };})(aid)
+      )
+    ).append(headerElement);
+    artistGrouping.append(headerElement);
   }
+
   for( var i = 0; i < artistNames.length; i++ ){
 	var artistName = artistNames[i];
 	var artistEntry = makeArtistMenuItem(artistName);
-	$('#artistlisting').append(artistEntry);
+        artistEntry.addClass('artistBatch'+renderArtists.id);
+	artistGrouping.append(artistEntry);
   }
+  $('#artistlisting').prepend(artistGrouping);
   $('#search').show();
-  if($('#artistlisting a').length > 0){
-    $($('#artistlisting a')[0]).click();
+  if($('.artistBatch'+renderArtists.id+' a').length > 0){
+    $($('.artistBatch'+renderArtists.id+' a')[0]).click();
   }
 };
+renderArtists.id = 0;
 
 var parseArtistNames = function(textVal){
   var splitNames = textVal.split(",");
@@ -325,8 +353,8 @@ FBC.fbFriends = [];
 FBC.session = {};
 
 FBC.makeMenuArtistTitle = function(f){
-  return $('<div class="menu-artist-title"></div>').append(
-  $("<img src='"+f['pic_square']+"' alt='profile pic'/>")
+  return $('<span></span>').append(
+  $("<img class='menu-artist-title-pic' src='"+f['pic_square']+"' alt='profile pic'/>")
   ).append(
     $("<span class='small'>"+f['name']+"</span>")
   );
@@ -346,7 +374,7 @@ FBCLogin = function(){
   FB.XFBML.Host.parseDomTree();
   $("#fb_logout_image").show();
   FBCGetFriends( function(){
-		   $('.artists-menu-friends').css({'display':'inline-block'});
+		   $('#menu-friends').css({'display':'block'});
 
                    renderArtists(FBC.owner['artists'],
                                  FBC.makeMenuArtistTitle(FBC.owner));

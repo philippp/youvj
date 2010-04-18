@@ -2,4 +2,4 @@
 *.pyc
 keys
 templates/*.py
-templates*.py.bak
+templates/*.py.bak

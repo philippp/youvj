@@ -95,6 +95,16 @@ class FindSimilar(JSONController):
 class Toplevel(Controller):
   addSlash = True
   def render(self, ctx):
+    arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
+    print arguments
+    if 'session' in arguments:
+      print 'redirecting after getting session, should be doing FB hookups'
+      return http.Response(
+        301, 
+        {'location': config.domain},
+        ''
+      )
+    
     return http.Response(
       200, 
       {'content-type': http_headers.MimeType('text', 'html')},

@@ -5,6 +5,9 @@ import gdata.youtube.service
 import lastfm
 from pprint import pprint 
 
+def log(msg):
+    print msg
+
 def runJob(fileName):
     mVids = {}
     artists = open(fileName,'r').readlines()
@@ -14,11 +17,17 @@ def runJob(fileName):
 
 def fetchVideos(artistName, ip_addr):
     videos_relevance = _fetchVideos(artistName, ip_addr, orderby='relevance')
+
+    log( "videos by relevance %s" % videos_relevance )
     videos_popularity = _fetchVideos(artistName, ip_addr, orderby='viewCount')
+    log(  "videos by popularity %s" % videos_popularity )
     hits = lastfm.getHits(artistName)
     videos = videos_relevance + videos_popularity
+    log( "before filterSimilar: %s" % [v['title'] for v in videos] )
     videos = filterSimilar(videos)
+    log( "after filterSimilar: %s" % [v['title'] for v in videos] )
     videos = orderPopular(videos, hits)
+    log( "after orderPopular: %s" % [v['title'] for v in videos] )
     return videos
 
 def filterSimilar(allVideos):
@@ -29,14 +38,10 @@ def filterSimilar(allVideos):
         'music video',
         ]
     for video in allVideos:
-        minTitle = video['title']
-        for word in junkWords:
-            minTitle = minTitle.replace(word,"")
-        minTitle = re.sub("\(.*\)", "", minTitle, count=0)
-        minTitle = re.sub("[^a-zA-Z]", "", minTitle, count=0)
-        
+        minTitle = _makeMinTitle(video['title'])
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
     for minTitle, videos in vidByTitle.iteritems():
+        log( "mintitle=%s contains %s" % (minTitle, [v['title'] for v in videos]) )
         vidByTitle[minTitle] = sorted(videos, key = lambda v: v['view_count'])
     return sorted([ v[0] for v in vidByTitle.values() ],
                   key = lambda v: v['view_count'])
@@ -55,17 +60,42 @@ def _makeMinTitle(videoTitle):
     return minTitle
 
 def orderPopular(videos, hitNames):
-    print hitNames
-    print [video['title'] for video in videos]
     ordered_videos = []
-    for hitName in hitNames:
+    minHits = [ _makeMinTitle(h) for h in hitNames ]
+    log( "hit names are %s" % minHits )
+    _m = []
+    for h in minHits:
+        if h not in _m:
+            _m.append(h)
+    minHits = _m
+
+    for hitName in minHits:
         for video in list(videos):
-            if _makeMinTitle(hitName) == _makeMinTitle(video['title']):
+            desc = video['description'].lower()
+            minTitle = str(_makeMinTitle(video['title']))
+            log( "min title is %s" % minTitle )
+            if str(hitName) == minTitle and \
+                    ('official' in desc or 'music video' in desc):
+                log( "appending %s because it is a hit and seems official" % video['title'] )
                 ordered_videos.append(video)
     for video in list(videos):
         if video not in ordered_videos:
+            log( "appending %s because it has not been added" % video['title'] )
             ordered_videos.append(video)
+
     return ordered_videos
+
+def _removeUmlaut(word):
+    umMap = {252:u'u',
+             220:u'u',
+             246:u'o',
+             214:u'o',
+             228:u'a',
+             196:u'a'}
+    word = word.decode('utf-8')
+    for k, v in umMap.items():
+        word = word.replace(unichr(k), v)
+    return word
 
 def _fetchVideos(artistName,
                  ip_addr,
@@ -73,21 +103,32 @@ def _fetchVideos(artistName,
     musicEntries = []
     ytService = gdata.youtube.service.YouTubeService()
     query = gdata.youtube.service.YouTubeVideoQuery()
-    query.vq = artistName.lower()+"+music+video"
+    query.vq = artistName.lower()
     query.orderby = orderby
     query.racy = 'include'
     query.max_results=50
     query.format = '5'
     #query.restriction = ip_addr
     feed = ytService.YouTubeQuery(query)
+    _blockWords = ['unofficial','parody','anime']
+    artistName = _removeUmlaut(artistName)
     for entry in feed.entry:
-        vidTitle = entry.media.title.text.lower()
-
+        vidTitle = _removeUmlaut(entry.media.title.text.lower())
+        vidDescription = entry.media.description.text or ''
+        
         if not vidTitle:
             continue
-        if "unofficial" in vidTitle or "parody" in vidTitle:
+
+        _blockFound = False
+        for _w in _blockWords:
+            if _w in  vidTitle or _w in vidDescription.lower():
+                _blockFound = True
+                break
+        if _blockFound:
             continue
 
+
+        vidTitle = re.sub("^[Tt]he","",vidTitle).strip()
         if re.search("^"+artistName.lower()+"[ ]*\-", vidTitle):
             vidTitle = '-'.join(vidTitle.split('-')[1:]).lstrip()
         elif re.search("\-[ ]*"+artistName.lower()+"$", vidTitle):
@@ -99,7 +140,7 @@ def _fetchVideos(artistName,
         entryDict = {
             'artist':artistName,
             'title':vidTitle,
-            'description':entry.media.description.text,
+            'description':vidDescription,
             'page_url':entry.media.player.url,
             'flash_url':entry.GetSwfUrl(),
             'duration':entry.media.duration.seconds,
@@ -110,7 +151,7 @@ def _fetchVideos(artistName,
             musicEntries.append(entryDict)
         else:
 
-            print "--rejected %s" % vidTitle
+            log( "--rejected %s" % vidTitle )
     return musicEntries
 
 def levenshtein_distance(first, second):
