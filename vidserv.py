@@ -13,7 +13,7 @@ class Controller(resource.Resource):
 
   def __init__(self, directory=""):
     if not directory:
-      directory = '/home/philippp/vidtunes/static'    
+      directory = config.path+"/static"
     self.directory = directory
 
   def template(self, view, **kwargs):
@@ -181,5 +181,5 @@ site = server.Site(root)
 # Standard twisted application Boilerplate
 from twisted.application import service, strports
 application = service.Application("demoserver")
-s = strports.service('tcp:8080', channel.HTTPFactory(site))
+s = strports.service('tcp:%s' % config.port, channel.HTTPFactory(site))
 s.setServiceParent(application)

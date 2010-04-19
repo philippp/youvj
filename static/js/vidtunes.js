@@ -1,7 +1,7 @@
 $(document).ready(function(){
   $('#queryForm').dialog({ autoOpen: false,
                            title : 'Search Artists',
-                           buttons: { "OK": function() { renderArtists(parseArtistNames( $('#artistnames').val() )); $(this).dialog("close"); } }});
+                           buttons: { "OK": function() { searchArtists(parseArtistNames( $('#artistnames').val() )); $(this).dialog("close"); } }});
 
   $('#friendForm').dialog({ autoOpen: false,
                             width: '560px',
@@ -13,6 +13,10 @@ $(document).ready(function(){
                        $('#queryForm').dialog('open');
                      });
   $('#search').hide();
+  $('#welcome-search').button().click(
+    function(){searchArtists(parseArtistNames( $('#welcome-artistnames').val() ));}
+  );
+
   $('#videos').css({'height':$(document).height()});
 });
 
@@ -21,14 +25,24 @@ var renderSearch = function(){
   $('#queryForm').dialog('open');
 };
 
+var searchArtists = function(artistNames){
+  $('#header').show();
+  $("#popup-welcome-border").hide();
+  var searchHeader = $('<span></span>').append(
+    $("<span class='small'>search</span>")
+  );
+  renderArtists(artistNames, searchHeader);
+};
+
+
 var renderArtists = function(artistNames, headerElement){
   renderArtists.id++;
   var aid = renderArtists.id;
   //$('#artistlisting').empty();
-  var artistGrouping = $('<div id="artistGrouping'+aid+'"></div>');
+  var artistGrouping = $('<div class="artist-grouping" id="artistGrouping'+aid+'"></div>');
   if( headerElement ){
     headerElement = $("<div class='menu-artist-title'></div>").append(
-      $('<a href="#" class="toggle_off-'+aid+'"></a>').append(
+      $('<a href="#" title="hide list of artists" class="toggle toggle_off-'+aid+'"></a>').append(
         $('<span>[-]</span>')
       ).click(
         (function(i){return function(){
@@ -38,7 +52,7 @@ var renderArtists = function(artistNames, headerElement){
         };})(aid)
       )
     ).append(
-      $('<a href="#" class="toggle_on-'+aid+'" style="display:none;"></a>').append(
+      $('<a href="#" title="show list of artists" class="toggle toggle_on-'+aid+'" style="display:none;"></a>').append(
         $('<span>[+]</span>')
       ).click(
         (function(i){return function(){
@@ -356,7 +370,7 @@ FBC.makeMenuArtistTitle = function(f){
   return $('<span></span>').append(
   $("<img class='menu-artist-title-pic' src='"+f['pic_square']+"' alt='profile pic'/>")
   ).append(
-    $("<span class='small'>"+f['name']+"</span>")
+    $("<div class='small menu-artist-title-name'>"+f['name']+"</div>")
   );
 };
 
@@ -365,12 +379,15 @@ FBCLogout = function(){
 };
 
 FBCLogin = function(){
-  var user_box = document.getElementById("fb_login");
+  $('#header').show();
+  $('#fb-login').show();
+  $("#popup-welcome-border").hide();
+  $("#friends-icon").show();
+  var user_box = document.getElementById("fb-login");
   // add in some XFBML. note that we set useyou=false so it doesn't display "you"
-  user_box.innerHTML = "<div style='float:left;'>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic></div>" +
-  "Welcome, <fb:name uid='loggedinuser' useyou='false'></fb:name>.<br/>" +
-  "<a href='#' onclick='browseFriends(0)'>Click here to browse your Facebook friends' music!</a>" +
-  "</span><br style='clear:both;'/>";
+  user_box.innerHTML = "<div class='fb-login-pic''>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic></div>" +
+  "Logged in as: <fb:name uid='loggedinuser' useyou='false'></fb:name>" +
+  "</span>";
   FB.XFBML.Host.parseDomTree();
   $("#fb_logout_image").show();
   FBCGetFriends( function(){
@@ -441,14 +458,9 @@ FBCPostStream = function(vidEntry){
 
   var message = 'Check out this video';
   var attachment = { 'name': vidEntry['title'],
-                     'href': ' http://notphil.com:8080',
-                     'caption': '{*actor*} found this video',
+                     'href': ' http://youvj.com',
+                     'caption': '{*actor*} found this music video',
                      'description': vidEntry['description'],
-                     'properties': {
-                       'category': {
-                         'text': vidEntry['artist'],
-                         'href': 'http://notphil.com:8080#'+vidEntry['artist']}
-                       },
                      'media': [ media ]
                    };
   var action_links = [{'text':'Find music videos',

@@ -19,20 +19,21 @@ body{
    background-color: #2992D4;
    font-family: arial, helvetica;
    font-size: 13px;
+   margin:0;
+   padding:0;
+
 }
 
 .title{
    font-size:15px;
-   height:21px;
    overflow:hidden;
-   width:145px;
    text-show: white 1px 1px 0;
 }
 
 #browser{
-   float:left;
-   width:150px;
-   margin-right:25px;
+float:left;
+margin-right:18px;
+width:160px;
 }
 
 #videos{
@@ -45,6 +46,7 @@ body{
 
 #media{
    height:100%;
+   margin: 0px 10px;
 }
 
 #featureVideo{
@@ -83,40 +85,147 @@ textarea#artistnames {
    height:80%;
 }
 
-.menu-artist{
-background-color:#EFEFEF;
-border-bottom:2px solid #FFFFFF;
-border-right:2px solid #FFFFFF;
-margin-bottom:2px;
-margin-left: 10px;
-cursor:pointer;
-display:block;
-height:20px;
-padding:5px 5px 0;
-overflow:hidden;
-width: 145px;
-}
 
 #menu-friends{
    display:none;
 }
 
-.menu-artist-title {
-background-color:#BFBFBF;
+#friends-icon{
+   display:none;
+}
+
+#popup-welcome-container{
+   text-align: center;
+}
+
+#popup-welcome-border{
+   -moz-border-radius:10px;
+   -webkit-border-radius:10px;
+   background-color:#94C8E9;
+   padding:10px;
+   display: inline-block;
+   margin-top: 150px;
+}
+
+#popup-welcome{
+   padding: 15px;
+   width: 500px;
+   background-color: white;
+   text-align: left;
+   -moz-border-radius:10px;
+   -webkit-border-radius:10px;
+}
+
+#popup-welcome .title{
+   margin-bottom: 10px;
+   font-size:25px;
+   text-shadow: white 1px 1px 0;
+}
+
+#popup-welcome .title-section{
+   text-shadow: white 1px 1px 0;
+}
+
+#popup-welcome #fb-login-button{
+-moz-border-radius:5px;
+background-color:#CEDAF4;
+border:1px solid #A9B3C8;
+display:inline-block;
+padding:10px;
+text-align:center;
+}
+
+#fb-login-button-wrapper{
+   text-align: center;
+   padding: 10px
+}
+
+#welcome-artistnames {
+   width: 100%;
+   height: 200px;
+}
+
+#popup-welcome-search{
+   display: none;
+}
+
+#popup-welcome-fb{
+}
+
+a.toggle{
+   text-decoration: none;
+   font-family: monospace;
+   float: right;
+}
+.artist-grouping {
+background-color:#DFDFDF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
+margin-bottom:10px;
+}
+
+#header{
+display:none;
+border-bottom:1px solid #94C8E9;
+margin-bottom:20px;
+padding-bottom:10px;
+}
+
+#fb-login {
+font-size: 10px;
+display: none;
+}
+
+.fb-login-pic{
+   float: left;
+   margin-right: 5px;
+}
+
+.header-icon{
+display:block;
+float:left;
+margin: 10px 18px 0 0;
+padding:0px 14px;
+width:130px;
+   cursor: pointer;
+}
+
+.header-icon-img{
+   display: block;
+   position: absolute;
+}
+
+.header-icon-text{
+   font-size: 10px;
+   margin-left: 55px
+}
+
+.menu-artist{
+cursor:pointer;
+display:block;
+line-height:20px;
+height: 20px;
+padding-left:14px;
+overflow:hidden;
+}
+
+
+.menu-artist-title {
 display:block;
 height:35px;
-margin-bottom:2px;
 overflow:hidden;
 padding:5px 5px 0;
-width:145px;
 }
 
 .menu-artist-title-pic { 
    width: 30px;
    height: 30px;
+   position: absolute;
 }
+.menu-artist-title-name{
+   margin-left: 35px;
+}
+
 
 .menu-artist a{
    color: #333333;
@@ -135,7 +244,8 @@ width:145px;
 }
 .menu-artist .menu-artist-indicator{
    font-size:20px;
-   margin-top:-6px;
+   margin-right:5px;
+   margin-top:-2px;
    float: right;
    display: none;
 }
@@ -186,6 +296,11 @@ width:131px;
 -moz-border-radius-topright:2px;
 }
 
+.videoInfo .title{
+   height:21px;
+   width: 145px;
+   overflow: hidden;
+}
 .videoInfo-friend{
 font-size:10px;
 margin-right: 3px;
@@ -245,8 +360,7 @@ margin-top:10px;
 }
 
 #artistlisting{
-margin-right:50px;
-width:150px;
+width:160px;
 }
 
 #queryForm{
