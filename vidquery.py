@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import re
 import pdb
 import gdata.youtube
@@ -16,8 +17,8 @@ def runJob(fileName):
         mVids['artist'] = entries
 
 def fetchVideos(artistName, ip_addr):
+    artistName = re.sub("^[Tt]he","",artistName).strip()
     videos_relevance = _fetchVideos(artistName, ip_addr, orderby='relevance')
-
     log( "videos by relevance %s" % videos_relevance )
     videos_popularity = _fetchVideos(artistName, ip_addr, orderby='viewCount')
     log(  "videos by popularity %s" % videos_popularity )
@@ -42,8 +43,12 @@ def filterSimilar(allVideos):
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
     for minTitle, videos in vidByTitle.iteritems():
         log( "mintitle=%s contains %s" % (minTitle, [v['title'] for v in videos]) )
-        vidByTitle[minTitle] = sorted(videos, key = lambda v: v['view_count'])
-    return sorted([ v[0] for v in vidByTitle.values() ],
+        vidByTitle[minTitle] = sorted(videos, key = lambda v: int(v['view_count']))[0]
+        officialVid = filter( lambda v: 'vevo.com' in v['description'], videos )
+        if officialVid:
+            vidByTitle[minTitle] = officialVid[0]
+
+    return sorted(vidByTitle.values(),
                   key = lambda v: v['view_count'])
 
 def _makeMinTitle(videoTitle):
@@ -73,7 +78,6 @@ def orderPopular(videos, hitNames):
         for video in list(videos):
             desc = video['description'].lower()
             minTitle = str(_makeMinTitle(video['title']))
-            log( "min title is %s" % minTitle )
             if str(hitName) == minTitle and \
                     ('official' in desc or 'music video' in desc):
                 log( "appending %s because it is a hit and seems official" % video['title'] )
@@ -176,3 +180,6 @@ def levenshtein_distance(first, second):
                 substitution += 1
             distance_matrix[i][j] = min(insertion, deletion, substitution)
     return distance_matrix[first_length-1][second_length-1]
+
+if __name__ == "__main__":
+    print fetchVideos("kings of leon", "67.207.139.31")
