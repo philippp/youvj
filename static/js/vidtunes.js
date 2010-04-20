@@ -49,6 +49,7 @@ var renderArtists = function(artistNames, headerElement){
           $('.artistBatch'+i).hide();
           $('.toggle_off-'+i).hide();
           $('.toggle_on-'+i).show();
+          return false;
         };})(aid)
       )
     ).append(
@@ -59,6 +60,7 @@ var renderArtists = function(artistNames, headerElement){
           $('.artistBatch'+i).show();
           $('.toggle_off-'+i).show();
           $('.toggle_on-'+i).hide();
+          return false;
         };})(aid)
       )
     ).append(headerElement);
@@ -87,15 +89,19 @@ var parseArtistNames = function(textVal){
   return splitNames;
 };
 
+var loadArtist = function(artistName){
+  document.location.hash = artistName;
+  loadVideos(artistName);
+  loadSimilar(artistName);
+  renderArtistBox(artistName);
+};
+
 var makeArtistMenuItem = function(artistName){
     var artistDiv = $('<div class="menu-artist"></div>').append(
                       $('<div class="menu-artist-indicator">&#8594;</div>')).append(
                       $('<a href="#">'+artistName+'</a>'));
     artistDiv.click(function(e){
-      loadVideos(artistName);
-      loadSimilar(artistName);
-      renderArtistBox(artistName);
-      document.location.hash = artistName;
+      loadArtist(artistName);
       $(e.currentTarget).addClass('menu-artist-selected');
       $('.menu-artist-indicator', e.currentTarget).show();
     });
@@ -123,8 +129,8 @@ var renderArtistBox = function(artistName){
       if(found > friendLimit){
         extraCls = "extra-content";
       }
-      $("#videoInfo-similar", artistBox).append(
-          $("<a href='#' class='videoInfo-friend "+extraCls+"'>"+friend['name']+"</span>").click(
+      $("#videoInfo-artistFriends", artistBox).append(
+          $("<a href='#' class='videoInfo-friend "+extraCls+"'>"+friend['name']+"</a>").click(
 
             (function(f){ return function(e){
               renderArtists(f['artists'],
@@ -136,13 +142,13 @@ var renderArtistBox = function(artistName){
     }
   }
   if( found > 0 ){
-    $("#videoInfo-similar", artistBox).prepend(
+    $("#videoInfo-artistFriends", artistBox).prepend(
       $("<span class='videoInfo-friend'><img src='/images/heart.gif' alt='heart'/> by </span>")
     );
 
   }
   if( found > friendLimit ){
-    $("#videoInfo-similar", artistBox).append(
+    $("#videoInfo-artistFriends", artistBox).append(
       $("<a class='videoInfo-friend show-more'> and "+(found-friendLimit)+" others.</a>").click(
         function(){
           $(".extra-content",artistBox).show();
@@ -199,10 +205,8 @@ var renderVideo = function(videoInfo){
       $('<div class="screenspace">&nbsp;</div>')
     )
   ).append(
-    $('<div class="video"></div>').append(
+    $('<div class="play-video"></div>').append(
       $('<a href="#">Play Video</a>')
-    ).append(
-      $("<span class='small'>"+videoInfo['view_count']+"</span>")
     )
   );
   $('.screencaps img',vid).hide();
@@ -224,9 +228,51 @@ var loadSimilar = function(artistName){
 };
 
 var loadSimilarCallback = function(resp){
+  var similarLimit = 4;
+  var extraCls = "";
+  var similarDiv = $('#videoInfo-similar');
   for( var i=resp.length-1; i >= 0; i--){
     renderSimilar(resp[i]).insertAfter($("#similar-artist-divider"));
   }
+  for( i=0; i < resp.length; i++){
+    if( i > similarLimit ){
+      extraCls = "extra-content";
+    }
+    var curArtist = resp[i][0];
+    var shortArtist = curArtist;
+    if( curArtist.length > 15 ){
+      shortArtist = curArtist.substring(0,12)+'...';
+    }
+    similarDiv.append(
+      $("<a href='#' class='videoInfo-similar "+extraCls+"' title='"+resp[i][0]+"'>"+shortArtist+"</a>").click(
+        (function(f){return function(e){
+                       loadArtist(f);
+                       return false;
+                     };})(curArtist)
+      )
+    );
+  }
+
+  if( resp.length > 0 ){
+    similarDiv.prepend(
+            $("<span class='videoInfo-similar'> ~ to </span>")
+    );
+  }
+
+  if( resp.length > similarLimit ){
+    var similarShow = $("<a class='videoInfo-similar show-more'> and "+(resp.length-similarLimit)+" others.</a>").click(
+        function(){
+          $("#videoInfo-similar .extra-content").show();
+          $("#videoInfo-similar .show-more").hide();
+          $("#videoInfo-artist").css({'height':'auto'});
+        }
+      );
+
+    similarDiv.append(
+      similarShow
+    );
+  }
+
 };
 
 var renderSimilar = function(pairing){
@@ -234,10 +280,7 @@ var renderSimilar = function(pairing){
                         $("<a href='#'></a>").text(pairing[0])
                         );
   $('a',similarArtist).click(function(){
-                               loadVideos(pairing[0]);
-                               loadSimilar(pairing[0]);
-                               renderArtistBox(pairing[0]);
-                               document.location.hash = pairing[0];
+                               loadArtist(artistName);
                              });
   return(similarArtist);
 };
@@ -368,7 +411,7 @@ FBC.session = {};
 
 FBC.makeMenuArtistTitle = function(f){
   return $('<span></span>').append(
-  $("<img class='menu-artist-title-pic' src='"+f['pic_square']+"' alt='profile pic'/>")
+  $("<img class='menu-artist-title-pic' align='left' src='"+f['pic_square']+"' alt='profile pic'/>")
   ).append(
     $("<div class='small menu-artist-title-name'>"+f['name']+"</div>")
   );
@@ -463,8 +506,8 @@ FBCPostStream = function(vidEntry){
                      'description': vidEntry['description'],
                      'media': [ media ]
                    };
-  var action_links = [{'text':'Find music videos',
-                       'href':'http://notphil.com:8080'}];
+  var action_links = [{'text':"Browse your FB friends' faves",
+                       'href':'http://youvj.com'}];
   FB.Connect.streamPublish(message, attachment, action_links);
 };
 

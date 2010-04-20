@@ -32,7 +32,7 @@ body{
 
 #browser{
 float:left;
-margin-right:18px;
+margin-right:20px;
 width:160px;
 }
 
@@ -220,8 +220,8 @@ padding:5px 5px 0;
 .menu-artist-title-pic { 
    width: 30px;
    height: 30px;
-   position: absolute;
 }
+
 .menu-artist-title-name{
    margin-left: 35px;
 }
@@ -286,7 +286,7 @@ float:left;
 height:150px;
 min-height:150px;
 margin-bottom:30px;
-margin-right:15px;
+margin-right:12px;
 padding:6px 14px;
 width:131px;
 -moz-border-radius: 2px;
@@ -304,6 +304,21 @@ width:131px;
 .videoInfo-friend{
 font-size:10px;
 margin-right: 3px;
+cursor: pointer;
+}
+
+#videoInfo-similar{
+overflow-x: hidden;
+cursor: pointer;
+}
+
+.videoInfo-similar{
+font-size:10px;
+margin-right: 3px;
+}
+
+.play-video{
+text-align: center;
 }
 
 .extra-content{
@@ -320,7 +335,7 @@ border-right:2px solid #FFFFFF;
 float:left;
 height:150px;
 margin-bottom:30px;
-margin-right:15px;
+margin-right:12px;
 padding:6px 14px;
 width:132px;
 -moz-border-radius: 2px;
