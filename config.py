@@ -11,3 +11,10 @@ title = 'YouVJ'
 
 path = '/home/philippp/vidtunes'
 port = '8080'
+
+db = {
+    'host':'localhost',
+    'user':'httpd',
+    'passwd':'httpd_db',
+    'db':'youvj',
+    }
