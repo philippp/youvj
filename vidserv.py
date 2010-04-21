@@ -8,6 +8,7 @@ import pylast
 import vidquery
 import minifb
 import config
+import vidlogger
 
 class Controller(resource.Resource):
 
@@ -80,6 +81,7 @@ class FindVideos(JSONController):
 
     ip_addr = ctx.remoteAddr.host
     for artist in artists:
+      vidlogger.log(data_1=1,text_info=artist)
       artistVids.append( vidquery.fetchVideos(artist, ip_addr) )
     return artistVids
 
@@ -104,7 +106,6 @@ class Toplevel(Controller):
         {'location': config.domain},
         ''
       )
-    
     return http.Response(
       200, 
       {'content-type': http_headers.MimeType('text', 'html')},

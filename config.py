@@ -1,4 +1,4 @@
-
+is_live = False
 LAST_FM_API_KEY = "daf69db37c9a7294c8a8b39938c5f92b" # this is a sample key
 LAST_FM_API_SECRET = "f83306591f5b14f331f7fb387174e4ed"
 
