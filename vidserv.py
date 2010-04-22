@@ -1,8 +1,15 @@
+import base64
+import hmac
 import pdb
+import hashlib
 import json
-import os.path, time
+import os.path
+import time
+
 from twisted.web2 import server, http, resource, channel
 from twisted.web2 import static, http_headers, responsecode
+from twisted.web2.http_headers import Cookie
+
 import lastfm
 import pylast
 import vidquery
@@ -45,6 +52,51 @@ class Controller(resource.Resource):
       return static.File(fullpath)
     return None
 
+  def setCookie(self, response, name, value, domain=None, path="/", expires=None):
+    """Generates and signs a cookie for the give name/value"""
+    print "Trying to set %s to %s" % (name, value)
+    timestamp = str(int(time.time()))
+    value = base64.b64encode(value)
+    signature = self._cookieSignature(value, timestamp)
+    value = "|".join([value, timestamp, signature])
+    cookie = Cookie(name, value, path=path, expires=expires, domain=domain)
+    response.headers.setHeader('Set-Cookie', [cookie])
+
+  def getCookie(self, ctx, name):
+    cookies = ctx.headers.getHeader('cookie')
+    for c in cookies:
+      if c.name == name:
+        return self._parseCookie(c.value)
+    return ''
+
+  def _cookieSignature(self, *parts):
+    """Generates a cookie signature.
+
+    We use the Facebook app secret since it is different for every app (so
+    people using this example don't accidentally all use the same secret).
+    """
+    hash = hmac.new(config.FB_APP_SECRET, digestmod=hashlib.sha1)
+    for part in parts: hash.update(part)
+    return hash.hexdigest()
+    
+  def _parseCookie(value):
+    """Parses and verifies a cookie value from set_cookie"""
+    if not value: return None
+    parts = value.split("|")
+    if len(parts) != 3: return None
+    if cookie_signature(parts[0], parts[1]) != parts[2]:
+      logging.warning("Invalid cookie signature %r", value)
+      return None
+    timestamp = int(parts[1])
+    if timestamp < time.time() - 30 * 86400:
+      logging.warning("Expired cookie %r", value)
+      return None
+    try:
+      return base64.b64decode(parts[0]).strip()
+    except:
+      return None
+
+
 class JSONController(Controller, resource.PostableResource):
   creation_time = time.time()
   content_type = http_headers.MimeType('text','json')
@@ -76,6 +128,7 @@ class HTMLController(Controller, resource.PostableResource):
   
 class FindVideos(JSONController):  
   def respond(self, ctx):
+    import pdb; pdb.set_trace()
     artists = ctx.args.get('artist',[])
     artistVids = []
 
@@ -119,19 +172,19 @@ class FBIndex(HTMLController):
   def respond(self, ctx):
 
     arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
-    arguments = minifb.validate(config.FB_API_SECRET,
+    arguments = minifb.validate(config.FB_APP_SECRET,
                                 arguments)
 
     print arguments
     if arguments['added'] != '0':
       flist = minifb.call("facebook.friends.get",
-                          config.FB_API_KEY,
-                          config.FB_API_SECRET,
+                          config.FB_APP_KEY,
+                          config.FB_APP_SECRET,
                           session_key = arguments['session_key'])
       
       result = minifb.call("facebook.users.getInfo",
-                           config.FB_API_KEY,
-                           config.FB_API_SECRET,
+                           config.FB_APP_KEY,
+                           config.FB_APP_SECRET,
                            fields = "name,pic_square,music",
                            uids = flist,
                            session_key = arguments['session_key'])
@@ -142,18 +195,18 @@ class FBUserAdded(HTMLController):
   addSlash = True
   def respond(self, ctx):
     arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
-    arguments = minifb.validate(config.FB_API_SECRET,
+    arguments = minifb.validate(config.FB_APP_SECRET,
                                 arguments)
     auth_token = arguments["auth_token"]
     result = minifb.call("facebook.auth.getSession",
-                         config.FB_API_KEY,
-                         config.FB_API_SECRET,
+                         config.FB_APP_KEY,
+                         config.FB_APP_SECRET,
                          auth_token = auth_token)
     uid = result["uid"]
     session_key = result["session_key"]
     usersInfo = minifb.call("facebook.users.getInfo",
-                            config.FB_API_KEY,
-                            config.FB_API_SECRET,
+                            config.FB_APP_KEY,
+                            config.FB_APP_SECRET,
                             session_key=session_key,
                             call_id=True,
                             fields="name,pic_square",
@@ -165,22 +218,9 @@ class FBUserAdded(HTMLController):
     # Set the users profile FBML
     fbml = "<p>Welcome, new user, <b>%s</b></p>" % name
     minifb.call("facebook.profile.setFBML",
-                config.FB_API_KEY,
-                config.FB_API_SECRET,
+                config.FB_APP_KEY,
+                config.FB_APP_SECRET,
                 session_key=session_key,
                 call_id=True, uid=uid, markup=fbml)
 
 
-root = Toplevel()
-root.putChild("findvideos", FindVideos())
-root.putChild("findsimilar", FindSimilar())
-root.putChild("fb_user_added", FBUserAdded())
-root.putChild("fb_index", FBIndex())
-site = server.Site(root)
-
-
-# Standard twisted application Boilerplate
-from twisted.application import service, strports
-application = service.Application("demoserver")
-s = strports.service('tcp:%s' % config.port, channel.HTTPFactory(site))
-s.setServiceParent(application)
