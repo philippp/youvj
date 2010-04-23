@@ -13,9 +13,9 @@ from twisted.web2.http_headers import Cookie
 import lastfm
 import pylast
 import vidquery
-import minifb
 import config
 import vidlogger
+from lib import memcache, facebook, minifb
 
 class Controller(resource.Resource):
 
@@ -23,6 +23,8 @@ class Controller(resource.Resource):
     if not directory:
       directory = config.path+"/static"
     self.directory = directory
+    self.mem = memcache.Client([config.memcache_host])
+    self._fbUser = None
 
   def template(self, view, **kwargs):
     """
@@ -63,11 +65,19 @@ class Controller(resource.Resource):
     response.headers.setHeader('Set-Cookie', [cookie])
 
   def getCookie(self, ctx, name):
-    cookies = ctx.headers.getHeader('cookie')
+    cookies = ctx.headers.getHeader('cookie') or []
     for c in cookies:
       if c.name == name:
         return self._parseCookie(c.value)
     return ''
+
+  def getLoggedInFB(self, ctx):
+    if not getattr(self,'_fbUser',None):
+      fb_id = self.getCookie(ctx, 'fb_user')
+      if fb_id:
+        profile = self.mem.get('fb_profile_%s' % fb_id)
+        self._fbUser = profile
+    return self._fbUser
 
   def _cookieSignature(self, *parts):
     """Generates a cookie signature.
@@ -79,12 +89,12 @@ class Controller(resource.Resource):
     for part in parts: hash.update(part)
     return hash.hexdigest()
     
-  def _parseCookie(value):
+  def _parseCookie(self, value):
     """Parses and verifies a cookie value from set_cookie"""
     if not value: return None
     parts = value.split("|")
     if len(parts) != 3: return None
-    if cookie_signature(parts[0], parts[1]) != parts[2]:
+    if self._cookieSignature(parts[0], parts[1]) != parts[2]:
       logging.warning("Invalid cookie signature %r", value)
       return None
     timestamp = int(parts[1])
@@ -128,7 +138,6 @@ class HTMLController(Controller, resource.PostableResource):
   
 class FindVideos(JSONController):  
   def respond(self, ctx):
-    import pdb; pdb.set_trace()
     artists = ctx.args.get('artist',[])
     artistVids = []
 
@@ -151,14 +160,8 @@ class Toplevel(Controller):
   addSlash = True
   def render(self, ctx):
     arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
-    print arguments
-    if 'session' in arguments:
-      print 'redirecting after getting session, should be doing FB hookups'
-      return http.Response(
-        301, 
-        {'location': config.domain},
-        ''
-      )
+
+    profile = self.getLoggedInFB(ctx)
     return http.Response(
       200, 
       {'content-type': http_headers.MimeType('text', 'html')},

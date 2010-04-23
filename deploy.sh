@@ -5,6 +5,7 @@ cp *.sh $RELEASE_DIR
 cp *.py $RELEASE_DIR
 cp -r static $RELEASE_DIR
 cp -r templates $RELEASE_DIR
+cp -r lib $RELEASE_DIR
 mv $RELEASE_DIR/config-live.py $RELEASE_DIR/config.py
 cd /tmp
 tar -cvzf /tmp/youvj-$RELEASE.tgz youvj.com-$RELEASE

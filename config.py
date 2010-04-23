@@ -9,7 +9,7 @@ FB_APP_SECRET = "fe7a9bb66b092c645fe1b8a9256612a4"
 domain = 'http://notphil.com:8080'
 title = 'YouVJ'
 
-path = '/home/philippp/vidtunes'
+path = '/home/philippp/youvj'
 port = '8080'
 
 db = {
@@ -18,3 +18,5 @@ db = {
     'passwd':'httpd_db',
     'db':'youvj',
     }
+
+memcache_host = '127.0.0.1:11211'

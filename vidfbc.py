@@ -72,7 +72,7 @@ class LoginHandler(vidserv.HTMLController):
         if verification_code:
             args["client_secret"] = config.FB_APP_SECRET
             args["code"] = verification_code
-
+            args["scope"] = "user_music,friends_music,user_photos"
             response = cgi.parse_qs(urllib.urlopen(
                 "https://graph.facebook.com/oauth/access_token?" +
                 urllib.urlencode(args)).read())
@@ -84,7 +84,8 @@ class LoginHandler(vidserv.HTMLController):
                 "https://graph.facebook.com/me?" +
                 urllib.urlencode(dict(access_token=access_token))))
             resp = http.Response(301,{'location': '/'},'')
-            print profile
+            profile['access_token'] = access_token
+            self.mem.set(str('fb_profile_'+profile['id']), profile)
             self.setCookie(resp, "fb_user", str(profile["id"]),
                        expires=time.time() + 30 * 86400)
             return resp

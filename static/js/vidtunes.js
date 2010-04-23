@@ -280,7 +280,7 @@ var renderSimilar = function(pairing){
                         $("<a href='#'></a>").text(pairing[0])
                         );
   $('a',similarArtist).click(function(){
-                               loadArtist(artistName);
+                               loadArtist(pairing[0]);
                              });
   return(similarArtist);
 };

@@ -23,6 +23,8 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `log` (
   `id` int(10) unsigned NOT NULL auto_increment,
+  `session_id` varchar(64) default NULL,
+  `fbid` varchar(64) default NULL,  
   `data_1` varchar(64) default NULL,
   `data_2` varchar(64) default NULL,
   `data_3` varchar(64) default NULL,

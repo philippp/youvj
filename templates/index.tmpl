@@ -71,12 +71,12 @@ Look for videos
 	</div>
       </div><!-- #popup-welcome-border -->
     </div><!-- #popup-welcome-container -->
-    <!-- script type="text/javascript" src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php"></script-->
+    <script type="text/javascript" src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php"></script>
     <script type="text/javascript">
-      // FB_RequireFeatures(["Api"], function() {  
+      FB_RequireFeatures(["Api"], function() {  
       // Create an ApiClient object, passing app's API key and  
       // a site relative URL to xd_receiver.htm  
-      // FB.init("$config.FB_APP_KEY","xd_receiver.htm",{"ifUserConnected":FBCLogin});
-      // });
+      FB.init("$config.FB_APP_KEY","xd_receiver.htm",{"ifUserConnected":FBCLogin});
+      });
     </script> 
 #end def

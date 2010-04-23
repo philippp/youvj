@@ -34,6 +34,6 @@ def load(table, col_list):
     return execute(query_str)
 
 def log(*args, **kwargs):
-    keylist = ['data_1','data_2','data_3','data_4','data_5','data_6','text_info']
+    keylist = ['session_id','fbid','data_1','data_2','data_3','data_4','data_5','data_6','text_info']
     #[ assert (k in keylist) for k in kwargs.keys() ]
     insert('log', **kwargs)

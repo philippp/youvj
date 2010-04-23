@@ -18,3 +18,5 @@ db = {
     'passwd':'passwd_db',
     'db':'youvj',
     }
+
+memcache_host = '127.0.0.1:11211'
