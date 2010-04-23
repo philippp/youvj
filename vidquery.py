@@ -53,14 +53,7 @@ def _makeMinTitle(videoTitle):
         'hq',
         'music video',
         ]
-    minTitle = videoTitle.decode('utf-8').lower()
-    for word in junkWords:
-        minTitle = minTitle.replace(word,"")
-    minTitle = re.sub("^[Tt]he","",minTitle).strip()
-    minTitle = re.sub("\(.*\)", "", minTitle, count=0)
-    minTitle = re.sub("[^a-zA-Z\-]", "", minTitle, count=0)
-
-    # replace umlauts, as people often do
+    minTitle = videoTitle.decode('utf-8')
     umMap = {252:u'u',
              220:u'u',
              246:u'o',
@@ -69,6 +62,15 @@ def _makeMinTitle(videoTitle):
              196:u'a'}
     for k, v in umMap.items():
         minTitle = minTitle.replace(unichr(k), v)
+    minTitle = str(minTitle).lower()
+
+    for word in junkWords:
+        minTitle = minTitle.replace(word,"")
+    minTitle = re.sub("^[Tt]he","",minTitle).strip()
+    minTitle = re.sub("\(.*\)", "", minTitle, count=0)
+    minTitle = re.sub("[^a-zA-Z\-]", "", minTitle, count=0)
+
+    # replace umlauts, as people often do
     return str(minTitle)
 
 
@@ -86,8 +88,7 @@ def orderPopular(videos, hitNames):
     for hitName in minHits:
         for video in list(videos):
             desc = video['description'].lower()
-            minTitle = _makeMinTitle(video['title'])
-            if str(hitName) == minTitle and \
+            if str(hitName) == video['match_title'] and \
                     ('official' in desc or 'music video' in desc):
                 log( "appending %s because it is a hit and seems official" % video['title'] )
                 ordered_videos.append(video)
@@ -127,16 +128,19 @@ def _fetchVideos(artistName,
             continue
 
         if re.search("^"+artistName.lower()+"[ ]*\-", vidTitle):
-            vidTitle = '-'.join(vidTitle.split('-')[1:]).lstrip()
+            prettyTitle = '-'.join(origTitle.split('-')[1:]).lstrip()
         elif re.search("\-[ ]*"+artistName.lower()+"$", vidTitle):
-            vidTitle = '-'.join(vidTitle.split('-')[:1]).lstrip()
+            prettyTitle = '-'.join(origTitle.split('-')[:1]).lstrip()
         elif re.search("[^\"]*"+artistName.lower()+'[ ]*\"[^\"]+\"',vidTitle):
-            vidTitle = vidTitle.split('"')[1]
+            prettyTitle = origTitle.split('"')[1]
         else:
             continue
+        vidTitle = _makeMinTitle(prettyTitle)
+
         entryDict = {
             'artist':artistName,
-            'title':origTitle,
+            'title':prettyTitle,
+            'match_title':vidTitle,
             'description':vidDescription,
             'page_url':entry.media.player.url,
             'flash_url':entry.GetSwfUrl(),
