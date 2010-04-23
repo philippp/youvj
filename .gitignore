@@ -1,5 +1,6 @@
 *~
 *.pyc
+config.py
 keys
 templates/*.py
 templates/*.py.bak
