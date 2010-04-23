@@ -53,17 +53,13 @@ def _makeMinTitle(videoTitle):
         'hq',
         'music video',
         ]
-    minTitle = videoTitle.decode('utf-8')
-    umMap = {252:u'u',
-             220:u'u',
-             246:u'o',
-             214:u'o',
-             228:u'a',
-             196:u'a'}
-    for k, v in umMap.items():
-        minTitle = minTitle.replace(unichr(k), v)
-    minTitle = str(minTitle).lower()
-
+    minTitle = videoTitle.lower() #videoTitle.decode('utf-8')
+    '''
+    try:
+        minTitle = _replaceUmlauts(minTitle)
+    except UnicodeDecodeError:
+        pass
+        '''
     for word in junkWords:
         minTitle = minTitle.replace(word,"")
     minTitle = re.sub("^[Tt]he","",minTitle).strip()
@@ -73,8 +69,19 @@ def _makeMinTitle(videoTitle):
     # replace umlauts, as people often do
     return str(minTitle)
 
-
-
+def _replaceUmlauts(minTitle):
+    minTitle = minTitle.decode('utf-8')
+    umMap = {252:u'u',
+             220:u'u',
+             246:u'o',
+             214:u'o',
+             228:u'a',
+             196:u'a'}
+    for k, v in umMap.items():
+            minTitle = minTitle.replace(unichr(k), v)
+    minTitle = minTitle.encode('latin-1').lower()
+    return minTitle
+    
 def orderPopular(videos, hitNames):
     ordered_videos = []
     minHits = [ _makeMinTitle(h) for h in hitNames ]
