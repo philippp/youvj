@@ -140,21 +140,36 @@ class FindVideos(JSONController):
   def respond(self, ctx):
     artists = ctx.args.get('artist',[])
     artistVids = []
-
     ip_addr = ctx.remoteAddr.host
     for artist in artists:
       vidlogger.log(data_1=1,text_info=artist)
-      artistVids.append( vidquery.fetchVideos(artist, ip_addr) )
+      artistVids.append( self.fetchVideos(artist) )
     return artistVids
+
+  def fetchVideos(self, artist):
+    cacheKey = 'videos_%s' % vidquery._makeMinTitle(artist)
+    cachedRes = self.mem.get(cacheKey)
+    if not cachedRes:
+      cachedRes = vidquery.fetchVideos(artist)
+      self.mem.set(cacheKey, cachedRes)
+    return cachedRes
 
 class FindSimilar(JSONController):  
   def respond(self, ctx):
     artist = ctx.args.get('artist')[0]
     try:
-      similar = lastfm.get_similar(artist)
+      similar = self.fetchSimilar(artist)
     except pylast.WSError:
       similar = []
     return similar
+
+  def fetchSimilar(self, artist):
+    cacheKey = 'similar_%s' % vidquery._makeMinTitle(artist)
+    cachedRes = self.mem.get(cacheKey)
+    if not cachedRes:
+      cachedRes = lastfm.get_similar(artist)
+      self.mem.set(cacheKey, cachedRes)
+    return cachedRes
 
 class Toplevel(Controller):
   addSlash = True

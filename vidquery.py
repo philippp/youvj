@@ -16,11 +16,11 @@ def runJob(fileName):
         entries = fetchVideos(artist)
         mVids['artist'] = entries
 
-def fetchVideos(artistName, ip_addr):
+def fetchVideos(artistName):
     artistName = re.sub("^[Tt]he","",artistName).strip()
-    videos_relevance = _fetchVideos(artistName, ip_addr, orderby='relevance')
+    videos_relevance = _fetchVideos(artistName,  orderby='relevance')
     log( "videos by relevance %s" % videos_relevance )
-    videos_popularity = _fetchVideos(artistName, ip_addr, orderby='viewCount')
+    videos_popularity = _fetchVideos(artistName, orderby='viewCount')
     log(  "videos by popularity %s" % videos_popularity )
     hits = lastfm.getHits(artistName)
     videos = videos_relevance + videos_popularity
@@ -33,11 +33,7 @@ def fetchVideos(artistName, ip_addr):
 
 def filterSimilar(allVideos):
     vidByTitle = {}
-    junkWords = [
-        'official',
-        'hq',
-        'music video',
-        ]
+
     for video in allVideos:
         minTitle = _makeMinTitle(video['title'])
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
@@ -57,12 +53,25 @@ def _makeMinTitle(videoTitle):
         'hq',
         'music video',
         ]
-    minTitle = videoTitle.lower()
+    minTitle = videoTitle.decode('utf-8').lower()
     for word in junkWords:
         minTitle = minTitle.replace(word,"")
+    minTitle = re.sub("^[Tt]he","",minTitle).strip()
     minTitle = re.sub("\(.*\)", "", minTitle, count=0)
-    minTitle = re.sub("[^a-zA-Z]", "", minTitle, count=0)
-    return minTitle
+    minTitle = re.sub("[^a-zA-Z\-]", "", minTitle, count=0)
+
+    # replace umlauts, as people often do
+    umMap = {252:u'u',
+             220:u'u',
+             246:u'o',
+             214:u'o',
+             228:u'a',
+             196:u'a'}
+    for k, v in umMap.items():
+        minTitle = minTitle.replace(unichr(k), v)
+    return str(minTitle)
+
+
 
 def orderPopular(videos, hitNames):
     ordered_videos = []
@@ -77,7 +86,7 @@ def orderPopular(videos, hitNames):
     for hitName in minHits:
         for video in list(videos):
             desc = video['description'].lower()
-            minTitle = str(_makeMinTitle(video['title']))
+            minTitle = _makeMinTitle(video['title'])
             if str(hitName) == minTitle and \
                     ('official' in desc or 'music video' in desc):
                 log( "appending %s because it is a hit and seems official" % video['title'] )
@@ -89,20 +98,7 @@ def orderPopular(videos, hitNames):
 
     return ordered_videos
 
-def _removeUmlaut(word):
-    umMap = {252:u'u',
-             220:u'u',
-             246:u'o',
-             214:u'o',
-             228:u'a',
-             196:u'a'}
-    word = word.decode('utf-8')
-    for k, v in umMap.items():
-        word = word.replace(unichr(k), v)
-    return word
-
 def _fetchVideos(artistName,
-                 ip_addr,
                  orderby='relevance'):
     musicEntries = []
     ytService = gdata.youtube.service.YouTubeService()
@@ -112,14 +108,13 @@ def _fetchVideos(artistName,
     query.racy = 'include'
     query.max_results=50
     query.format = '5'
-    #query.restriction = ip_addr
     feed = ytService.YouTubeQuery(query)
     _blockWords = ['unofficial','parody','anime']
-    artistName = _removeUmlaut(artistName)
+    artistName = _makeMinTitle(artistName)
     for entry in feed.entry:
-        vidTitle = _removeUmlaut(entry.media.title.text.lower())
+        origTitle = str(entry.media.title.text.lower())
+        vidTitle = _makeMinTitle(origTitle)
         vidDescription = entry.media.description.text or ''
-        
         if not vidTitle:
             continue
 
@@ -131,8 +126,6 @@ def _fetchVideos(artistName,
         if _blockFound:
             continue
 
-
-        vidTitle = re.sub("^[Tt]he","",vidTitle).strip()
         if re.search("^"+artistName.lower()+"[ ]*\-", vidTitle):
             vidTitle = '-'.join(vidTitle.split('-')[1:]).lstrip()
         elif re.search("\-[ ]*"+artistName.lower()+"$", vidTitle):
@@ -143,7 +136,7 @@ def _fetchVideos(artistName,
             continue
         entryDict = {
             'artist':artistName,
-            'title':vidTitle,
+            'title':origTitle,
             'description':vidDescription,
             'page_url':entry.media.player.url,
             'flash_url':entry.GetSwfUrl(),
