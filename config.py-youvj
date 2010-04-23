@@ -10,7 +10,7 @@ domain = 'http://youvj.com'
 title = 'YouVJ'
 
 path = '/var/www/youvj.com'
-port = '80'
+port = '8080'
 
 db = {
     'host':'localhost',
