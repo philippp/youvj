@@ -1,37 +1,32 @@
 import config
-try:
-    import MySQLdb
-except DeprecationWarning:
-    pass
-
 import MySQLdb
 
-
-def get_cursor():
+def get_conn():
     conn = MySQLdb.connect( **config.db )
-    return conn.cursor()
-
-def execute(to_exec):
-    cursor = get_cursor()
-    cursor.execute(to_exec)
-    rows = cursor.fetchall()
-    cursor.close()
-    return rows
+    return conn
 
 def insert(table, **kwargs):
+    conn = get_conn()
+    cursor = conn.cursor()
     query_str = "INSERT INTO %s (%s) VALUES (%s)" % \
         (table, 
          ",".join(kwargs.keys()),
-         ",".join( [ "'%s'" % v for v in kwargs.values() ] )
+         ",".join( [ "'%s'" % conn.escape_string(str(v)) for v in kwargs.values() ] )
          )
-    execute(query_str)
+    cursor.execute(query_str)
+    cursor.close()
     
 def load(table, col_list):
+    conn = get_conn()
+    cursor = conn.cursor()
     query_str = "SELECT %s FROM %s" % \
         (",".join(col_list),
          table)
     
-    return execute(query_str)
+    cursor.execute(query_str)
+    rows = cursor.fetchall()
+    cursor.close()
+    return rows
 
 def log(*args, **kwargs):
     keylist = ['session_id','fbid','data_1','data_2','data_3','data_4','data_5','data_6','text_info']
