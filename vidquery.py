@@ -5,6 +5,9 @@ import gdata.youtube
 import gdata.youtube.service
 import lastfm
 from pprint import pprint 
+from optparse import OptionParser
+
+track_code = None
 
 def log(msg):
     print msg
@@ -19,11 +22,9 @@ def runJob(fileName):
 def fetchVideos(artistName):
     artistName = re.sub("^[Tt]he","",artistName).strip()
     videos_relevance = _fetchVideos(artistName,  orderby='relevance')
-    log( "videos by relevance %s" % videos_relevance )
-    videos_popularity = _fetchVideos(artistName, orderby='viewCount')
-    log(  "videos by popularity %s" % videos_popularity )
+    #videos_popularity = _fetchVideos(artistName, orderby='viewCount')
     hits = lastfm.getHits(artistName)
-    videos = videos_relevance + videos_popularity
+    videos = videos_relevance# + videos_popularity
     log( "before filterSimilar: %s" % [v['title'] for v in videos] )
     videos = filterSimilar(videos)
     log( "after filterSimilar: %s" % [v['title'] for v in videos] )
@@ -38,7 +39,7 @@ def filterSimilar(allVideos):
         minTitle = _makeMinTitle(video['title'])
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
     for minTitle, videos in vidByTitle.iteritems():
-        log( "mintitle=%s contains %s" % (minTitle, [v['title'] for v in videos]) )
+        log( "mintitle=%s contains %s" % (minTitle, [v['title']+" "+v['flash_url'] for v in videos]) )
         videosNoRmx = filter( lambda v: (('remix' not in v['title']) and ('rmx' not in v['title'])), videos )
         if videosNoRmx:
             videos = videosNoRmx
@@ -122,10 +123,18 @@ def _fetchVideos(artistName,
     feed = ytService.YouTubeQuery(query)
     _blockWords = ['unofficial','parody','anime']
     artistName = _makeMinTitle(artistName)
+
     for entry in feed.entry:
         origTitle = str(entry.media.title.text.lower())
         vidTitle = _makeMinTitle(origTitle)
+        pageURL = entry.media.player.url
         vidDescription = entry.media.description.text or ''
+        
+        if track_code and track_code in pageURL:
+            log("TRACKER: Found %s in %s search" %
+                (vidTitle, orderby))
+            
+
         if not vidTitle:
             continue
 
@@ -136,14 +145,17 @@ def _fetchVideos(artistName,
                 break
         if _blockFound:
             continue
-
-        if re.search("^"+artistName.lower()+"[ ]*\-", vidTitle):
+        artistNameL = artistName.lower()
+        if re.search("^"+artistNameL+"[ ]*\-", vidTitle):
             prettyTitle = '-'.join(origTitle.split('-')[1:]).lstrip()
-        elif re.search("\-[ ]*"+artistName.lower()+"$", vidTitle):
+        elif re.search("\-[ ]*"+artistNameL+"$", vidTitle):
             prettyTitle = '-'.join(origTitle.split('-')[:1]).lstrip()
-        elif re.search("[^\"]*"+artistName.lower()+'[ ]*\"[^\"]+\"',vidTitle):
+        elif re.search("[^\"]*"+artistNameL+'[ ]*\"[^\"]+\"',vidTitle):
             prettyTitle = origTitle.split('"')[1]
         else:
+            if (track_code and pageURL) and track_code in pageURL:
+                log("Eliminated %s because it did not match %s" % 
+                    (vidTitle, artistNameL) )
             continue
         vidTitle = _makeMinTitle(prettyTitle)
 
@@ -161,8 +173,14 @@ def _fetchVideos(artistName,
         if entryDict['flash_url']:
             musicEntries.append(entryDict)
         else:
-
-            log( "--rejected %s" % vidTitle )
+            if track_code and track_code in pageURL:
+                log("TRACKER: Eliminated %s because it did not have a flash_url" % 
+                    (vidTitle) )
+    if track_code:
+        for mE in musicEntries:
+            if track_code in mE['page_url']:
+                log("TRACKER: Found %s in %s search" %
+                    (mE['title'], orderby))
     return musicEntries
 
 def levenshtein_distance(first, second):
@@ -189,4 +207,14 @@ def levenshtein_distance(first, second):
     return distance_matrix[first_length-1][second_length-1]
 
 if __name__ == "__main__":
-    print fetchVideos("eins zwo")
+    usage = "usage: %prog [options] ARTIST_NAME"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-f", "--follow", dest="follow", default=track_code,
+                      help="follow the VIDEO_ID", metavar="VIDEO_ID")
+    (options, args) = parser.parse_args()
+    track_code = options.follow
+    print args
+    if len(args) != 1:
+        print parser.print_help()
+    else:
+        fetchVideos(args[0])
