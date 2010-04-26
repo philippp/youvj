@@ -189,7 +189,7 @@ def _fetchVideos(artistName,
             'page_url':entry.media.player.url,
             'flash_url':entry.GetSwfUrl(),
             'duration':entry.media.duration.seconds,
-            'view_count':entry.statistics.view_count,
+            'view_count':entry.statistics and entry.statistics.view_count or 0,
             'thumbnails':[t.url for t in entry.media.thumbnail]
             }
         if entryDict['flash_url']:
