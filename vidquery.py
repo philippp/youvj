@@ -146,11 +146,11 @@ def _fetchVideos(artistName,
         if _blockFound:
             continue
         artistNameL = artistName.lower()
-        if re.search("^"+artistNameL+"[ ]*\-", vidTitle):
+        if re.search("^(.*feat)?(.*vs)?"+artistName+"(feat.*)?(vs.*)?\-", vidTitle):
             prettyTitle = '-'.join(origTitle.split('-')[1:]).lstrip()
-        elif re.search("\-[ ]*"+artistNameL+"$", vidTitle):
+        elif re.search("\-(.*feat)?(.*vs)?"+artistNameL+"(feat.*)?(vs.*)?$", vidTitle):
             prettyTitle = '-'.join(origTitle.split('-')[:1]).lstrip()
-        elif re.search("[^\"]*"+artistNameL+'[ ]*\"[^\"]+\"',vidTitle):
+        elif re.search("[^\"]*(.*feat)?(.*vs)?"+artistNameL+'(feat.*)?(vs.*)?\"[^\"]+\"',vidTitle):
             prettyTitle = origTitle.split('"')[1]
         else:
             if (track_code and pageURL) and track_code in pageURL:
