@@ -16,7 +16,7 @@
 
 
 body{
-   background-color: #2992D4;
+   background: transparent url(/images/blue_stripe.png) repeat scroll 0 0;
    font-family: arial, helvetica;
    font-size: 13px;
    margin:0;

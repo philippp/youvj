@@ -162,6 +162,7 @@ var renderArtistBox = function(artistName){
 };
 
 var loadVideos = function(artistName){
+  loadVideos.artistName = artistName;
   $('.menu-artist').removeClass('menu-artist-selected');
   $('.menu-artist-indicator').hide();
   $('#queryForm').dialog('close');
@@ -175,11 +176,15 @@ var loadVideos = function(artistName){
 
   jsonPost('/findvideos',
            {'artist':artistName},
-           loadVideosCallback
+           function(resp){ loadVideosCallback(resp, artistName); }
           );
 };
+loadVideos.artistName = '';
 
-var loadVideosCallback = function(resp){
+var loadVideosCallback = function(resp, artistName){
+  if( artistName != loadVideos.artistName ){
+    return;
+  }
   $("#video-loader").hide();
   for( var i=0; i < resp[0].length; i++){
     renderVideo(resp[0][i]).insertBefore($("#similar-artist-divider"));
@@ -220,14 +225,19 @@ var renderVideo = function(videoInfo){
 };
 
 var loadSimilar = function(artistName){
+  loadSimilar.artistName = artistName;
   $('.similar-artist').remove();
   jsonPost('/findsimilar',
            {'artist':artistName},
-           loadSimilarCallback
+           function(resp){loadSimilarCallback(resp, artistName);}
           );
 };
+loadSimilar.artistName = '';
 
-var loadSimilarCallback = function(resp){
+var loadSimilarCallback = function(resp, artistName){
+  if( artistName != loadSimilar.artistName ){
+    return;
+  }
   var similarLimit = 4;
   var extraCls = "";
   var similarDiv = $('#videoInfo-similar');

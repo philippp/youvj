@@ -39,6 +39,9 @@ def filterSimilar(allVideos):
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
     for minTitle, videos in vidByTitle.iteritems():
         log( "mintitle=%s contains %s" % (minTitle, [v['title'] for v in videos]) )
+        videosNoRmx = filter( lambda v: (('remix' not in v['title']) and ('rmx' not in v['title'])), videos )
+        if videosNoRmx:
+            videos = videosNoRmx
         vidByTitle[minTitle] = sorted(videos, key = lambda v: int(v['view_count']))[0]
         officialVid = filter( lambda v: 'vevo.com' in v['description'], videos )
         if officialVid:
@@ -186,4 +189,4 @@ def levenshtein_distance(first, second):
     return distance_matrix[first_length-1][second_length-1]
 
 if __name__ == "__main__":
-    print fetchVideos("kings of leon", "67.207.139.31")
+    print fetchVideos("eins zwo")
