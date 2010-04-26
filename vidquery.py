@@ -10,7 +10,8 @@ from optparse import OptionParser
 track_code = None
 
 def log(msg):
-    print msg
+    pass
+    #print msg
 
 def runJob(fileName):
     mVids = {}
@@ -21,16 +22,26 @@ def runJob(fileName):
 
 def fetchVideos(artistName):
     artistName = re.sub("^[Tt]he","",artistName).strip()
-    videos_relevance = _fetchVideos(artistName,  orderby='relevance')
-    #videos_popularity = _fetchVideos(artistName, orderby='viewCount')
+    videos = _fetchVideos(artistName,  orderby='relevance')
+
+    if track_code and filter( lambda v: track_code in v['page_url'], videos ):
+        log("TRACKER: Found tracked video, about to filter")
     hits = lastfm.getHits(artistName)
-    videos = videos_relevance# + videos_popularity
-    log( "before filterSimilar: %s" % [v['title'] for v in videos] )
     videos = filterSimilar(videos)
+    if track_code and filter( lambda v: track_code in v['page_url'], videos ):
+        log("TRACKER: Found tracked video after filterSimilar")
     log( "after filterSimilar: %s" % [v['title'] for v in videos] )
     videos = orderPopular(videos, hits)
+    if track_code and filter( lambda v: track_code in v['page_url'], videos ):
+        log("TRACKER: Found tracked video after orderPopular")
     log( "after orderPopular: %s" % [v['title'] for v in videos] )
+    
     return videos
+
+def _track_in_list(videos):
+    if track_code and filter( lambda v: track_code in v['page_url'], videos ):
+        return True
+    return False
 
 def filterSimilar(allVideos):
     vidByTitle = {}
@@ -39,17 +50,19 @@ def filterSimilar(allVideos):
         minTitle = _makeMinTitle(video['title'])
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
     for minTitle, videos in vidByTitle.iteritems():
-        log( "mintitle=%s contains %s" % (minTitle, [v['title']+" "+v['flash_url'] for v in videos]) )
         videosNoRmx = filter( lambda v: (('remix' not in v['title']) and ('rmx' not in v['title'])), videos )
         if videosNoRmx:
             videos = videosNoRmx
-        vidByTitle[minTitle] = sorted(videos, key = lambda v: int(v['view_count']))[0]
+        vidByTitle[minTitle] = sorted(videos, key = lambda v: -int(v['view_count']))[:2]
         officialVid = filter( lambda v: 'vevo.com' in v['description'], videos )
         if officialVid:
             vidByTitle[minTitle] = officialVid[0]
 
-    return sorted(vidByTitle.values(),
-                  key = lambda v: v['view_count'])
+    topVideos = []
+    for vidList in vidByTitle.values():
+        topVideos += vidList
+    return sorted(topVideos,
+                  key = lambda v: -int(v['view_count']))
 
 def _makeMinTitle(videoTitle):
     junkWords = [
@@ -57,33 +70,42 @@ def _makeMinTitle(videoTitle):
         'hq',
         'music video',
         ]
-    minTitle = videoTitle.lower() #videoTitle.decode('utf-8')
-    '''
-    try:
-        minTitle = _replaceUmlauts(minTitle)
-    except UnicodeDecodeError:
-        pass
-        '''
+    minTitle = videoTitle.lower()
+    minTitle = _replaceUmlauts(minTitle)
+
     for word in junkWords:
         minTitle = minTitle.replace(word,"")
     minTitle = re.sub("^[Tt]he","",minTitle).strip()
     minTitle = re.sub("\(.*\)", "", minTitle, count=0)
     minTitle = re.sub("[^a-zA-Z\-\"]", "", minTitle, count=0)
 
-    # replace umlauts, as people often do
     return str(minTitle)
 
 def _replaceUmlauts(minTitle):
-    minTitle = minTitle.decode('utf-8')
+
+    if type(minTitle) == str:
+        minTitle = unicode(minTitle, 'utf-8')
+
     umMap = {252:u'u',
              220:u'u',
-             246:u'o',
-             214:u'o',
-             228:u'a',
-             196:u'a'}
+             246:u'o', #Lowercase O-umlaut
+             214:u'o', #Uppercase O-umlaut
+             228:u'a', #Lowercase A-umlaut
+             196:u'a', #Capital A-umlaut
+             224:u'a', #Lowercase A-grave
+             192:u'a', #Capital A-grave
+             193:u'a', #Capital A-acute
+             225:u'a', #Lowercase A-acute
+             194:u'a', #Capital A-circumflex
+             226:u'a', #Lowercase A-circumflex
+             223:u'e', #Lowercase E-acute
+             201:u'e', #Capital E-acute
+             234:u'e', #Lowercase E-circumflex
+             243:u'o', #Lowercase O-acute
+             }
     for k, v in umMap.items():
             minTitle = minTitle.replace(unichr(k), v)
-    minTitle = minTitle.encode('latin-1').lower()
+    minTitle = minTitle.lower()
     return minTitle
     
 def orderPopular(videos, hitNames):
@@ -179,7 +201,7 @@ def _fetchVideos(artistName,
     if track_code:
         for mE in musicEntries:
             if track_code in mE['page_url']:
-                log("TRACKER: Found %s in %s search" %
+                log("TRACKER: Did not eliminate %s in %s search" %
                     (mE['title'], orderby))
     return musicEntries
 
@@ -213,7 +235,7 @@ if __name__ == "__main__":
                       help="follow the VIDEO_ID", metavar="VIDEO_ID")
     (options, args) = parser.parse_args()
     track_code = options.follow
-    print args
+
     if len(args) != 1:
         print parser.print_help()
     else:
