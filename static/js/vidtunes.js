@@ -186,6 +186,7 @@ var loadVideosCallback = function(resp, artistName){
     return;
   }
   $("#video-loader").hide();
+  $("#videoInfo-artist").show();
   for( var i=0; i < resp[0].length; i++){
     renderVideo(resp[0][i]).insertBefore($("#similar-artist-divider"));
   }
@@ -519,7 +520,7 @@ FBCPostStream = function(vidEntry){
                      'description': vidEntry['description'],
                      'media': [ media ]
                    };
-  var action_links = [{'text':"Browse your FB friends' faves",
+  var action_links = [{'text':"Be the VJ",
                        'href':'http://youvj.com'}];
   FB.Connect.streamPublish(message, attachment, action_links);
 };

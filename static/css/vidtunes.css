@@ -279,6 +279,7 @@ a:hover{
 }
 
 #videoInfo-artist {
+display:none;
 background-color:#EFEFEF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
