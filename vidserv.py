@@ -166,7 +166,9 @@ class FindSimilar(JSONController):
   def fetchSimilar(self, artist):
     cacheKey = 'similar_%s' % vidquery._makeMinTitle(artist)
     cachedRes = self.mem.get(cacheKey)
+    print 'SIMILAR: fetched %s for %s' % (cachedRes, cacheKey)
     if not cachedRes:
+      print 'fetching again'
       cachedRes = lastfm.get_similar(artist)
       self.mem.set(cacheKey, cachedRes)
     return cachedRes
