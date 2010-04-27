@@ -10,8 +10,8 @@ from optparse import OptionParser
 track_code = None
 
 def log(msg):
-    pass
     #print msg
+    pass
 
 def runJob(fileName):
     mVids = {}
@@ -47,7 +47,7 @@ def filterSimilar(allVideos):
     vidByTitle = {}
 
     for video in allVideos:
-        minTitle = _makeMinTitle(video['title'])
+        minTitle = _makeMinTitle(video['match_title'])
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
     for minTitle, videos in vidByTitle.iteritems():
         videosNoRmx = filter( lambda v: (('remix' not in v['title']) and ('rmx' not in v['title'])), videos )
@@ -56,7 +56,7 @@ def filterSimilar(allVideos):
         vidByTitle[minTitle] = sorted(videos, key = lambda v: -int(v['view_count']))[:2]
         officialVid = filter( lambda v: 'vevo.com' in v['description'], videos )
         if officialVid:
-            vidByTitle[minTitle] = officialVid[0]
+            vidByTitle[minTitle] = [officialVid[0]]
 
     topVideos = []
     for vidList in vidByTitle.values():
@@ -155,7 +155,6 @@ def _fetchVideos(artistName,
         if track_code and track_code in pageURL:
             log("TRACKER: Found %s in %s search" %
                 (vidTitle, orderby))
-            
 
         if not vidTitle:
             continue
@@ -180,7 +179,7 @@ def _fetchVideos(artistName,
                     (vidTitle, artistNameL) )
             continue
         vidTitle = _makeMinTitle(prettyTitle)
-
+        vidTitle = vidTitle.replace("\"","")
         entryDict = {
             'artist':artistName,
             'title':prettyTitle,
