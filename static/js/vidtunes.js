@@ -31,16 +31,22 @@ var renderSearch = function(){
 var searchArtists = function(artistNames){
   $('#header').show();
   $("#popup-welcome-border").hide();
-  var searchHeader = $('<span></span>').append(
+  searchArtists.list = unique(artistNames.concat(searchArtists.list));
+  $('#artistGroupingSearch').remove();
+  var searchHeader = $('<span id="artist-search-header"></span>').append(
     $("<span class='small'>search</span>")
   );
-  renderArtists(artistNames, searchHeader);
+  renderArtists(searchArtists.list, searchHeader, 'Search');
 };
+searchArtists.list = [];
 
+var renderArtists = function(artistNames, headerElement, targetID){
+  var aid = targetID;
+  if( !aid ){
+    renderArtists.id++;
+    aid = renderArtists.id;
+  }
 
-var renderArtists = function(artistNames, headerElement){
-  renderArtists.id++;
-  var aid = renderArtists.id;
   //$('#artistlisting').empty();
   var artistGrouping = $('<div class="artist-grouping" id="artistGrouping'+aid+'"></div>');
   if( headerElement ){
@@ -73,13 +79,13 @@ var renderArtists = function(artistNames, headerElement){
   for( var i = 0; i < artistNames.length; i++ ){
 	var artistName = artistNames[i];
 	var artistEntry = makeArtistMenuItem(artistName);
-        artistEntry.addClass('artistBatch'+renderArtists.id);
+        artistEntry.addClass('artistBatch'+aid);
 	artistGrouping.append(artistEntry);
   }
   $('#artistlisting').prepend(artistGrouping);
   $('#search').show();
-  if($('.artistBatch'+renderArtists.id+' a').length > 0){
-    $($('.artistBatch'+renderArtists.id+' a')[0]).click();
+  if($('a.artist-name', artistGrouping).length > 0){
+    $($('a.artist-name', artistGrouping)[0]).click();
   }
 };
 renderArtists.id = 0;
@@ -102,7 +108,7 @@ var loadArtist = function(artistName){
 var makeArtistMenuItem = function(artistName){
     var artistDiv = $('<div class="menu-artist"></div>').append(
                       $('<div class="menu-artist-indicator">&#8594;</div>')).append(
-                      $('<a href="#">'+artistName+'</a>'));
+                      $('<a class="artist-name" href="#">'+artistName+'</a>'));
     artistDiv.click(function(e){
       loadArtist(artistName);
       $(e.currentTarget).addClass('menu-artist-selected');
@@ -260,7 +266,7 @@ var loadSimilarCallback = function(resp, artistName){
     similarDiv.append(
       $("<a href='#' class='videoInfo-similar "+extraCls+"' title='"+resp[i][0]+"'>"+shortArtist+"</a>").click(
         (function(f){return function(e){
-                       loadArtist(f);
+                       searchArtists([f]);
                        return false;
                      };})(curArtist)
       )
@@ -294,7 +300,7 @@ var renderSimilar = function(pairing){
                         $("<a href='#'></a>").text(pairing[0])
                         );
   $('a',similarArtist).click(function(){
-                               loadArtist(pairing[0]);
+                               searchArtists([pairing[0]]);
                              });
   return(similarArtist);
 };
@@ -534,3 +540,18 @@ String.prototype.rtrim = function() {
 String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/g,"");
 }
+
+var unique = function(a)
+{
+  var r = new Array();
+  o:for(var i = 0, n = a.length; i < n; i++)
+  {
+    for(var x = 0, y = r.length; x < y; x++)
+    {
+      if(r[x]==a[i]) continue o;
+    }
+    r[r.length] = a[i];
+  }
+  return r;
+};
+
