@@ -6,8 +6,8 @@ import vidfbc
 import vidserv
 import config
 
-
 root = vidserv.Toplevel()
+root.putChild("", vidserv.Toplevel())
 root.putChild("findvideos", vidserv.FindVideos())
 root.putChild("findsimilar", vidserv.FindSimilar())
 root.putChild("fb_user_added", vidserv.FBUserAdded())

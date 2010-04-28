@@ -18,6 +18,9 @@ $(document).ready(function(){
   );
 
   $('#videos').css({'height':$(document).height()});
+  if( UVJ.onLoadSearch ){
+    searchArtists(UVJ.onLoadSearch);
+  };
 });
 
 var renderSearch = function(){
@@ -446,12 +449,6 @@ FBCLogin = function(){
   $("#fb_logout_image").show();
   FBCGetFriends( function(){
 		   $('#menu-friends').css({'display':'block'});
-                   var firstDisplayed= FBC.owner;
-                   if( !firstDisplayed['artists'] ){
-                     firstDisplayed = FBC.fbFriends[0];
-                   }
-                   renderArtists(firstDisplayed['artists'],
-                                 FBC.makeMenuArtistTitle(firstDisplayed));
   });
 
 };

@@ -1,5 +1,6 @@
 #extends base
 #import config
+#import json
 #def head()
     <link href="/css/vidtunes.css" type="text/css" rel="stylesheet">
     <link href="/css/ui-lightness/jquery.ui.base.css" type="text/css" rel="stylesheet">
@@ -78,5 +79,9 @@ Look for videos
       // a site relative URL to xd_receiver.htm  
       FB.init("$config.FB_APP_KEY","xd_receiver.htm",{"ifUserConnected":FBCLogin});
       });
+      var UVJ = {};
+      #if $hasVar('load_search')
+      UVJ.onLoadSearch = $json.dumps($load_search);
+      #end if
     </script> 
 #end def
