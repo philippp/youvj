@@ -24,11 +24,35 @@ $(document).ready(function(){
   FBC2.init();
 });
 
+
 var FBC2 = {};
+FBC2.user = {};
+FBC2.user.pic = function(size){
+  if( !size ){
+    size = 'square';
+  }
+  return "http://graph.facebook.com/"+this.id+"/picture?type="+size;
+};
+
 FBC2.init = function(){
   FB.getLoginStatus(function(response) {
     if (response.session) {
       FBC2.session = response.session;
+      FBC2.user.id = response.session.uid;
+      FB.api('/me', function(response) {
+               FBC2.user.id = response.id;
+               FBC2.user.name = response.name;
+               var user_box = document.getElementById("fb-login");
+               user_box.innerHTML = "<div class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
+                 "Logged in as: "+FBC2.user.name+"</span>";
+               $("#fb_logout_image").show();
+
+      });
+
+      $('#header').show();
+      $('#fb-login').show();
+      $("#popup-welcome-border").hide();
+      $("#friends-icon").show();
     } else {
       $('#popup-welcome-fb').show();
     }
@@ -481,24 +505,6 @@ FBC.makeMenuArtistTitle = function(f){
 
 FBCLogout = function(){
   FB.Connect.logout(function() { reload();  });
-};
-
-FBCLogin = function(){
-  $('#header').show();
-  $('#fb-login').show();
-  $("#popup-welcome-border").hide();
-  $("#friends-icon").show();
-  var user_box = document.getElementById("fb-login");
-  // add in some XFBML. note that we set useyou=false so it doesn't display "you"
-  user_box.innerHTML = "<div class='fb-login-pic''>" + "<fb:profile-pic uid='loggedinuser' facebook-logo='true'></fb:profile-pic></div>" +
-  "Logged in as: <fb:name uid='loggedinuser' useyou='false'></fb:name>" +
-  "</span>";
-  FB.XFBML.Host.parseDomTree();
-  $("#fb_logout_image").show();
-  FBCGetFriends( function(){
-		   $('#menu-friends').css({'display':'block'});
-  });
-
 };
 
 FBCGetFriends = function(callback){
