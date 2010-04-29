@@ -49,14 +49,16 @@ Look for videos
 	<div id="popup-welcome">
 	  <div class="title">Rediscover music videos with $config.title !</div> 
 	  <div id="popup-welcome-fb">
-            <div class="title-section">
-	      Connect with Facebook to browse your FB friends' favorites:
-	    </div>
-	    <div id="fb-login-button-wrapper">
-	      <div id="fb-login-button">
-		<fb:login-button size="large" v="2" onlogin="FBCLogin();"></fb:login-button> 
+	    <div id="popup-welcome-fb-signin">
+              <div class="title-section">
+		Connect with Facebook to browse your FB friends' favorites:
 	      </div>
-	    </div>
+	      <div id="fb-login-button-wrapper">
+		<div id="fb-login-button">
+		  <fb:login-button size="large" v="2" onlogin="FBCLogin();"></fb:login-button> 
+		</div>
+	      </div>
+	    </div><!--#popup-welcome-fb-signin-->
 	    <br/>
 	    <a href="#" onclick="\$('#popup-welcome-search').show(); \$('#popup-welcome-fb').hide();">Not on Facebook? Click here!</a>
 	  </div>
@@ -73,6 +75,7 @@ Look for videos
       </div><!-- #popup-welcome-border -->
     </div><!-- #popup-welcome-container -->
     <script type="text/javascript">
+      var UVJ = {};
       #if $hasVar('load_search')
       UVJ.onLoadSearch = $json.dumps($load_search);
       #end if

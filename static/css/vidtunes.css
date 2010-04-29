@@ -135,6 +135,10 @@ padding:10px;
 text-align:center;
 }
 
+#popup-welcome-fb {
+   display:none;
+}
+
 #fb-login-button-wrapper{
    text-align: center;
    padding: 10px

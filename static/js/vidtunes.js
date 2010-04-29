@@ -21,7 +21,49 @@ $(document).ready(function(){
   if( UVJ.onLoadSearch ){
     searchArtists(UVJ.onLoadSearch);
   };
+  FBC2.init();
 });
+
+var FBC2 = {};
+FBC2.init = function(){
+  FB.getLoginStatus(function(response) {
+    if (response.session) {
+      FBC2.session = response.session;
+    } else {
+      $('#popup-welcome-fb').show();
+    }
+  });
+};
+
+FBC2.PostStream = function(vidEntry){
+
+  var media = {
+    "type":"flash",
+    "swfsrc" : vidEntry['flash_url'],
+    "imgsrc" : vidEntry['thumbnails'][0],
+    "width" : "130",
+    "height" : "97",
+    "expanded_width" : "480",
+    "expanded_height" : "385"
+
+    };
+
+  FB.ui(
+    {
+      method:'stream.publish',
+      message:'Check out this video',
+      action_links : [{'text':"Be the VJ", 'href':'http://youvj.com'}],
+      user_prompt_message: 'Share this video on your wall',
+      attachment : { 'name': vidEntry['title'],
+                 'href': ' http://youvj.com',
+                 'caption': '{*actor*} found this music video',
+                 'description': vidEntry['description'],
+                 'media': [ media ]
+                 }
+    }
+  );
+};
+
 
 var renderSearch = function(){
   $('#queryForm').show();
@@ -323,7 +365,7 @@ var renderPlayer = function(videoInfo){
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append(
     $('<a href="#">Post to Facebook</a>').click(
-      function(){ FBCPostStream(videoInfo); }
+      function(){ FBC2.PostStream(videoInfo); }
     )
   ).append($(''));
 };
