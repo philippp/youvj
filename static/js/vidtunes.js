@@ -25,8 +25,6 @@ $(document).ready(function(){
 });
 
 
-var FBC2 = {};
-FBC2.user = {};
 FBC2.user.pic = function(size){
   if( !size ){
     size = 'square';
@@ -35,28 +33,20 @@ FBC2.user.pic = function(size){
 };
 
 FBC2.init = function(){
-  FB.getLoginStatus(function(response) {
-    if (response.session) {
-      FBC2.session = response.session;
-      FBC2.user.id = response.session.uid;
-      FB.api('/me', function(response) {
-               FBC2.user.id = response.id;
-               FBC2.user.name = response.name;
-               var user_box = document.getElementById("fb-login");
-               user_box.innerHTML = "<div class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
-                 "Logged in as: "+FBC2.user.name+"</span>";
-               $("#fb_logout_image").show();
+  if( FBC2.user.id ){
+    var user_box = document.getElementById("fb-login");
+    user_box.innerHTML = "<div class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
+      "Logged in as: "+FBC2.user.name+"</span>";
+    $("#fb_logout_image").show();
 
-      });
+    $('#header').show();
+    $('#fb-login').show();
+    $("#popup-welcome-border").hide();
+    $("#friends-icon").show();
+  } else {
+    $('#popup-welcome-fb').show();
+  }
 
-      $('#header').show();
-      $('#fb-login').show();
-      $("#popup-welcome-border").hide();
-      $("#friends-icon").show();
-    } else {
-      $('#popup-welcome-fb').show();
-    }
-  });
 };
 
 FBC2.PostStream = function(vidEntry){

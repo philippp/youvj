@@ -5,6 +5,8 @@ import hashlib
 import json
 import os.path
 import time
+import cgi
+import urllib
 
 from twisted.web2 import server, http, resource, channel
 from twisted.web2 import static, http_headers, responsecode
@@ -17,6 +19,7 @@ import config
 import vidlogger
 from lib import memcache, facebook, minifb
 
+
 class Controller(resource.Resource):
 
     def __init__(self, *args, **kwargs):
@@ -27,7 +30,7 @@ class Controller(resource.Resource):
         self.directory = directory
         self.init_args = kwargs
         self.mem = memcache.Client([config.memcache_host])
-        self._fbUser = None
+        self._fbSession = None
 
     def template(self, view, **kwargs):
         """
@@ -68,20 +71,52 @@ class Controller(resource.Resource):
         cookie = Cookie(name, value, path=path, expires=expires, domain=domain)
         response.headers.setHeader('Set-Cookie', [cookie])
 
-    def getCookie(self, ctx, name):
-        cookies = ctx.headers.getHeader('cookie') or []
+    def getCookie(self, name, default=''):
+        cookies = self.ctx.headers.getHeader('cookie') or []
         for c in cookies:
             if c.name == name:
-                return self._parseCookie(c.value)
-        return ''
+                return c.value
+        return default
 
-    def getLoggedInFB(self, ctx):
-        if not getattr(self,'_fbUser',None):
-            fb_id = self.getCookie(ctx, 'fb_user')
-            if fb_id:
-                profile = self.mem.get('fb_profile_%s' % fb_id)
-                self._fbUser = profile
+    def getFBSession(self):
+        if not getattr(self,'_fbSession',None):
+                self._fbSession = self._getFBSessionFromCookie()
+        return self._fbSession
+
+    def getFBUser(self):
+        if not self._fbSession:
+            return {}
+        if not getattr(self, '_fbUser', None):
+            fbApi = facebook.GraphAPI(self._fbSession['access_token'])
+            self._fbUser = fbApi.get_object(self._fbSession['uid'])
         return self._fbUser
+
+    def _getFBSessionFromCookie(self):
+        """Parses the cookie set by the official Facebook JavaScript SDK.
+
+        cookies should be a dictionary-like object mapping cookie names to
+        cookie values.
+
+        If the user is logged in via Facebook, we return a dictionary with the
+        keys "uid" and "access_token". The former is the user's Facebook ID,
+        and the latter can be used to make authenticated requests to the Graph API.
+        If the user is not logged in, we return None.
+
+        Download the official Facebook JavaScript SDK at
+        http://github.com/facebook/connect-js/. Read more about Facebook
+        authentication at http://developers.facebook.com/docs/authentication/.
+        """
+        cookie = self.getCookie("fbs_%s" % config.FB_APP_ID)
+        if not cookie: return None
+        args = dict((k, v[-1]) for k, v in cgi.parse_qs(cookie.strip('"')).items())
+        payload = "".join(k + "=" + args[k] for k in sorted(args.keys())
+                          if k != "sig")
+        sig = hashlib.md5(payload + config.FB_APP_SECRET).hexdigest()
+        if sig == args.get("sig") and time.time() < int(args["expires"]):
+            return args
+        else:
+            return None
+
 
     def _cookieSignature(self, *parts):
         """Generates a cookie signature.
@@ -93,57 +128,42 @@ class Controller(resource.Resource):
         for part in parts: hash.update(part)
         return hash.hexdigest()
         
-    def _parseCookie(self, value):
-        """Parses and verifies a cookie value from set_cookie"""
-        if not value: return None
-        parts = value.split("|")
-        if len(parts) != 3: return None
-        if self._cookieSignature(parts[0], parts[1]) != parts[2]:
-            logging.warning("Invalid cookie signature %r", value)
-            return None
-        timestamp = int(parts[1])
-        if timestamp < time.time() - 30 * 86400:
-            logging.warning("Expired cookie %r", value)
-            return None
-        try:
-            return base64.b64decode(parts[0]).strip()
-        except:
-            return None
-
 
 class JSONController(Controller, resource.PostableResource):
     creation_time = time.time()
     content_type = http_headers.MimeType('text','json')
 
-    def respond(self, ctx):
+    def respond(self):
         pass
 
     def render(self, ctx):
+        self.ctx = ctx
         return http.Response(
             responsecode.OK,
             {'last-modified': self.creation_time,
             'content-type': self.content_type},
-            json.dumps(self.respond(ctx)))
+            json.dumps(self.respond()))
 
 class HTMLController(Controller, resource.PostableResource):
     creation_time = time.time()
     content_type = http_headers.MimeType('text','html')
 
-    def respond(self, ctx):
+    def respond(self):
         pass
 
     def render(self, ctx):
+        self.ctx = ctx
         return http.Response(
             responsecode.OK,
             {'last-modified': self.creation_time,
             'content-type': self.content_type},
-            self.respond(ctx))
+            self.respond())
 
 class FindVideos(JSONController):    
-    def respond(self, ctx):
-        artists = ctx.args.get('artist',[])
+    def respond(self):
+        artists = self.ctx.args.get('artist',[])
         artistVids = []
-        ip_addr = ctx.remoteAddr.host
+        ip_addr = self.ctx.remoteAddr.host
         for artist in artists:
             vidlogger.log(data_1=1,text_info=artist)
             artistVids.append( self.fetchVideos(artist) )
@@ -158,8 +178,8 @@ class FindVideos(JSONController):
         return cachedRes
 
 class FindSimilar(JSONController):    
-    def respond(self, ctx):
-        artist = ctx.args.get('artist')[0]
+    def respond(self):
+        artist = self.ctx.args.get('artist')[0]
         try:
             similar = self.fetchSimilar(artist)
         except pylast.WSError:
@@ -174,29 +194,29 @@ class FindSimilar(JSONController):
             self.mem.set(cacheKey, cachedRes)
         return cachedRes
 
-class Toplevel(Controller):
+class Toplevel(HTMLController):
     addSlash = True
-    def render(self, ctx):
-        arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
+    def respond(self):
+        arguments = dict( (k,v[0]) for k,v in self.ctx.args.iteritems() )
         
         template_args = {}
         if self.init_args.get('problempath',None):
-             template_args['load_search'] = self.init_args['problempath'].split(',')
+             template_args['initialSearch'] = self.init_args['problempath'].split(',')
 
-        profile = self.getLoggedInFB(ctx)
-        return http.Response(
-            200, 
-            {'content-type': http_headers.MimeType('text', 'html')},
-            self.template("index", **template_args)
-            )
+        self.getFBSession()
+        profile = self.getFBUser()
+        if profile:
+            template_args['fbSession'] = self._fbSession
+            template_args['fbUser'] = profile
+        return self.template("index", **template_args)
 
 class FBIndex(HTMLController):
     content_type = http_headers.MimeType('text', 'html')
     addSlash = True
 
-    def respond(self, ctx):
+    def respond(self):
 
-        arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
+        arguments = dict( (k,v[0]) for k,v in self.ctx.args.iteritems() )
         arguments = minifb.validate(config.FB_APP_SECRET,
                                                                 arguments)
 
@@ -218,8 +238,8 @@ class FBIndex(HTMLController):
 
 class FBUserAdded(HTMLController):
     addSlash = True
-    def respond(self, ctx):
-        arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
+    def respond(self):
+        arguments = dict( (k,v[0]) for k,v in self.ctx.args.iteritems() )
         arguments = minifb.validate(config.FB_APP_SECRET,
                                     arguments)
 
