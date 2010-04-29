@@ -84,12 +84,34 @@ class Controller(resource.Resource):
         return self._fbSession
 
     def getFBUser(self):
-        if not self._fbSession:
-            return {}
         if not getattr(self, '_fbUser', None):
+            self._fbUser = self.mem.get('_fbUser_%s' % self._fbSession['uid'])
+        if not self._fbUser:
             fbApi = facebook.GraphAPI(self._fbSession['access_token'])
             self._fbUser = fbApi.get_object(self._fbSession['uid'])
+            self.mem.set('_fbUser_%s' % self._fbSession['uid'], self._fbUser)
         return self._fbUser
+
+    def getFBFriends(self):
+        if getattr(self, '_fbFriends', None):
+            return self._fbFriends
+        self._fbFriends = self.mem.get('_fbFriends_%s' % self._fbSession['uid'])
+        if not self._fbFriends:
+            self._fbFriends = self._loadFBFriends()
+            self.mem.set('_fbFriends_%s' % self._fbSession['uid'], self._fbFriends)
+        return self._fbFriends
+            
+
+    def _loadFBFriends(self):
+        '''load the fb friends list for a user into memory, along with their
+        music preferences'''
+        friends = fbApi.get_connections(self._fbSession['uid'], 'friends')['data']
+        music = fbApi.request_old('users.getInfo',
+                                  {'fields':'music',
+                                   'uids':','.join([f['id'] for f in friends]),
+                                   'format':'json'
+                                   })
+        pdb.set_trace()
 
     def _getFBSessionFromCookie(self):
         """Parses the cookie set by the official Facebook JavaScript SDK.
@@ -209,6 +231,11 @@ class Toplevel(HTMLController):
             template_args['fbSession'] = self._fbSession
             template_args['fbUser'] = profile
         return self.template("index", **template_args)
+
+class FBFriends(JSONController):    
+    def respond(self):
+        self.getFBSession()
+        return self.getFBFriends()
 
 class FBIndex(HTMLController):
     content_type = http_headers.MimeType('text', 'html')

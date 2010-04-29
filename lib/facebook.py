@@ -158,6 +158,24 @@ class GraphAPI(object):
     def search_objects(self, objType, q):
         self.request('search',args={'type':objType,'q':q})
 
+    def query_fbml(self, clause):
+        return self.request_old( 'fql.query',args={'query':clause, 'format':'json'} )
+
+    def request_old(self, method_name, args=None):
+        if not args: args = {}
+        if self.access_token:
+            args["token"] = self.access_token
+        url = "https://api.facebook.com/method/" + method_name + "?" + urllib.urlencode(args)
+        urlresp = urllib.urlopen(url)
+        rawresp = urlresp.read()
+        response = {'error':'json parse error'}
+        try:
+            response = _parse_json(rawresp)
+        finally:
+            urlresp.close()
+        return response
+        
+
     def request(self, path, args=None, post_args=None):
         """Fetches the given path in the Graph API.
 
@@ -172,14 +190,12 @@ class GraphAPI(object):
                 args["access_token"] = self.access_token
         post_data = None if post_args is None else urllib.urlencode(post_args)
         url = "https://graph.facebook.com/" + path + "?" + urllib.urlencode(args)
-        print url
-        file = urllib.urlopen(url, post_data)
+        resp = urllib.urlopen(url, post_data)
         try:
-            response = _parse_json(file.read())
+            response = _parse_json(resp.read())
         finally:
-            file.close()
+            resp.close()
         if response.get("error"):
-            print response
             raise GraphAPIError(response["error"].get("code",0),
                                 response["error"]["message"])
         return response
