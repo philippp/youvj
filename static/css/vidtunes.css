@@ -189,7 +189,6 @@ margin-bottom:10px;
 }
 
 #header{
-display:none;
 background-color: #94C8E9;
 margin-bottom:30px;
 padding-bottom:10px;
@@ -197,7 +196,6 @@ padding-bottom:10px;
 
 #fb-login {
 font-size: 10px;
-display: none;
 }
 
 .fb-login-pic{

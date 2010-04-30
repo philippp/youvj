@@ -47,14 +47,8 @@ FBC2.init = function(){
       "Logged in as: "+FBC2.user.name+"</span>";
     $("#fb_logout_image").show();
     $(user_box).click(FBC2.user.renderBands);
-    $('#header').show();
-    $('#fb-login').show();
-    $("#popup-welcome-border").hide();
     $("#friends-icon").show();
-  } else {
-    $('#popup-welcome-fb').show();
   }
-
 };
 
 FBC2.PostStream = function(vidEntry){

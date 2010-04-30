@@ -22,6 +22,17 @@ Look for videos
     </div>
     <div id="header">
       <div class="header-icon" id="fb-login">
+      	<div id="popup-welcome-fb-signin">
+          <div class="title-section">
+	    Connect with Facebook to browse your FB friends' favorites:
+	  </div>
+	  <div id="fb-login-button-wrapper">
+	    <div id="fb-login-button">
+	      <fb:login-button size="large" v="2" onlogin="FBCLogin();"></fb:login-button> 
+	    </div>
+	  </div>
+	</div><!--#popup-welcome-fb-signin-->
+
       </div>
       <div class="header-icon" id="search-icon" onclick="renderSearch()">
         <img src="/images/youvj_icons-search-50.png" class="header-icon-img" alt='search' border="0"/><div class="header-icon-text">Search for artists and band names</div>
@@ -43,36 +54,6 @@ Look for videos
       <div id="similar-artist-divider"></div>
 
     </div>
-    <div id="popup-welcome-container">
-      <div id="popup-welcome-border">
-	<div id="popup-welcome">
-	  <div class="title">Rediscover music videos with $config.title !</div> 
-	  <div id="popup-welcome-fb">
-	    <div id="popup-welcome-fb-signin">
-              <div class="title-section">
-		Connect with Facebook to browse your FB friends' favorites:
-	      </div>
-	      <div id="fb-login-button-wrapper">
-		<div id="fb-login-button">
-		  <fb:login-button size="large" v="2" onlogin="FBCLogin();"></fb:login-button> 
-		</div>
-	      </div>
-	    </div><!--#popup-welcome-fb-signin-->
-	    <br/>
-	    <a href="#" onclick="\$('#popup-welcome-search').show(); \$('#popup-welcome-fb').hide();">Not on Facebook? Click here!</a>
-	  </div>
-	  <div id="popup-welcome-search">
-            <span class="title-section">
-              Search band names:
-	      <form onsubmit="return false;">
-		<textarea id="welcome-artistnames" name="artistnames">Beatles, Lady Gaga, Aphex Twin</textarea>
-              </form>
-	      <button id="welcome-search">Search</button>
-            </span>
-	  </div>
-	</div>
-      </div><!-- #popup-welcome-border -->
-    </div><!-- #popup-welcome-container -->
     <script type="text/javascript">
       var UVJ = {};
       #if $hasVar('initialSearch')
