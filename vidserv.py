@@ -88,7 +88,14 @@ class Controller(resource.Resource):
         if not self._fbUser:
             fbApi = facebook.GraphAPI(self._fbSession['access_token'])
             self._fbUser = fbApi.get_object(self._fbSession['uid'])
+            musicEntries = fbApi.request_old('users.getInfo',
+                                             {'fields':'music',
+                                              'uids':self._fbSession['uid'],
+                                              'format':'json'
+                                              })
+            self._fbUser['bands'] = [mE.strip() for mE in musicEntries[0]['music'].split(',')]
             self.mem.set('_fbUser_%s' % self._fbSession['uid'], self._fbUser)
+
         return self._fbUser
 
     def getFBFriends(self):

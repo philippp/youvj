@@ -32,13 +32,21 @@ FBC2.user.pic = function(size){
   return "http://graph.facebook.com/"+this.id+"/picture?type="+size;
 };
 
+FBC2.user.renderBands = function(){
+  $("#artistGrouping_u"+FBC2.user.id).remove();
+  renderArtists(FBC2.user.bands,
+                FBC.makeMenuArtistTitle(FBC2.user),
+                "_u"+FBC2.user.id);
+};
+
 FBC2.init = function(){
   if( FBC2.user.id ){
+    FBC2.user['pic_square'] = FBC2.user.pic();
     var user_box = document.getElementById("fb-login");
     user_box.innerHTML = "<div class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
       "Logged in as: "+FBC2.user.name+"</span>";
     $("#fb_logout_image").show();
-
+    $(user_box).click(FBC2.user.renderBands);
     $('#header').show();
     $('#fb-login').show();
     $("#popup-welcome-border").hide();
