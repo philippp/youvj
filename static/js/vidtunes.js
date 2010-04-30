@@ -78,6 +78,44 @@ FBC2.PostStream = function(vidEntry){
   );
 };
 
+FBC2.browseFriends = function(){
+  if( FBC2.friends ){
+    FBC2._browseFriends(FBC2.friends);
+  }else{
+    jsonPost('/fb_friends',
+             {},
+             function(resp){ FBC2._browseFriends(resp); }
+    );
+  }
+};
+
+FBC2._browseFriends = function(friends){
+  $('#friendForm').empty();
+  var friendsList = $("<div class='friends'></div>");
+  for( var i = 0; i < friends.length; i++ ){
+    var friend = friends[i];
+    friendsList.append(
+        $("<div class='friend'></div>").append(
+          $("<span class='name'>"+friend+"</span><br/>")
+        ).click(
+          function(f){return function(){
+            searchArtists([f]);
+            $('#friendForm').dialog('close');
+          };}(friend)
+        )
+      );
+  }
+  $('#friendForm').append(
+    friendsList
+  ).append(
+    $("<br class='clear'/>")
+  );
+
+  $('#friendForm').show();
+  $('#friendForm').dialog('open');
+};
+
+
 
 var renderSearch = function(){
   $('#queryForm').show();
@@ -362,6 +400,7 @@ var renderSimilar = function(pairing){
 };
 
 var renderPlayer = function(videoInfo){
+  $("#featureVideo").empty();
   purl = videoInfo['flash_url'];
   purl += '&autoplay=1&fs=1';
   var pstr = '<object width="480" height="385">'
@@ -371,17 +410,22 @@ var renderPlayer = function(videoInfo){
     + '<param name="allowscriptaccess" value="always"></param>'
     + '<embed src="'+purl+'" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" fs="1" width="480" height="385"></embed>'
     + '</object>';
-  $('#featureVideo').html(pstr);
-  $('#featureVideo').show();
+  var featVidObj = $('<div id="featureVideo-obj"></div>');
+  featVidObj.html(pstr);
+  $('#featureVideo').append(featVidObj);
+
   $('#featureVideo').append(
+    $('<div class="player-fbpost"><a href="#"></a></div>').append(
+      $('<img src="/images/facebook_share_button.png" alt="share on facebook"/>')
+    ).click(
+      function(){ FBC2.PostStream(videoInfo); }
+    )
+  ).append(
     $('<div class="player-title">'+videoInfo['title']+'</div>')
   ).append(
     $('<div class="player-description">'+videoInfo['description']+'</div>')
-  ).append(
-    $('<a href="#">Post to Facebook</a>').click(
-      function(){ FBC2.PostStream(videoInfo); }
-    )
   ).append($(''));
+  $('#featureVideo').show();
 };
 
 var flipImages = function(e){
@@ -416,7 +460,9 @@ var jsonPost = function(path, params, success, fail){
 	   function(resp){
 	       try{
 		   resp = eval("("+resp+")");
-	       }catch(e){}
+	       }catch(e){
+                 alert(e);
+               }
 	       success(resp);
 	   },
 	   fail,
@@ -424,7 +470,8 @@ var jsonPost = function(path, params, success, fail){
 	   );
 };
 
-var browseFriends = function(pageNum){
+
+var old_browseFriends = function(pageNum){
   var pageSize = 9;
   try{
     pageNum = parseInt(pageNum);

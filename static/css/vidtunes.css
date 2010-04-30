@@ -63,6 +63,26 @@ padding:20px;
 width:480px;
 }
 
+#featureVideo-obj{
+   margin-bottom: 10px;
+}
+
+.player-description{
+   margin-top:10px;
+   font-size: 10px;
+}
+
+.player-title{
+   font-size: 20px;
+   line-height: 42px;
+}
+
+.player-fbpost{
+   float:right;
+   margin-left: 20px;
+   cursor:pointer;
+}
+
 .small {
    font-size: 10px;
 }

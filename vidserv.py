@@ -23,7 +23,6 @@ from lib import memcache, facebook, minifb
 class Controller(resource.Resource):
 
     def __init__(self, *args, **kwargs):
-
         directory = kwargs.get('directory',None)
         if not directory:
             directory = config.path+"/static"
@@ -105,13 +104,41 @@ class Controller(resource.Resource):
     def _loadFBFriends(self):
         '''load the fb friends list for a user into memory, along with their
         music preferences'''
+        fbApi = facebook.GraphAPI(self._fbSession['access_token'])
         friends = fbApi.get_connections(self._fbSession['uid'], 'friends')['data']
-        music = fbApi.request_old('users.getInfo',
-                                  {'fields':'music',
-                                   'uids':','.join([f['id'] for f in friends]),
-                                   'format':'json'
-                                   })
-        pdb.set_trace()
+        musicEntries = fbApi.request_old('users.getInfo',
+                                         {'fields':'music',
+                                          'uids':','.join([f['id'] for f in friends]),
+                                          'format':'json'
+                                          })
+        artistRanking = {}
+        for mE in musicEntries:
+            if not mE['music']:
+                continue
+            bands = mE['music'].split(',')
+            if len(bands) < 3:
+                continue
+            for band in bands:
+                minBand = vidquery._makeMinTitle(band)
+                if artistRanking.get(minBand,None):
+                    artistRanking[minBand].append( [mE['uid'], band] )
+                else:
+                    artistRanking[minBand] = [ [mE['uid'], band] ]
+        ranked = sorted( artistRanking.items(), key = lambda k: len(k[1]), reverse = True )
+        ranked = [(r[0], len(r[1]), self._mostCommon(r[1])) for r in ranked][:20]
+        return [r[2] for r in ranked]
+
+    def _mostCommon(self, uid_artists):
+        hits = {}
+        for uid_artist in uid_artists:
+            n = uid_artist[1].encode('ascii', 'xmlcharrefreplace').strip()
+
+            if getattr(hits, n, None):
+                hits[n] += 1
+            else:
+                hits[n] = 1
+        hits = sorted( hits.items(), key = lambda k: k[1], reverse = True )
+        return hits[0][0]
 
     def _getFBSessionFromCookie(self):
         """Parses the cookie set by the official Facebook JavaScript SDK.
@@ -225,17 +252,19 @@ class Toplevel(HTMLController):
         if self.init_args.get('problempath',None):
              template_args['initialSearch'] = self.init_args['problempath'].split(',')
 
-        self.getFBSession()
-        profile = self.getFBUser()
-        if profile:
-            template_args['fbSession'] = self._fbSession
-            template_args['fbUser'] = profile
+        if self.getFBSession():
+            profile = self.getFBUser()
+            if profile:
+                template_args['fbSession'] = self._fbSession
+                template_args['fbUser'] = profile
+
         return self.template("index", **template_args)
 
 class FBFriends(JSONController):    
     def respond(self):
         self.getFBSession()
-        return self.getFBFriends()
+        fbFriends = self.getFBFriends()
+        return fbFriends
 
 class FBIndex(HTMLController):
     content_type = http_headers.MimeType('text', 'html')

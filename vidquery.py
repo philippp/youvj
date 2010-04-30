@@ -70,12 +70,12 @@ def _makeMinTitle(videoTitle):
         'hq',
         'music video',
         ]
-    minTitle = videoTitle.lower()
+    minTitle = videoTitle.lower().strip()
     minTitle = _replaceUmlauts(minTitle)
 
     for word in junkWords:
         minTitle = minTitle.replace(word,"")
-    minTitle = re.sub("^[Tt]he","",minTitle).strip()
+    minTitle = re.sub("^[Tt]he","",minTitle)
     minTitle = re.sub("\(.*\)", "", minTitle, count=0)
     minTitle = re.sub("[^a-zA-Z\-\"]", "", minTitle, count=0)
 
