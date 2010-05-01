@@ -29,7 +29,6 @@ class Controller(resource.Resource):
         self.directory = directory
         self.init_args = kwargs
         self.mem = memcache.Client([config.memcache_host])
-        self._fbSession = None
 
     def template(self, view, **kwargs):
         """
@@ -78,41 +77,42 @@ class Controller(resource.Resource):
         return default
 
     def getFBSession(self):
-        if not getattr(self,'_fbSession',None):
-                self._fbSession = self._getFBSessionFromCookie()
-        return self._fbSession
+        if not getattr(self.ctx,'_fbSession',None):
+                self.ctx._fbSession = self._getFBSessionFromCookie()
+        return self.ctx._fbSession
 
     def getFBUser(self):
-        if not getattr(self, '_fbUser', None):
-            self._fbUser = self.mem.get('_fbUser_%s' % self._fbSession['uid'])
-        if not self._fbUser:
-            fbApi = facebook.GraphAPI(self._fbSession['access_token'])
-            self._fbUser = fbApi.get_object(self._fbSession['uid'])
+        if not getattr(self.ctx, '_fbUser', None):
+            self.ctx._fbUser = self.mem.get('_fbUser_%s' % self.ctx._fbSession['uid'])
+        if not self.ctx._fbUser:
+            fbApi = facebook.GraphAPI(self.ctx._fbSession['access_token'])
+            self.ctx._fbUser = fbApi.get_object(self.ctx._fbSession['uid'])
             musicEntries = fbApi.request_old('users.getInfo',
                                              {'fields':'music',
-                                              'uids':self._fbSession['uid'],
+                                              'uids':self.ctx._fbSession['uid'],
                                               'format':'json'
                                               })
-            self._fbUser['bands'] = [mE.strip() for mE in musicEntries[0]['music'].split(',')]
-            self.mem.set('_fbUser_%s' % self._fbSession['uid'], self._fbUser)
+            musicList = musicEntries[0].get('music','') or ''
+            self.ctx._fbUser['bands'] = [mE.strip() for mE in musicList.split(',')]
+            self.mem.set('_fbUser_%s' % self.ctx._fbSession['uid'], self.ctx._fbUser)
 
-        return self._fbUser
+        return self.ctx._fbUser
 
     def getFBFriends(self):
-        if getattr(self, '_fbFriends', None):
-            return self._fbFriends
-        self._fbFriends = self.mem.get('_fbFriends_%s' % self._fbSession['uid'])
-        if not self._fbFriends:
-            self._fbFriends = self._loadFBFriends()
-            self.mem.set('_fbFriends_%s' % self._fbSession['uid'], self._fbFriends)
-        return self._fbFriends
+        if getattr(self.ctx, '_fbFriends', None):
+            return self.ctx._fbFriends
+        self.ctx._fbFriends = self.mem.get('_fbFriends_%s' % self.ctx._fbSession['uid'])
+        if not self.ctx._fbFriends:
+            self.ctx._fbFriends = self._loadFBFriends()
+            self.mem.set('_fbFriends_%s' % self.ctx._fbSession['uid'], self.ctx._fbFriends)
+        return self.ctx._fbFriends
             
 
     def _loadFBFriends(self):
         '''load the fb friends list for a user into memory, along with their
         music preferences'''
-        fbApi = facebook.GraphAPI(self._fbSession['access_token'])
-        friends = fbApi.get_connections(self._fbSession['uid'], 'friends')['data']
+        fbApi = facebook.GraphAPI(self.ctx._fbSession['access_token'])
+        friends = fbApi.get_connections(self.ctx._fbSession['uid'], 'friends')['data']
         musicEntries = fbApi.request_old('users.getInfo',
                                          {'fields':'music',
                                           'uids':','.join([f['id'] for f in friends]),
@@ -262,7 +262,7 @@ class Toplevel(HTMLController):
         if self.getFBSession():
             profile = self.getFBUser()
             if profile:
-                template_args['fbSession'] = self._fbSession
+                template_args['fbSession'] = self.ctx._fbSession
                 template_args['fbUser'] = profile
 
         return self.template("index", **template_args)
