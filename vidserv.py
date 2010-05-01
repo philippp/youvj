@@ -86,7 +86,11 @@ class Controller(resource.Resource):
             self.ctx._fbUser = self.mem.get('_fbUser_%s' % self.ctx._fbSession['uid'])
         if not self.ctx._fbUser:
             fbApi = facebook.GraphAPI(self.ctx._fbSession['access_token'])
-            self.ctx._fbUser = fbApi.get_object(self.ctx._fbSession['uid'])
+            try:
+                self.ctx._fbUser = fbApi.get_object(self.ctx._fbSession['uid'])
+            except facebook.GraphAPIError, e:
+                print e.code
+                return None
             musicEntries = fbApi.request_old('users.getInfo',
                                              {'fields':'music',
                                               'uids':self.ctx._fbSession['uid'],

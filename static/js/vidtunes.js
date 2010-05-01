@@ -43,10 +43,10 @@ FBC2.init = function(){
   if( FBC2.user.id ){
     FBC2.user['pic_square'] = FBC2.user.pic();
     var user_box = document.getElementById("fb-login");
-    user_box.innerHTML = "<div class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
-      "Logged in as: "+FBC2.user.name+"</span>";
+    user_box.innerHTML = "<div id='fb-login-userpic' class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
+      "Logged in as: "+FBC2.user.name+"</span><br/><a href='#' onclick='FBCLogout();'>Logout</a>";
     $("#fb_logout_image").show();
-    $(user_box).click(FBC2.user.renderBands);
+    $('#fb-login-userpic').click(FBC2.user.renderBands);
     $("#friends-icon").show();
   }
 };
@@ -542,8 +542,12 @@ FBC.makeMenuArtistTitle = function(f){
   );
 };
 
-FBCLogout = function(){
-  FB.Connect.logout(function() { reload();  });
+var FBCLogin = function(){
+  window.location.reload();
+};
+
+var FBCLogout = function(){
+  FB.logout(function(response){ window.location.reload(); });
 };
 
 FBCGetFriends = function(callback){
