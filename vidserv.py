@@ -138,7 +138,7 @@ class FBRequest(object):
         for uid_artist in uid_artists:
             n = uid_artist[1].encode('ascii', 'xmlcharrefreplace').strip()
 
-            if getattr(hits, n, None):
+            if hits.get(n, None):
                 hits[n] += 1
             else:
                 hits[n] = 1
