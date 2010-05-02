@@ -1,7 +1,7 @@
 $(document).ready(function(){
   $('#queryForm').dialog({ autoOpen: false,
                            title : 'Search Artists',
-                           buttons: { "OK": function() { searchArtists(parseArtistNames( $('#artistnames').val() )); $(this).dialog("close"); } }});
+                           buttons: { "OK": function() { UVJ.searchArtists(parseArtistNames( $('#artistnames').val() )); $(this).dialog("close"); } }});
 
   $('#friendForm').dialog({ autoOpen: false,
                             width: '560px',
@@ -14,12 +14,14 @@ $(document).ready(function(){
                      });
   $('#search').hide();
   $('#welcome-search').button().click(
-    function(){searchArtists(parseArtistNames( $('#welcome-artistnames').val() ));}
+    function(){UVJ.searchArtists(parseArtistNames( $('#welcome-artistnames').val() ));}
   );
 
   $('#videos').css({'height':$(document).height()});
   if( UVJ.onLoadSearch ){
-    searchArtists(UVJ.onLoadSearch);
+    UVJ.searchArtists(UVJ.onLoadSearch);
+  }else{
+    UVJ.searchArtists([]);
   };
   FBC2.init();
 });
@@ -34,8 +36,8 @@ FBC2.user.pic = function(size){
 
 FBC2.user.renderBands = function(){
   $("#artistGrouping_u"+FBC2.user.id).remove();
-  renderArtists(FBC2.user.bands,
-                FBC.makeMenuArtistTitle(FBC2.user),
+  renderArtistsGrouping(FBC2.user.bands,
+                FBC2.makeMenuArtistTitle(FBC2.user),
                 "_u"+FBC2.user.id);
 };
 
@@ -93,6 +95,7 @@ FBC2.browseFriends = function(){
 
 FBC2._browseFriends = function(friends){
   $('#friendForm').empty();
+  FBC2.friends = friends;
   var friendsList = $("<div class='friends'></div>");
   for( var i = 0; i < friends.length; i++ ){
     var friend = friends[i];
@@ -101,7 +104,7 @@ FBC2._browseFriends = function(friends){
           $("<span class='name'>"+friend+"</span><br/>")
         ).click(
           function(f){return function(){
-            searchArtists([f]);
+            UVJ.searchArtists([f]);
             $('#friendForm').dialog('close');
           };}(friend)
         )
@@ -117,33 +120,54 @@ FBC2._browseFriends = function(friends){
   $('#friendForm').dialog('open');
 };
 
+UVJ.searchInline = function(){
+  var val = $("#inline-search")[0].value;
+  if( val != $('#inline-search')[0].title ){
+    UVJ.searchArtists([val]);
+  }
+  return false;
 
-
-var renderSearch = function(){
-  $('#queryForm').show();
-  $('#queryForm').dialog('open');
 };
 
-var searchArtists = function(artistNames){
+UVJ.searchArtists = function(artistNames){
   $('#header').show();
   $("#popup-welcome-border").hide();
-  searchArtists.list = unique(artistNames.concat(searchArtists.list));
+  UVJ.searchArtists.list = unique(artistNames.concat(UVJ.searchArtists.list));
   $('#artistGroupingSearch').remove();
   var searchHeader = $('<span id="artist-search-header"></span>').append(
-    $("<span class='small'>search</span>")
+    $("<span class='medium'>Browse and Find</span>")
+  ).append($("<form class='inline-search-box'></form>").append(
+             $("<input class='default-text' type='text' id='inline-search' title='Artist Search'/>")
+           ).append(
+             $("<input type='submit' value='Find'/>")
+           ).submit(function(e){ UVJ.searchInline(); })
   );
-  renderArtists(searchArtists.list, searchHeader, 'Search');
-};
-searchArtists.list = [];
 
-var renderArtists = function(artistNames, headerElement, targetID){
+  $(".default-text", searchHeader).focus(function(srcc){
+    if ($(this).val() == $(this)[0].title){
+      $(this).removeClass("default-text-active");
+      $(this).val("");
+    }
+  });
+  $(".default-text", searchHeader).blur(function(){
+    if ($(this).val() == ""){
+      $(this).addClass("default-text-active");
+      $(this).val($(this)[0].title);
+    }
+  });
+  $(".default-text", searchHeader).blur();
+
+  renderArtistsGrouping(UVJ.searchArtists.list, searchHeader, 'Search');
+};
+UVJ.searchArtists.list = [];
+
+var renderArtistsGrouping = function(artistNames, headerElement, targetID){
   var aid = targetID;
   if( !aid ){
-    renderArtists.id++;
-    aid = renderArtists.id;
+    renderArtistsGrouping.id++;
+    aid = renderArtistsGrouping.id;
   }
 
-  //$('#artistlisting').empty();
   var artistGrouping = $('<div class="artist-grouping" id="artistGrouping'+aid+'"></div>');
   if( headerElement ){
     headerElement = $("<div class='menu-artist-title'></div>").append(
@@ -184,7 +208,7 @@ var renderArtists = function(artistNames, headerElement, targetID){
     $($('a.artist-name', artistGrouping)[0]).click();
   }
 };
-renderArtists.id = 0;
+renderArtistsGrouping.id = 0;
 
 var parseArtistNames = function(textVal){
   var splitNames = textVal.split(",");
@@ -195,7 +219,6 @@ var parseArtistNames = function(textVal){
 };
 
 var loadArtist = function(artistName){
-  document.location.hash = artistName;
   loadVideos(artistName);
   loadSimilar(artistName);
   renderArtistBox(artistName);
@@ -225,8 +248,8 @@ var renderArtistBox = function(artistName){
   var shFriends = [];
   var friendLimit = 3;
   var found = 0;
-  for( i = 0; i < FBC.fbFriends.length; i++ ){
-    var friend = FBC.fbFriends[i];
+  for( i = 0; FBC2.friends && i < FBC2.friends.friends.length; i++ ){
+    var friend = FBC2.friends.friends[i];
     var regexp = new RegExp(artistName,'i');
     if( regexp.test(friend['music_str'])){
       found++;
@@ -238,8 +261,8 @@ var renderArtistBox = function(artistName){
           $("<a href='#' class='videoInfo-friend "+extraCls+"'>"+friend['name']+"</a>").click(
 
             (function(f){ return function(e){
-              renderArtists(f['artists'],
-              FBC.makeMenuArtistTitle(f));
+              renderArtistsGrouping(f['artists'],
+              FBC2.makeMenuArtistTitle(f));
               return false;
             }; })(friend)
           )
@@ -362,7 +385,7 @@ var loadSimilarCallback = function(resp, artistName){
     similarDiv.append(
       $("<a href='#' class='videoInfo-similar "+extraCls+"' title='"+resp[i][0]+"'>"+shortArtist+"</a>").click(
         (function(f){return function(e){
-                       searchArtists([f]);
+                       UVJ.searchArtists([f]);
                        return false;
                      };})(curArtist)
       )
@@ -396,7 +419,7 @@ var renderSimilar = function(pairing){
                         $("<a href='#'></a>").text(pairing[0])
                         );
   $('a',similarArtist).click(function(){
-                               searchArtists([pairing[0]]);
+                               UVJ.searchArtists([pairing[0]]);
                              });
   return(similarArtist);
 };
@@ -482,7 +505,7 @@ var old_browseFriends = function(pageNum){
     pageNum = 0;
   }
 
-  var maxPages = Math.floor(FBC.fbFriends.length / pageSize);
+  var maxPages = Math.floor(FBC2.friends.length / pageSize);
   var navigationList = $('<div class="navigation"></div>');
   for( var page = 0; page < maxPages; page++ ){
     if( page != pageNum ){
@@ -500,8 +523,8 @@ var old_browseFriends = function(pageNum){
   var startIdx = pageSize * pageNum;
   $('#friendForm').empty();
   var friendsList = $("<div class='friends'></div>");
-  for( var i = startIdx; i < FBC.fbFriends.length && i < startIdx+9; i++ ){
-    var friend = FBC.fbFriends[i];
+  for( var i = startIdx; i < FBC2.friends.length && i < startIdx+9; i++ ){
+    var friend = FBC2.friends[i];
       friendsList.append(
         $("<div class='friend'></div>").append(
           $("<img src='"+friend['pic_square']+"' align='left'/>")
@@ -511,7 +534,7 @@ var old_browseFriends = function(pageNum){
           $("<span class='info'>"+friend['artists'].length+"</span>")
         ).click(
           function(f){return function(){
-            renderArtists(f['artists'], FBC.makeMenuArtistTitle(f));
+            renderArtistsGrouping(f['artists'], FBC2.makeMenuArtistTitle(f));
             $('#friendForm').dialog('close');
           };}(friend)
         )
@@ -534,11 +557,11 @@ FBC = {};
 FBC.fbFriends = [];
 FBC.session = {};
 
-FBC.makeMenuArtistTitle = function(f){
+FBC2.makeMenuArtistTitle = function(f){
   return $('<span></span>').append(
   $("<img class='menu-artist-title-pic' align='left' src='"+f['pic_square']+"' alt='profile pic'/>")
   ).append(
-    $("<div class='small menu-artist-title-name'>"+f['name']+"</div>")
+    $("<div class='medium menu-artist-title-name'>"+f['name']+"</div>")
   );
 };
 

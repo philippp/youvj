@@ -96,32 +96,42 @@ class FBRequest(object):
         music preferences'''
         fbApi = facebook.GraphAPI(self._req._fbSession['access_token'])
         friends = fbApi.get_connections(self._req._fbSession['uid'], 'friends')['data']
+
+        friends = dict([(int(f['id']),f) for f in friends])
         t1 = time.time()
         musicEntries = fbApi.request_old('users.getInfo',
                                          {'fields':'music',
-                                          'uids':','.join([f['id'] for f in friends]),
+                                          'uids':','.join([str(k) for k in friends.keys()]),
                                           'format':'json'
                                           })
-        t2 = time.time()
-        print "%s seconds to fetch" % (t2 - t1)
         artistRanking = {}
+
         for mE in musicEntries:
             if not mE['music']:
                 continue
             bands = mE['music'].split(',')
             if len(bands) < 3:
                 continue
+            friends[mE['uid']]['bands'] = bands
+            friends[mE['uid']]['music_str'] = mE['music']
             for band in bands:
                 minBand = vidquery._makeMinTitle(band)
                 if artistRanking.get(minBand,None):
                     artistRanking[minBand].append( [mE['uid'], band] )
                 else:
                     artistRanking[minBand] = [ [mE['uid'], band] ]
-        ranked = sorted( artistRanking.items(), key = lambda k: len(k[1]), reverse = True )
+
+        #Sort most popular artists in your social group
+        ranked = sorted( artistRanking.items(),
+                         key = lambda k: len(k[1]),
+                         reverse = True )
         ranked = [(r[0], len(r[1]), self._mostCommon(r[1])) for r in ranked][:20]
-        t3 = time.time()
-        print "%s seconds to sort" % (t3 - t2)
-        return [r[2] for r in ranked]
+
+        friends = sorted( friends.values(),
+                          key = lambda f: len(f.get('bands',[])),
+                          reverse = True)
+
+        return {'ranked' : [r[2] for r in ranked], 'friends':friends}
 
     def _mostCommon(self, uid_artists):
         hits = {}
@@ -271,7 +281,7 @@ class Toplevel(HTMLController):
         
         template_args = {}
         if self.init_args.get('problempath',None):
-             template_args['initialSearch'] = self.init_args['problempath'].split(',')
+             template_args['onLoadSearch'] = self.init_args['problempath'].split(',')
 
         if ctx.getFBSession():
             profile = ctx.getFBUser()

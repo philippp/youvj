@@ -1,3 +1,5 @@
+.default-text-active{ color: #a1a1a1; font-style: italic; }
+
 .screencaps {
    background-color:black;
    border:2px solid black;
@@ -86,6 +88,11 @@ width:480px;
 .small {
    font-size: 10px;
 }
+
+.medium{
+   font-size: 13px;
+}
+
 .message{
 background-color:#EFEFEF;
 border-bottom:2px solid white;
@@ -190,7 +197,7 @@ margin-bottom:10px;
 
 #header{
 background-color: #94C8E9;
-margin-bottom:30px;
+margin-bottom:10px;
 padding-bottom:10px;
 }
 
@@ -222,6 +229,15 @@ width:130px;
    margin-left: 55px
 }
 
+.inline-search-box{
+   margin: 5px 0;
+}
+
+#inline-search{
+   width: 90px;
+   margin-right: 5px;
+}
+
 .menu-artist{
 cursor:pointer;
 display:block;
@@ -234,9 +250,8 @@ overflow:hidden;
 
 .menu-artist-title {
 display:block;
-height:35px;
 overflow:hidden;
-padding:5px 5px 0;
+padding:5px;
 }
 
 .menu-artist-title-pic { 
