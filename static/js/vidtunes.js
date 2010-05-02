@@ -27,11 +27,11 @@ $(document).ready(function(){
 });
 
 
-FBC2.user.pic = function(size){
+FBC2.user_pic = function(id, size){
   if( !size ){
     size = 'square';
   }
-  return "http://graph.facebook.com/"+this.id+"/picture?type="+size;
+  return "http://graph.facebook.com/"+id+"/picture?type="+size;
 };
 
 FBC2.user.renderBands = function(){
@@ -43,13 +43,16 @@ FBC2.user.renderBands = function(){
 
 FBC2.init = function(){
   if( FBC2.user.id ){
-    FBC2.user['pic_square'] = FBC2.user.pic();
+    FBC2.user['pic_square'] = FBC2.user_pic(FBC2.user.id);
     var user_box = document.getElementById("fb-login");
-    user_box.innerHTML = "<div id='fb-login-userpic' class='fb-login-pic''>" + "<img src='"+FBC2.user.pic()+"'/></div>" +
+    user_box.innerHTML = "<div id='fb-login-userpic' class='fb-login-pic''>" + "<img src='"+FBC2.user_pic(FBC2.user.id)+"'/></div>" +
       "Logged in as: "+FBC2.user.name+"</span><br/><a href='#' onclick='FBCLogout();'>Logout</a>";
     $("#fb_logout_image").show();
     $('#fb-login-userpic').click(FBC2.user.renderBands);
-    $("#friends-icon").show();
+    $('#fb-explain').hide();
+    $('#fb-friends-list').show();
+    $('#fb-friends-list').html("Loading friends, please wait...");
+    FBC2.loadFriends();
   }
 };
 
@@ -63,14 +66,13 @@ FBC2.PostStream = function(vidEntry){
     "height" : "97",
     "expanded_width" : "480",
     "expanded_height" : "385"
-
     };
 
   FB.ui(
     {
       method:'stream.publish',
       message:'Check out this video',
-      action_links : [{'text':"Be the VJ", 'href':'http://youvj.com'}],
+      action_links : [{'text':"See all videos", 'href':'http://youvj.com'}],
       user_prompt_message: 'Share this video on your wall',
       attachment : { 'name': vidEntry['title'],
                  'href': ' http://youvj.com',
@@ -82,43 +84,70 @@ FBC2.PostStream = function(vidEntry){
   );
 };
 
-FBC2.browseFriends = function(){
+FBC2.loadFriends = function(){
   if( FBC2.friends ){
     FBC2._browseFriends(FBC2.friends);
   }else{
     jsonPost('/fb_friends',
              {},
-             function(resp){ FBC2._browseFriends(resp); }
+             function(resp){ FBC2._onLoadFriends(resp); }
     );
   }
 };
 
-FBC2._browseFriends = function(friends){
-  $('#friendForm').empty();
+FBC2._onLoadFriends = function(friends){
   FBC2.friends = friends;
-  var friendsList = $("<div class='friends'></div>");
-  for( var i = 0; i < friends.length; i++ ){
-    var friend = friends[i];
-    friendsList.append(
+  FBC2.renderFriends();
+};
+
+FBC2.renderFriends = function(pageNum){
+  var pageSize = 4;
+  try{
+    pageNum = parseInt(pageNum);
+    if( !pageNum ) pageNum = 0;
+  }catch(e){
+    pageNum = 0;
+  }
+
+  var maxPages = Math.floor(FBC2.friends.length / pageSize);
+  var navigationList = $('<div class="navigation"></div>');
+  for( var page = 0; page < maxPages; page++ ){
+    if( page != pageNum ){
+      navigationList.append(
+        $("<a href='#'>"+page+"</a>").click(
+          function(p){ return function(){ browseFriends(p); }; }(page)
+        )
+      );
+    }else{
+      navigationList.append(
+        $("<span>"+page+"</span>")
+      );
+    }
+  }
+  var startIdx = pageSize * pageNum;
+  var friendsList = $("#fb-friends-list");
+  friendsList.empty();
+  for( var i = startIdx; i < FBC2.friends.friends.length && i < startIdx+9; i++ ){
+    var friend = FBC2.friends.friends[i];
+      friendsList.append(
         $("<div class='friend'></div>").append(
-          $("<span class='name'>"+friend+"</span><br/>")
+          $("<img src='"+FBC2.user_pic(friend['id'])+"' align='left'/>")
+        ).append(
+          $("<span class='name'>"+friend['name']+"</span><br/>")
+        ).append(
+          $("<span class='info'>"+friend['bands'].length+"</span>")
         ).click(
           function(f){return function(){
-            UVJ.searchArtists([f]);
-            $('#friendForm').dialog('close');
+            renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f));
           };}(friend)
         )
       );
   }
-  $('#friendForm').append(
-    friendsList
-  ).append(
-    $("<br class='clear'/>")
+  friendsList.append(
+    navigationList
   );
-
-  $('#friendForm').show();
-  $('#friendForm').dialog('open');
 };
+
 
 UVJ.searchInline = function(){
   var val = $("#inline-search")[0].value;
@@ -130,7 +159,7 @@ UVJ.searchInline = function(){
 };
 
 UVJ.searchArtists = function(artistNames){
-  $('#header').show();
+  $('#footer').show();
   $("#popup-welcome-border").hide();
   UVJ.searchArtists.list = unique(artistNames.concat(UVJ.searchArtists.list));
   $('#artistGroupingSearch').remove();
@@ -202,7 +231,12 @@ var renderArtistsGrouping = function(artistNames, headerElement, targetID){
         artistEntry.addClass('artistBatch'+aid);
 	artistGrouping.append(artistEntry);
   }
-  $('#artistlisting').prepend(artistGrouping);
+  if( aid == "Search" ){
+    $('#artistlisting').prepend(artistGrouping);
+  }else{
+    artistGrouping.insertAfter($('#artistGroupingSearch'));
+  }
+
   $('#search').show();
   if($('a.artist-name', artistGrouping).length > 0){
     $($('a.artist-name', artistGrouping)[0]).click();
@@ -496,61 +530,6 @@ var jsonPost = function(path, params, success, fail){
 };
 
 
-var old_browseFriends = function(pageNum){
-  var pageSize = 9;
-  try{
-    pageNum = parseInt(pageNum);
-    if( !pageNum ) pageNum = 0;
-  }catch(e){
-    pageNum = 0;
-  }
-
-  var maxPages = Math.floor(FBC2.friends.length / pageSize);
-  var navigationList = $('<div class="navigation"></div>');
-  for( var page = 0; page < maxPages; page++ ){
-    if( page != pageNum ){
-      navigationList.append(
-        $("<a href='#'>"+page+"</a>").click(
-          function(p){ return function(){ browseFriends(p); }; }(page)
-        )
-      );
-    }else{
-      navigationList.append(
-        $("<span>"+page+"</span>")
-      );
-    }
-  }
-  var startIdx = pageSize * pageNum;
-  $('#friendForm').empty();
-  var friendsList = $("<div class='friends'></div>");
-  for( var i = startIdx; i < FBC2.friends.length && i < startIdx+9; i++ ){
-    var friend = FBC2.friends[i];
-      friendsList.append(
-        $("<div class='friend'></div>").append(
-          $("<img src='"+friend['pic_square']+"' align='left'/>")
-        ).append(
-          $("<span class='name'>"+friend['name']+"</span><br/>")
-        ).append(
-          $("<span class='info'>"+friend['artists'].length+"</span>")
-        ).click(
-          function(f){return function(){
-            renderArtistsGrouping(f['artists'], FBC2.makeMenuArtistTitle(f));
-            $('#friendForm').dialog('close');
-          };}(friend)
-        )
-      );
-  }
-  $('#friendForm').append(
-    friendsList
-  ).append(
-    $("<br class='clear'/>")
-  ).append(
-    navigationList
-  );
-
-  $('#friendForm').show();
-  $('#friendForm').dialog('open');
-};
 
 FBC = {};
 
@@ -559,7 +538,7 @@ FBC.session = {};
 
 FBC2.makeMenuArtistTitle = function(f){
   return $('<span></span>').append(
-  $("<img class='menu-artist-title-pic' align='left' src='"+f['pic_square']+"' alt='profile pic'/>")
+  $("<img class='menu-artist-title-pic' align='left' src='"+FBC2.user_pic(f['id'])+"' alt='profile pic'/>")
   ).append(
     $("<div class='medium menu-artist-title-name'>"+f['name']+"</div>")
   );

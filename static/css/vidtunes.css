@@ -48,7 +48,7 @@ width:160px;
 
 #media{
    height:100%;
-   margin: 0px 10px;
+   margin: 10px;
 }
 
 #featureVideo{
@@ -180,25 +180,33 @@ text-align:center;
    display: none;
 }
 
-#popup-welcome-fb{
-}
-
 a.toggle{
    text-decoration: none;
    font-family: monospace;
    float: right;
 }
-.artist-grouping {
-background-color:#DFDFDF;
-border-bottom:2px solid #FFFFFF;
-border-right:2px solid #FFFFFF;
-margin-bottom:10px;
+
+#fb-friends-list{
+   display: none;
 }
 
-#header{
-background-color: #94C8E9;
-margin-bottom:10px;
-padding-bottom:10px;
+#fb-explain ul{
+   margin:0;
+}
+
+.artist-grouping {
+   background-color:#DFDFDF;
+   border-bottom:2px solid #FFFFFF;
+   border-right:2px solid #FFFFFF;
+   margin-bottom:10px;
+}
+
+#footer{
+   background-color: #94C8E9;
+   position:fixed;
+   bottom: 0;
+   left: 0;
+   width: 100%;
 }
 
 #fb-login {
@@ -429,19 +437,22 @@ width:160px;
    display:none;
 }
 
-#friendForm .friend img{
+#fb-friends-list .friend img{
    margin-right: 5px;
 }
 
-#friendForm a, #friendForm span{
+#fb-friends-list a, #fb-friends-list span{
    display: inline-block;
    margin-right: 5px;
+   font-size: 10px;
 }
-#friendForm .friend{
-   width: 162px;
+
+#fb-friends-list .friend{
+   width: 100px;
    float: left;
    font-size: 12px;
    margin: 5px;
+   cursor: pointer;
 }
 ul#artists-menu {
    list-style:none;

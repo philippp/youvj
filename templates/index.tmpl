@@ -20,7 +20,19 @@ Look for videos
     </div>
     <div id="friendForm">
     </div>
-    <div id="header">
+
+    <div id="media">
+      <div id="browser">
+        <div id="artistlisting"></div>
+      </div>
+      <div id="featureVideo">
+      </div>
+
+      <div id="similar-artist-divider"></div>
+
+    </div>
+
+    <div id="footer">
       <div class="header-icon" id="fb-login">
 
       	<div id="popup-welcome-fb-signin">
@@ -32,22 +44,20 @@ Look for videos
 	</div><!--#popup-welcome-fb-signin-->
 
       </div>
-      <div class="header-icon" id="friends-icon" onclick="FBC2.browseFriends()">
-        <img src="/images/youvj_icons-friends-50.png" class="header-icon-img" alt='search' border="0"/><div class="header-icon-text">Browse your Facebook friends' favorites</div>
-	<br style="clear:both;"/>
+      <div id="fb-friends-list">
       </div>
-      <br style="clear: both;"/>
-    </div>
-    <div id="media">
-      <div id="browser">
-        <div id="artistlisting"></div>
+      <div id="fb-explain">
+	Log in with Facebook!
+	<ul>
+	  <li>see videos by your friends' favorite bands</li>
+	  <li>watch videos of bands you have "liked"</li>
+	  <li>share your best finds!</li>
+	</ul>
       </div>
-      <div id="featureVideo">
-      </div>
+      <div style="clear: both; height: 1px"></div>
+    </div><!-- #footer -->
 
-      <div id="similar-artist-divider"></div>
 
-    </div>
     <script type="text/javascript">
       var UVJ = {};
       #if $hasVar('onLoadSearch')
