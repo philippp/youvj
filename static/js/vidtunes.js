@@ -131,11 +131,11 @@ FBC2.renderFriends = function(pageNum){
     var friend = FBC2.friends.friends[i];
       friendsList.append(
         $("<div class='friend'></div>").append(
-          $("<img src='"+FBC2.user_pic(friend['id'])+"' align='left'/>")
+          $("<span class='info'>"+friend['bands'].length+"<img src='/images/heart.gif' alt='heart' class='friend-info-heart'/></span>")
+        ).append(
+          $("<img src='"+FBC2.user_pic(friend['id'])+"'/>")
         ).append(
           $("<span class='name'>"+friend['name']+"</span><br/>")
-        ).append(
-          $("<span class='info'>"+friend['bands'].length+"</span>")
         ).click(
           function(f){return function(){
             renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f));
@@ -295,7 +295,7 @@ var renderArtistBox = function(artistName){
           $("<a href='#' class='videoInfo-friend "+extraCls+"'>"+friend['name']+"</a>").click(
 
             (function(f){ return function(e){
-              renderArtistsGrouping(f['artists'],
+              renderArtistsGrouping(f['bands'],
               FBC2.makeMenuArtistTitle(f));
               return false;
             }; })(friend)
