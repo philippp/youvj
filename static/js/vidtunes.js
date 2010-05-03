@@ -137,7 +137,7 @@ FBC2.renderFriends = function(pageDir){
           $("<span class='name'>"+friend['name']+"</span><br/>")
         ).click(
           function(f){return function(){
-            renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f));
+            renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f), "_u"+f['id']);
           };}(friend)
         )
       );
@@ -172,7 +172,6 @@ UVJ.searchArtists = function(artistNames){
   $('#footer').show();
   $("#popup-welcome-border").hide();
   UVJ.searchArtists.list = unique(artistNames.concat(UVJ.searchArtists.list));
-  $('#artistGroupingSearch').remove();
   var searchHeader = $('<span id="artist-search-header"></span>').append(
     $("<span class='medium'>Browse and Find</span>")
   ).append($("<form class='inline-search-box'></form>").append(
@@ -202,7 +201,9 @@ UVJ.searchArtists.list = [];
 
 var renderArtistsGrouping = function(artistNames, headerElement, targetID){
   var aid = targetID;
-  if( !aid ){
+  if( aid ) {
+    $("#artistGrouping"+aid).remove();
+  }else{
     renderArtistsGrouping.id++;
     aid = renderArtistsGrouping.id;
   }
@@ -306,7 +307,9 @@ var renderArtistBox = function(artistName){
 
             (function(f){ return function(e){
               renderArtistsGrouping(f['bands'],
-              FBC2.makeMenuArtistTitle(f));
+              FBC2.makeMenuArtistTitle(f),
+              "_u"+f['id']
+              );
               return false;
             }; })(friend)
           )
