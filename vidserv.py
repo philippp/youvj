@@ -17,6 +17,7 @@ import pylast
 import vidquery
 import config
 import vidlogger
+import genres
 from lib import memcache, facebook, minifb
 
 class FBRequest(object):
@@ -91,6 +92,17 @@ class FBRequest(object):
         return self._req._fbFriends
             
 
+    def _filterFBBandNames(self, bandList):
+        res = []
+        for b in bandList:
+            b = b.strip().lower()
+            if b in genres.genres:
+                continue
+            if len(b.split(" ")) > 5:
+                continue
+            res.append(b)
+        return res
+
     def _loadFBFriends(self):
         '''load the fb friends list for a user into memory, along with their
         music preferences'''
@@ -110,6 +122,7 @@ class FBRequest(object):
             if not mE['music']:
                 continue
             bands = mE['music'].split(',')
+            bands = self._filterFBBandNames(bands)
             if len(bands) < 3:
                 continue
             friends[mE['uid']]['bands'] = bands
