@@ -50,7 +50,9 @@ FBC2.init = function(){
     $("#fb_logout_image").show();
     $('#fb-login-userpic').click(FBC2.user.renderBands);
     $('#fb-explain').hide();
-    $('#fb-friends-list').show();
+    $('#fb-friends').show();
+    $('#fb-friends-pager-up').click(function(){FBC2.renderFriends(-1); return false;});
+    $('#fb-friends-pager-down').click(function(){FBC2.renderFriends(1); return false;});
     $('#fb-friends-list').html("Loading friends, please wait...");
     FBC2.loadFriends();
   }
@@ -97,37 +99,34 @@ FBC2.loadFriends = function(){
 
 FBC2._onLoadFriends = function(friends){
   FBC2.friends = friends;
+  $('#fb-friends-pager').show();
   FBC2.renderFriends();
 };
 
-FBC2.renderFriends = function(pageNum){
-  var pageSize = 4;
-  try{
-    pageNum = parseInt(pageNum);
-    if( !pageNum ) pageNum = 0;
-  }catch(e){
-    pageNum = 0;
+
+
+/**
+ * Render friend pages
+ * @int pageDir - 0 for first page, -1 for previous page (if available), +1 for next page
+ */
+FBC2.renderFriends = function(pageDir){
+
+  var friendCount = Math.floor( ($(window).width() - $('#fb-login').width()- $('#fb-friends-pager').width()) / 100) - 1;
+  var startIdx = 0, endIdx = 0, maxIdx = FBC2.friends.friends.length-1; // First and last idx to be rendered
+
+  if( pageDir == 1 ){
+    startIdx = FBC2.renderFriends.endIdx+1;
+    endIdx = Math.min(startIdx + friendCount, maxIdx);
+  }else if( pageDir == -1){
+    endIdx = FBC2.renderFriends.startIdx-1;
+    startIdx = Math.max(endIdx - friendCount, 0);
+  }else{
+    endIdx = Math.min(friendCount-1, maxIdx);
   }
 
-  var maxPages = Math.floor(FBC2.friends.length / pageSize);
-  var navigationList = $('<div class="navigation"></div>');
-  for( var page = 0; page < maxPages; page++ ){
-    if( page != pageNum ){
-      navigationList.append(
-        $("<a href='#'>"+page+"</a>").click(
-          function(p){ return function(){ browseFriends(p); }; }(page)
-        )
-      );
-    }else{
-      navigationList.append(
-        $("<span>"+page+"</span>")
-      );
-    }
-  }
-  var startIdx = pageSize * pageNum;
   var friendsList = $("#fb-friends-list");
   friendsList.empty();
-  for( var i = startIdx; i < FBC2.friends.friends.length && i < startIdx+9; i++ ){
+  for( var i = startIdx; i <= endIdx; i++ ){
     var friend = FBC2.friends.friends[i];
       friendsList.append(
         $("<div class='friend'></div>").append(
@@ -143,11 +142,22 @@ FBC2.renderFriends = function(pageNum){
         )
       );
   }
-  friendsList.append(
-    navigationList
-  );
-};
+  if( startIdx == 0 ){
+    $('#fb-friends-pager-up').hide();
+  }else {
+    $('#fb-friends-pager-up').show();
+  }
 
+  if( endIdx == maxIdx ){
+    $('#fb-friends-pager-down').hide();
+  }else{
+    $('#fb-friends-pager-down').show();
+  }
+  FBC2.renderFriends.startIdx = startIdx;
+  FBC2.renderFriends.endIdx = endIdx;
+};
+FBC2.renderFriends.startIdx = 0;
+FBC2.renderFriends.endIdx = 0;
 
 UVJ.searchInline = function(){
   var val = $("#inline-search")[0].value;

@@ -59,7 +59,7 @@ background-color:#EFEFEF;
 display:none;
 float:right;
 height:590px;
-margin-bottom:6px;
+margin-bottom:20px;
 padding:20px;
 width:480px;
 }
@@ -185,7 +185,7 @@ a.toggle{
    float: right;
 }
 
-#fb-friends-list{
+#friends{
    display: none;
 }
 
@@ -201,7 +201,8 @@ a.toggle{
 }
 
 #footer{
-   background: transparent url(/images/blue_stripe.png) repeat scroll 0 0;
+   background-color: #62A8D4;
+   border-top: 2px solid #2992D4;
    height: 85px;
    position:fixed;
    bottom: 0;
@@ -317,11 +318,11 @@ float: left;
 
 a{
 text-decoration:underline;
-color:#0D7BA2;
+color: #055B82
 }
 
 a:hover{
-
+text-decoration:none;
 }
 
 #videoInfo-artist {
@@ -436,6 +437,18 @@ width:160px;
 }
 #friendForm{
    display:none;
+}
+
+#fb-friends-pager{
+   display: none;
+   float: left;
+   font-size: 13px;
+   width: 100px;
+}
+
+#fb-friends-pager a{
+   line-height: 32px;
+
 }
 
 #fb-friends-list a, #fb-friends-list span{
