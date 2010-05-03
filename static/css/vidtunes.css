@@ -55,6 +55,11 @@ width:160px;
 -moz-border-radius-bottomright:1px;
 -moz-border-radius-topleft:1px;
 -moz-border-radius-topright:2px;
+-webkit-border-radius-bottomleft:2px;
+-webkit-border-radius-bottomright:1px;
+-webkit-border-radius-topleft:1px;
+-webkit-border-radius-topright:2px;
+
 background-color:#EFEFEF;
 display:none;
 float:right;
@@ -154,6 +159,7 @@ textarea#artistnames {
 
 #popup-welcome #fb-login-button{
 -moz-border-radius:5px;
+-webkit-border-radius:5px;
 background-color:#CEDAF4;
 border:1px solid #A9B3C8;
 display:inline-block;
@@ -212,7 +218,8 @@ a.toggle{
 }
 
 #fb-login {
-font-size: 10px;
+   margin-top:15px;
+   font-size: 10px;
 }
 
 .fb-login-pic{
@@ -225,7 +232,7 @@ font-size: 10px;
    float:left;
    margin: 0px 10px 0 0;
    padding:0px 14px;
-   width:130px;
+   width:200px;
    cursor: pointer;
 }
 
@@ -314,6 +321,10 @@ float: left;
 -moz-border-radius-bottomright:1px;
 -moz-border-radius-topleft:1px;
 -moz-border-radius-topright:2px;
+-webkit-border-radius-bottomleft:2px;
+-webkit-border-radius-bottomright:1px;
+-webkit-border-radius-topleft:1px;
+-webkit-border-radius-topright:2px;
 }
 
 a{
@@ -337,11 +348,15 @@ margin-bottom:30px;
 margin-right:12px;
 padding:6px 14px;
 width:131px;
--moz-border-radius: 2px;
 -moz-border-radius-bottomleft:2px;
 -moz-border-radius-bottomright:1px;
 -moz-border-radius-topleft:1px;
 -moz-border-radius-topright:2px;
+-webkit-border-radius-bottomleft:2px;
+-webkit-border-radius-bottomright:1px;
+-webkit-border-radius-topleft:1px;
+-webkit-border-radius-topright:2px;
+
 }
 
 .videoInfo .title{
@@ -386,10 +401,17 @@ margin-bottom:30px;
 margin-right:12px;
 padding:6px 14px;
 width:132px;
+}
+
+.rounded-plate{
 -moz-border-radius-bottomleft:2px;
 -moz-border-radius-bottomright:1px;
 -moz-border-radius-topleft:1px;
 -moz-border-radius-topright:2px;
+-webkit-border-radius-bottomleft:2px;
+-webkit-border-radius-bottomright:1px;
+-webkit-border-radius-topleft:1px;
+-webkit-border-radius-topright:2px;
 }
 
 #video-loader{
@@ -403,11 +425,8 @@ text-align:center;
 background-color: #EFEFEF;
 border-bottom:2px solid #FFFFFF;
 border-right:2px solid #FFFFFF;
--moz-border-radius-bottomleft:2px;
--moz-border-radius-bottomright:1px;
--moz-border-radius-topleft:1px;
--moz-border-radius-topright:2px;
 }
+
 #video-loader-msg{
 font-size:10px;
 color:#333333;
@@ -462,6 +481,9 @@ width:160px;
    background-color: white;
    padding: 2px;
    -moz-border-radius: 5px;
+   -webkit-border-radius: 5px;
+   border-bottom:1px solid #999999;
+   border-right:1px solid #999999;
 }
 
 .friend-info-heart { 

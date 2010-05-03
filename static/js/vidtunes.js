@@ -128,9 +128,11 @@ FBC2.renderFriends = function(pageDir){
   friendsList.empty();
   for( var i = startIdx; i <= endIdx; i++ ){
     var friend = FBC2.friends.friends[i];
+    var bandCnt = friend['bands'].length;
+    var likeTitle = friend['name'] + " likes "+bandCnt+" bands.";
       friendsList.append(
         $("<div class='friend'></div>").append(
-          $("<span class='info'>"+friend['bands'].length+"<img src='/images/heart.gif' alt='heart' class='friend-info-heart'/></span>")
+          $("<span class='info' title='"+likeTitle+"'>"+friend['bands'].length+"<img src='/images/heart.gif' alt='heart' class='friend-info-heart'/></span>")
         ).append(
           $("<img src='"+FBC2.user_pic(friend['id'])+"'/>")
         ).append(
