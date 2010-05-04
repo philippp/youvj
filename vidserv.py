@@ -258,7 +258,7 @@ class FindVideos(JSONController):
         artistVids = []
         ip_addr = ctx.remoteAddr.host
         for artist in artists:
-            vidlogger.log(data_1=1,text_info=artist)
+            vidlogger.log(ctx=ctx, data_1=1,text_info=artist)
             artistVids.append( self.fetchVideos(artist) )
         return artistVids
 

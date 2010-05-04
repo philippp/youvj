@@ -29,6 +29,11 @@ def load(table, col_list):
     return rows
 
 def log(*args, **kwargs):
+    if 'ctx' in kwargs:
+        sess = kwargs['ctx'].getFBSession()
+        if sess:
+            kwargs['fbid'] = sess['uid']
+        del kwargs['ctx']
     keylist = ['session_id','fbid','data_1','data_2','data_3','data_4','data_5','data_6','text_info']
     #[ assert (k in keylist) for k in kwargs.keys() ]
     insert('log', **kwargs)
