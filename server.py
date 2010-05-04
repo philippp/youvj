@@ -9,6 +9,7 @@ import config
 root = vidserv.Toplevel()
 root.putChild("findvideos", vidserv.FindVideos())
 root.putChild("findsimilar", vidserv.FindSimilar())
+root.putChild("log", vidserv.ClientLogger())
 root.putChild("fb_login", vidfbc.LoginHandler())
 root.putChild("fb_logout", vidfbc.LogoutHandler())
 root.putChild("fb_friends", vidserv.FBFriends())

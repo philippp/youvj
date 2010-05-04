@@ -1,6 +1,14 @@
 import config
 import MySQLdb
 
+EVENT_SEARCH = 1
+EVENT_VIEW_VIDEO = 2
+EVENT_CLICK_FRIEND = 3
+EVENT_CLICK_SHARE = 4
+EVENT_URL_SHORTCUT = 5
+EVENT_FB_LOGON = 6
+EVENT_FB_LOGOFF = 7
+
 def get_conn():
     conn = MySQLdb.connect( **config.db )
     return conn

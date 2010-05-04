@@ -26,6 +26,14 @@ $(document).ready(function(){
   FBC2.init();
 });
 
+FBC2.makeMenuArtistTitle = function(f){
+  return $('<span></span>').append(
+  $("<img class='menu-artist-title-pic' align='left' src='"+FBC2.user_pic(f['id'])+"' alt='profile pic'/>")
+  ).append(
+    $("<div class='medium menu-artist-title-name'>"+f['name']+"</div>")
+  );
+};
+
 
 FBC2.user_pic = function(id, size){
   if( !size ){
@@ -58,6 +66,15 @@ FBC2.init = function(){
   }
 };
 
+var FBCLogin = function(){
+  window.location.reload();
+};
+
+var FBCLogout = function(){
+  FB.logout(function(response){ window.location.reload(); });
+};
+
+
 FBC2.PostStream = function(vidEntry){
 
   var media = {
@@ -84,6 +101,7 @@ FBC2.PostStream = function(vidEntry){
                  }
     }
   );
+  UVJ.log({'data_1':4, 'text_info':vidEntry['flash_url']});
 };
 
 FBC2.loadFriends = function(){
@@ -139,7 +157,7 @@ FBC2.renderFriends = function(pageDir){
           $("<span class='name'>"+friend['name']+"</span><br/>")
         ).click(
           function(f){return function(){
-            renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f), "_u"+f['id']);
+            FBC2.clickFriend(f);
           };}(friend)
         )
       );
@@ -158,8 +176,22 @@ FBC2.renderFriends = function(pageDir){
   FBC2.renderFriends.startIdx = startIdx;
   FBC2.renderFriends.endIdx = endIdx;
 };
+
+FBC2.clickFriend = function(f){
+  UVJ.log({'data_1':3, 'data_2':f['id']});
+  renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f), "_u"+f['id']);
+};
+
 FBC2.renderFriends.startIdx = 0;
 FBC2.renderFriends.endIdx = 0;
+
+UVJ.log = function(logObj){
+  jsonPost('/log',
+           logObj,
+           function(resp){}
+          );
+
+};
 
 UVJ.searchInline = function(){
   var val = $("#inline-search")[0].value;
@@ -474,6 +506,7 @@ var renderSimilar = function(pairing){
 };
 
 var renderPlayer = function(videoInfo){
+  UVJ.log({'data_1':2, 'text_info':videoInfo['flash_url']});
   $("#featureVideo").empty();
   purl = videoInfo['flash_url'];
   purl += '&autoplay=1&fs=1';
@@ -551,90 +584,6 @@ FBC = {};
 FBC.fbFriends = [];
 FBC.session = {};
 
-FBC2.makeMenuArtistTitle = function(f){
-  return $('<span></span>').append(
-  $("<img class='menu-artist-title-pic' align='left' src='"+FBC2.user_pic(f['id'])+"' alt='profile pic'/>")
-  ).append(
-    $("<div class='medium menu-artist-title-name'>"+f['name']+"</div>")
-  );
-};
-
-var FBCLogin = function(){
-  window.location.reload();
-};
-
-var FBCLogout = function(){
-  FB.logout(function(response){ window.location.reload(); });
-};
-
-FBCGetFriends = function(callback){
-  var api = FB.Facebook.apiClient;
-
-  // require user to login
-  api.requireLogin(function(exception) {
-    FBC.session = api.get_session();
-    // Get friends list
-    api.friends_get(null, function(result) {
-      result[result.length] = FBC.session.uid;
-      FB.Facebook.apiClient.users_getInfo(result,
-        ['name','pic_square','music'],
-	function(res){
-          FBC.owner = FBCGetFriends_parseUser(res[res.length-1]);
-          FBC.fbFriends = [];
-          res.length--;
-          for( var i=0; i < res.length; i++ ){
-            var friend_user = FBCGetFriends_parseUser(res[i]);
-            if( friend_user ){
-              FBC.fbFriends[FBC.fbFriends.length] = friend_user;
-            }
-          }
-          FBC.fbFriends = FBC.fbFriends.sort(function(a,b){
-            return b['artists'].length - a['artists'].length;
-          });
-          callback();
-        });
-      });
-    });
-};
-
-FBCGetFriends_parseUser = function( res ){
-  if( !res['music'] || res['music'].length == 0 ){
-    return false;
-  }
-  var mFriend = {};
-  mFriend['music_str'] = res['music'];
-  mFriend['artists'] = parseArtistNames(res['music']);
-  if( mFriend['artists'].length < 4 ){
-    return false;
-  }
-  mFriend['name'] = res['name'];
-  mFriend['pic_square'] = res['pic_square'];
-  return mFriend;
-};
-FBCPostStream = function(vidEntry){
-
-  var media = {
-    "type":"flash",
-    "swfsrc" : vidEntry['flash_url'],
-    "imgsrc" : vidEntry['thumbnails'][0],
-    "width" : "130",
-    "height" : "97",
-    "expanded_width" : "480",
-    "expanded_height" : "385"
-
-    };
-
-  var message = 'Check out this video';
-  var attachment = { 'name': vidEntry['title'],
-                     'href': ' http://youvj.com',
-                     'caption': '{*actor*} found this music video',
-                     'description': vidEntry['description'],
-                     'media': [ media ]
-                   };
-  var action_links = [{'text':"Be the VJ",
-                       'href':'http://youvj.com'}];
-  FB.Connect.streamPublish(message, attachment, action_links);
-};
 
 
 String.prototype.ltrim = function() {

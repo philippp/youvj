@@ -258,7 +258,9 @@ class FindVideos(JSONController):
         artistVids = []
         ip_addr = ctx.remoteAddr.host
         for artist in artists:
-            vidlogger.log(ctx=ctx, data_1=1,text_info=artist)
+            vidlogger.log(ctx=ctx,
+                          data_1=vidlogger.EVENT_SEARCH,
+                          text_info=artist)
             artistVids.append( self.fetchVideos(artist) )
         return artistVids
 
@@ -269,6 +271,12 @@ class FindVideos(JSONController):
             cachedRes = vidquery.fetchVideos(artist)
             self.mem.set(cacheKey, cachedRes)
         return cachedRes
+
+class ClientLogger(JSONController):
+    def respond(self, ctx):
+        args = dict( [ (k, v[0]) for k, v in ctx.args.iteritems() ] )
+        vidlogger.log(ctx=ctx, **args)
+        return True
 
 class FindSimilar(JSONController):    
     def respond(self, ctx):
