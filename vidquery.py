@@ -137,7 +137,7 @@ def _fetchVideos(artistName,
     musicEntries = []
     ytService = gdata.youtube.service.YouTubeService()
     query = gdata.youtube.service.YouTubeVideoQuery()
-    query.vq = artistName.lower()
+    query.vq = artistName.lower() 
     query.orderby = orderby
     query.racy = 'include'
     query.max_results=50

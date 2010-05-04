@@ -15,6 +15,7 @@ from twisted.web2.http_headers import Cookie
 import lastfm
 import pylast
 import vidquery
+import vidmapper
 import config
 import vidlogger
 import genres
@@ -29,12 +30,13 @@ class FBRequest(object):
     def __getattr__(self, name):
         return getattr(self._req, name)
         
-    def setCookie(self, response, name, value, domain=None, path="/", expires=None):
+    def setCookie(self, response, name, value, domain=None, path="/", expires=None, signed=False):
         """Generates and signs a cookie for the give name/value"""
-        timestamp = str(int(time.time()))
-        value = base64.b64encode(value)
-        signature = self._cookieSignature(value, timestamp)
-        value = "|".join([value, timestamp, signature])
+        if signed:
+            timestamp = str(int(time.time()))
+            value = base64.b64encode(value)
+            signature = self._cookieSignature(value, timestamp)
+            value = "|".join([value, timestamp, signature])
         cookie = Cookie(name, value, path=path, expires=expires, domain=domain)
         response.headers.setHeader('Set-Cookie', [cookie])
 
@@ -59,7 +61,36 @@ class FBRequest(object):
     def getFBSession(self):
         if not getattr(self._req,'_fbSession',None):
                 self._req._fbSession = self._getFBSessionFromCookie()
+                if self._req._fbSession:
+                    uid = vidmapper.tset_fbid(self._req._fbSession['uid'])
         return self._req._fbSession
+
+    def _getFBSessionFromCookie(self):
+        """Parses the cookie set by the official Facebook JavaScript SDK.
+
+        cookies should be a dictionary-like object mapping cookie names to
+        cookie values.
+
+        If the user is logged in via Facebook, we return a dictionary with the
+        keys "uid" and "access_token". The former is the user's Facebook ID,
+        and the latter can be used to make authenticated requests to the Graph API.
+        If the user is not logged in, we return None.
+
+        Download the official Facebook JavaScript SDK at
+        http://github.com/facebook/connect-js/. Read more about Facebook
+        authentication at http://developers.facebook.com/docs/authentication/.
+        """
+        cookie = self.getCookie("fbs_%s" % config.FB_APP_ID)
+        if not cookie: return None
+        args = dict((k, v[-1]) for k, v in cgi.parse_qs(cookie.strip('"')).items())
+        payload = "".join(k + "=" + args[k] for k in sorted(args.keys())
+                          if k != "sig")
+        sig = hashlib.md5(payload + config.FB_APP_SECRET).hexdigest()
+        if sig == args.get("sig") and time.time() < int(args["expires"]):
+            return args
+        else:
+            return None
+
 
     def getFBUser(self):
         if not getattr(self._req, '_fbUser', None):
@@ -158,31 +189,6 @@ class FBRequest(object):
         hits = sorted( hits.items(), key = lambda k: k[1], reverse = True )
         return hits[0][0]
 
-    def _getFBSessionFromCookie(self):
-        """Parses the cookie set by the official Facebook JavaScript SDK.
-
-        cookies should be a dictionary-like object mapping cookie names to
-        cookie values.
-
-        If the user is logged in via Facebook, we return a dictionary with the
-        keys "uid" and "access_token". The former is the user's Facebook ID,
-        and the latter can be used to make authenticated requests to the Graph API.
-        If the user is not logged in, we return None.
-
-        Download the official Facebook JavaScript SDK at
-        http://github.com/facebook/connect-js/. Read more about Facebook
-        authentication at http://developers.facebook.com/docs/authentication/.
-        """
-        cookie = self.getCookie("fbs_%s" % config.FB_APP_ID)
-        if not cookie: return None
-        args = dict((k, v[-1]) for k, v in cgi.parse_qs(cookie.strip('"')).items())
-        payload = "".join(k + "=" + args[k] for k in sorted(args.keys())
-                          if k != "sig")
-        sig = hashlib.md5(payload + config.FB_APP_SECRET).hexdigest()
-        if sig == args.get("sig") and time.time() < int(args["expires"]):
-            return args
-        else:
-            return None
 
 class Controller(resource.Resource):
 
