@@ -63,6 +63,7 @@ class FBRequest(object):
                 self._req._fbSession = self._getFBSessionFromCookie()
                 if self._req._fbSession:
                     uid = vidmapper.tset_fbid(self._req._fbSession['uid'])
+                    print "uid is %s" % uid
         return self._req._fbSession
 
     def _getFBSessionFromCookie(self):
@@ -292,6 +293,34 @@ class FindSimilar(JSONController):
         except pylast.WSError:
             similar = []
         return similar
+
+    def fetchSimilar(self, artist):
+        cacheKey = 'similar_%s' % vidquery._makeMinTitle(artist)
+        cachedRes = self.mem.get(cacheKey)
+        if not cachedRes:
+            cachedRes = lastfm.get_similar(artist)
+            self.mem.set(cacheKey, cachedRes)
+        return cachedRes
+
+class SaveVideo(JSONController):    
+    def respond(self, ctx):
+        saveArgs = ['youtube_id',
+                    'title',
+                    'artist',
+                    'description',
+                    'view_count',
+                    'duration',
+                    'thumbnail_1',
+                    'thumbnail_2',
+                    'thumbnail_3',
+                    'flash_url']
+        vidData = {}
+        for a in saveArgs:
+            vidData[a] = ctx.args.get(a)[0]
+
+        viddb.insert('youtube_videos', _ignore = True, **vidData)
+        
+        return True
 
     def fetchSimilar(self, artist):
         cacheKey = 'similar_%s' % vidquery._makeMinTitle(artist)

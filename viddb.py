@@ -8,8 +8,13 @@ def get_conn():
 def insert(table, **kwargs):
     conn = get_conn()
     cursor = conn.cursor()
-    query_str = "INSERT INTO %s (%s) VALUES (%s)" % \
-        (table, 
+    ignore = ""
+    if '_ignore' in kwargs:
+        ignore = "IGNORE"
+        del kwargs['_ignore']
+    query_str = "INSERT %s INTO %s (%s) VALUES (%s)" % \
+        (ignore,
+         table, 
          ",".join(kwargs.keys()),
          ",".join( [ "'%s'" % conn.escape_string(str(v)) for v in kwargs.values() ] )
          )
