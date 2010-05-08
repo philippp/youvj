@@ -8,7 +8,7 @@ import time
 import cgi
 import urllib
 
-from twisted.web2 import server, http, resource, channel
+from twisted.web2 import server, http, resource, channel, stream
 from twisted.web2 import static, http_headers, responsecode
 from twisted.web2.http_headers import Cookie
 
@@ -42,10 +42,17 @@ class FBRequest(object):
 
     def getCookie(self, name, default=''):
         cookies = self._req.headers.getHeader('cookie') or []
+        value = default
         for c in cookies:
             if c.name == name:
-                return c.value
-        return default
+                cparts = c.value.split('|')
+                value = c.value
+                if len(cparts) == 3:
+                    value, tstamp, sig = cparts
+                    realsig = self._cookieSignature(value, tstamp)
+                    value = base64.b64decode(value)
+                    assert sig == realsig
+        return value
 
     def _cookieSignature(self, *parts):
         """Generates a cookie signature.
@@ -58,13 +65,38 @@ class FBRequest(object):
         return hash.hexdigest()
         
 
-    def getFBSession(self):
-        if not getattr(self._req,'_fbSession',None):
-                self._req._fbSession = self._getFBSessionFromCookie()
-                if self._req._fbSession:
-                    uid = vidmapper.tset_fbid(self._req._fbSession['uid'])
-                    print "uid is %s" % uid
-        return self._req._fbSession
+    def _getFBSession(self):
+        self._req._fb_session = getattr(self._req,'_fb_session',None)
+        if not self._req._fb_session:
+            self._req._fb_session = self._getFBSessionFromCookie()
+        return self._req._fb_session
+
+    def getSession(self):
+        fb_session = self._getFBSession()
+        session = {}
+
+        if not fb_session:
+            self.setSession(0)
+            return  {'fb':{}, 'uid':0}
+            
+        self._req._uvj_session = getattr(self._req, '_uvj_session', {})
+        uvj_has_fb = not self._req._uvj_session.get('fb',None)
+
+        if not self._req._uvj_session or ( fb_session and not uvj_has_fb ):
+            _sess_str = self.getCookie('uvj_session')
+            _sess = _sess_str and cgi.parse_qs(_sess_str) or {}
+            _sess = dict([ (k,len(v) == 1 and v[0] or v) for k, v in _sess.iteritems()])
+            self._req._uvj_session = _sess
+            if fb_session and not self._req._uvj_session:
+                self.setSession(vidmapper.tset_fbid(fb_session["uid"]))
+        session = self._req._uvj_session.copy()
+        session['fb'] = fb_session
+        return session
+
+    def setSession(self, user_id):
+        self._req._uvj_session = {'uid':user_id}
+        session_str = urllib.urlencode(self._req._uvj_session)
+        self.setCookie(self._req.response, 'uvj_session',session_str,signed=True)
 
     def _getFBSessionFromCookie(self):
         """Parses the cookie set by the official Facebook JavaScript SDK.
@@ -92,35 +124,39 @@ class FBRequest(object):
         else:
             return None
 
+    def getUser(self):
+        return {'fb':self.getFBUser()}
 
     def getFBUser(self):
+        fb_session = self.getSession()['fb']
         if not getattr(self._req, '_fbUser', None):
-            self._req._fbUser = self.mem.get('_fbUser_%s' % self._req._fbSession['uid'])
+            self._req._fbUser = self.mem.get('_fbUser_%s' % fb_session['uid'])
         if not self._req._fbUser:
-            fbApi = facebook.GraphAPI(self._req._fbSession['access_token'])
+            fbApi = facebook.GraphAPI(fb_session['access_token'])
             try:
-                self._req._fbUser = fbApi.get_object(self._req._fbSession['uid'])
+                self._req._fbUser = fbApi.get_object(fb_session['uid'])
             except facebook.GraphAPIError, e:
                 print e.code
                 return None
             musicEntries = fbApi.request_old('users.getInfo',
                                              {'fields':'music',
-                                              'uids':self._req._fbSession['uid'],
+                                              'uids':fb_session['uid'],
                                               'format':'json'
                                               })
             musicList = musicEntries[0].get('music','') or ''
             self._req._fbUser['bands'] = [mE.strip() for mE in musicList.split(',')]
-            self.mem.set('_fbUser_%s' % self._req._fbSession['uid'], self._req._fbUser)
+            self.mem.set('_fbUser_%s' % fb_session['uid'], self._req._fbUser)
 
         return self._req._fbUser
 
     def getFBFriends(self):
+        fb_session = self.getSession()['fb']
         if getattr(self._req, '_fbFriends', None):
             return self._req._fbFriends
-        self._req._fbFriends = self.mem.get('_fbFriends_%s' % self._req._fbSession['uid'])
+        self._req._fbFriends = self.mem.get('_fbFriends_%s' % fb_session['uid'])
         if not self._req._fbFriends:
             self._req._fbFriends = self._loadFBFriends()
-            self.mem.set('_fbFriends_%s' % self._req._fbSession['uid'], self._req._fbFriends)
+            self.mem.set('_fbFriends_%s' % fb_session['uid'], self._req._fbFriends)
         return self._req._fbFriends
             
 
@@ -138,8 +174,9 @@ class FBRequest(object):
     def _loadFBFriends(self):
         '''load the fb friends list for a user into memory, along with their
         music preferences'''
-        fbApi = facebook.GraphAPI(self._req._fbSession['access_token'])
-        friends = fbApi.get_connections(self._req._fbSession['uid'], 'friends')['data']
+        fb_session = self.getSession()['fb']
+        fbApi = facebook.GraphAPI(fb_session['access_token'])
+        friends = fbApi.get_connections(fb_session['uid'], 'friends')['data']
 
         friends = dict([(int(f['id']),f) for f in friends])
         t1 = time.time()
@@ -239,11 +276,15 @@ class JSONController(Controller, resource.PostableResource):
         pass
 
     def render(self, ctx):
-        return http.Response(
+
+        resp = http.Response(
             responsecode.OK,
             {'last-modified': self.creation_time,
-            'content-type': self.content_type},
-            json.dumps(self.respond(FBRequest(ctx, self.mem))))
+            'content-type': self.content_type})
+        ctx.response = resp
+        resp_str = json.dumps(self.respond(FBRequest(ctx, self.mem)))
+        resp.stream = stream.IByteStream(resp_str)
+        return resp
 
 class HTMLController(Controller, resource.PostableResource):
     creation_time = time.time()
@@ -253,11 +294,14 @@ class HTMLController(Controller, resource.PostableResource):
         pass
 
     def render(self, ctx):
-        return http.Response(
+        resp = http.Response(
             responsecode.OK,
             {'last-modified': self.creation_time,
-            'content-type': self.content_type},
-            self.respond(FBRequest(ctx, self.mem)))
+            'content-type': self.content_type})
+        ctx.response = resp
+        resp_str = self.respond(FBRequest(ctx, self.mem))
+        resp.stream = stream.IByteStream(resp_str)
+        return resp
 
 class FindVideos(JSONController):    
     def respond(self, ctx):
@@ -304,6 +348,7 @@ class FindSimilar(JSONController):
 
 class SaveVideo(JSONController):    
     def respond(self, ctx):
+        
         saveArgs = ['youtube_id',
                     'title',
                     'artist',
@@ -339,17 +384,17 @@ class Toplevel(HTMLController):
         if self.init_args.get('problempath',None):
              template_args['onLoadSearch'] = self.init_args['problempath'].split(',')
 
-        if ctx.getFBSession():
-            profile = ctx.getFBUser()
+        if ctx.getSession()['fb']:
+            profile = ctx.getUser()['fb']
             if profile:
-                template_args['fbSession'] = ctx.getFBSession()
+                template_args['fbSession'] = ctx.getSession()['fb']
                 template_args['fbUser'] = profile
 
         return self.template("index", **template_args)
 
 class FBFriends(JSONController):    
     def respond(self, ctx):
-        ctx.getFBSession()
+        ctx.getSession()
         fbFriends = ctx.getFBFriends()
         return fbFriends
 

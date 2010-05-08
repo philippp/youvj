@@ -10,7 +10,7 @@ EVENT_FB_LOGOFF = 7
 
 def log(*args, **kwargs):
     if 'ctx' in kwargs:
-        sess = kwargs['ctx'].getFBSession()
+        sess = kwargs['ctx'].getSession()
         if sess:
             kwargs['fbid'] = sess['uid']
         del kwargs['ctx']
