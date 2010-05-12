@@ -603,7 +603,7 @@ var renderPlayer = function(videoInfo){
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
 
-  if( UVJ.favorites.indexOf(videoInfo['youtube_id']) >= 0 ){
+  if( UVJ.favorites && UVJ.favorites.indexOf && UVJ.favorites.indexOf(videoInfo['youtube_id']) >= 0 ){
     $('.player-save').hide();
     $('.player-unsave').show();
   }else{
@@ -693,3 +693,13 @@ var unique = function(a)
   return r;
 };
 
+  if(!Array.indexOf){
+    Array.prototype.indexOf = function(obj){
+      for(var i=0; i<this.length; i++){
+      if(this[i]==obj){
+        return i;
+        }
+      }
+      return -1;
+    };
+  }
