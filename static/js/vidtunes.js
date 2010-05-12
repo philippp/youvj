@@ -646,7 +646,8 @@ var jsonPost = function(path, params, success, fail){
     $.post(path,
 	   params,
 	   function(resp){
-	       try{
+             if( resp.length == 0 ) resp = "0";
+	     try{
 		   resp = eval("("+resp+")");
 	       }catch(e){
                  alert(e);
