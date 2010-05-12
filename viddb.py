@@ -52,12 +52,23 @@ def load(table, col_list, where=''):
     cursor.close()
     return rows
 
-def delete(table, where=''):
+def delete(table, where):
     conn = get_conn()
     cursor = conn.cursor()
     query_str = "DELETE FROM %s" % table
-    if where:
-        query_str += " WHERE "+where
+    query_str += " WHERE "+where
+    cursor.execute(query_str)
+    rows = cursor.fetchall()
+    cursor.close()
+    return rows
+
+def update(table, set_dict, where):
+    conn = get_conn()
+    cursor = conn.cursor()
+    set_str = ','.join(['='.join(i) for i in set_dict.items()])
+    query_str = "UPDATE %s SET %s WHERE %s" % \
+        (table, set_str, where)
+    query_str += " WHERE "+where
     cursor.execute(query_str)
     rows = cursor.fetchall()
     cursor.close()

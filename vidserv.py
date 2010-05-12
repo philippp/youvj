@@ -150,7 +150,10 @@ class FBRequest(object):
                                               'uids':fb_session['uid'],
                                               'format':'json'
                                               })
-            musicList = musicEntries[0].get('music','') or ''
+            if type(musicEntries) == dict and musicEntries.get('error_code',0):
+                musicList = ''
+            else:
+                musicList = musicEntries and musicEntries[0].get('music','') or ''
             self._req._fbUser['bands'] = [mE.strip() for mE in musicList.split(',')]
             self.mem.set('_fbUser_%s' % fb_session['uid'], self._req._fbUser)
 
@@ -193,6 +196,9 @@ class FBRequest(object):
                                           'format':'json'
                                           })
         artistRanking = {}
+
+        if type(musicEntries) == dict and musicEntries.get('error_code',0):
+            musicEntries = []
 
         for mE in musicEntries:
             if not mE['music']:
