@@ -86,6 +86,7 @@ def _replaceUmlauts(minTitle):
     if type(minTitle) == str:
         minTitle = unicode(minTitle, 'utf-8')
 
+    # from http://webdesign.about.com/library/bl_htmlcodes.htm
     umMap = {252:u'u',
              220:u'u',
              246:u'o', #Lowercase O-umlaut
@@ -102,6 +103,7 @@ def _replaceUmlauts(minTitle):
              201:u'e', #Capital E-acute
              234:u'e', #Lowercase E-circumflex
              243:u'o', #Lowercase O-acute
+             248:u'o', #Lowercase O-slash
              }
     for k, v in umMap.items():
             minTitle = minTitle.replace(unichr(k), v)
@@ -144,7 +146,7 @@ def _fetchVideos(artistName,
     query.format = '5'
     feed = ytService.YouTubeQuery(query)
     _blockWords = ['unofficial','parody','anime']
-    artistName = _makeMinTitle(artistName)
+    artistNameMin = _makeMinTitle(artistName)
 
     for entry in feed.entry:
         origTitle = str(entry.media.title.text.lower())
@@ -166,21 +168,22 @@ def _fetchVideos(artistName,
                 break
         if _blockFound:
             continue
-        artistNameL = artistName.lower()
-        if re.search("^(.*feat)?(.*vs)?"+artistName+"(feat.*)?(vs.*)?\-", vidTitle):
+        artistNameMinL = artistNameMin.lower()
+        if re.search("^(.*feat)?(.*vs)?"+artistNameMin+"(feat.*)?(vs.*)?\-", vidTitle):
             prettyTitle = '-'.join(origTitle.split('-')[1:]).lstrip()
-        elif re.search("\-(.*feat)?(.*vs)?"+artistNameL+"(feat.*)?(vs.*)?$", vidTitle):
+        elif re.search("\-(.*feat)?(.*vs)?"+artistNameMinL+"(feat.*)?(vs.*)?$", vidTitle):
             prettyTitle = '-'.join(origTitle.split('-')[:1]).lstrip()
-        elif re.search("[^\"]*(.*feat)?(.*vs)?"+artistNameL+'(feat.*)?(vs.*)?\"[^\"]+\"',vidTitle):
+        elif re.search("[^\"]*(.*feat)?(.*vs)?"+artistNameMinL+'(feat.*)?(vs.*)?\"[^\"]+\"',vidTitle):
             prettyTitle = origTitle.split('"')[1]
         else:
             if (track_code and pageURL) and track_code in pageURL:
                 log("Eliminated %s because it did not match %s" % 
-                    (vidTitle, artistNameL) )
+                    (vidTitle, artistNameMinL) )
             continue
         vidTitle = _makeMinTitle(prettyTitle)
         vidTitle = vidTitle.replace("\"","")
         entryDict = {
+            'youtube_id':entry.id.text.split('/')[-1],
             'artist':artistName,
             'title':prettyTitle,
             'match_title':vidTitle,
@@ -189,8 +192,12 @@ def _fetchVideos(artistName,
             'flash_url':entry.GetSwfUrl(),
             'duration':entry.media.duration.seconds,
             'view_count':entry.statistics and entry.statistics.view_count or 0,
-            'thumbnails':[t.url for t in entry.media.thumbnail]
             }
+        i = 1
+        for t in entry.media.thumbnail:
+            entryDict['thumbnail_%s'%i] = t.url
+            i += 1
+
         if entryDict['flash_url']:
             musicEntries.append(entryDict)
         else:

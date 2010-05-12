@@ -80,7 +80,7 @@ FBC2.PostStream = function(vidEntry){
   var media = {
     "type":"flash",
     "swfsrc" : vidEntry['flash_url'],
-    "imgsrc" : vidEntry['thumbnails'][0],
+    "imgsrc" : vidEntry['thumbnail_1'],
     "width" : "130",
     "height" : "97",
     "expanded_width" : "480",
@@ -213,7 +213,7 @@ UVJ.searchArtists = function(artistNames){
            ).append(
              $("<input type='submit' value='Find'/>")
            ).submit(function(e){ UVJ.searchInline(); })
-  );
+  ).append($("<a href='#'>Saved Videos</a>").click(function(){UVJ.loadSaved();}));
 
   $(".default-text", searchHeader).focus(function(srcc){
     if ($(this).val() == $(this)[0].title){
@@ -397,25 +397,32 @@ var loadVideosCallback = function(resp, artistName){
   $("#video-loader").hide();
   $("#videoInfo-artist").show();
   for( var i=0; i < resp[0].length; i++){
-    renderVideo(resp[0][i]).insertBefore($("#similar-artist-divider"));
+    UVJ.renderVideo(resp[0][i]).insertBefore($("#similar-artist-divider"));
   }
   if( resp[0].length == 0 ){
     $("<div class='message'>Sorry, nothing found.</>").insertBefore($("#similar-artist-divider"));
   }
 };
 
-var renderVideo = function(videoInfo){
+UVJ.renderVideos = function(videoInfoEntries){
+  $('.videoInfo, .message, #video-loader, #videoInfo-artist').remove();
+  for( var i=0; i < videoInfoEntries.length; i++){
+    UVJ.renderVideo(videoInfoEntries[i]).insertBefore($("#similar-artist-divider"));
+  }
+};
+
+UVJ.renderVideo = function(videoInfo){
   var vid = $('<div class="videoInfo"></div>').append(
     $('<div class="title"></div>').text(videoInfo['title'])
   ).append(
     $('<div class="description"></div>').text(videoInfo['description'])
   ).append(
     $('<div class="screencaps"></div>').append(
-      $('<img class="t0" src="'+videoInfo['thumbnails'][0]+'"/>')
+      $('<img class="t0" src="'+videoInfo['thumbnail_1']+'"/>')
     ).append(
-      $('<img class="t1" src="'+videoInfo['thumbnails'][1]+'"/>')
+      $('<img class="t1" src="'+videoInfo['thumbnail_2']+'"/>')
     ).append(
-      $('<img class="t2" src="'+videoInfo['thumbnails'][2]+'"/>')
+      $('<img class="t2" src="'+videoInfo['thumbnail_3']+'"/>')
     ).append(
       $('<div class="screenspace">&nbsp;</div>')
     )
@@ -432,6 +439,55 @@ var renderVideo = function(videoInfo){
   $('.screencaps',vid).click(function(){renderPlayer(videoInfo);});
   $('a',vid).button();
   return vid;
+};
+
+UVJ.unSaveVideo = function( youtube_id ){
+  jsonPost('/unsavevideo',
+           {'youtube_id':youtube_id},
+           UVJ.unSaveVideoCallback);
+};
+
+UVJ.unSaveVideoCallback = function( resp ){
+
+};
+
+UVJ.saveVideo = function( videoInfo ){
+  var toSend = {}, i = 0;
+  var sameArgs = ['title',
+                  'artist',
+                  'description',
+                  'view_count',
+                  'duration',
+                  'flash_url',
+                  'youtube_id',
+                  'thumbnail_1',
+                  'thumbnail_2',
+                  'thumbnail_3'];
+  for( i=0; i < sameArgs.length; i++ ){
+    toSend[sameArgs[i]] = videoInfo[sameArgs[i]];
+  }
+
+
+
+  jsonPost('/savevideo',
+           toSend,
+           UVJ.saveVideoCallback
+          );
+};
+
+UVJ.saveVideoCallback = function( resp ){
+
+};
+
+UVJ.loadSaved = function(){
+  jsonPost('/listsavedvideos',
+           {},
+           function(resp){UVJ.loadSavedCallback(resp);}
+          );
+};
+
+UVJ.loadSavedCallback = function(resp){
+  UVJ.renderVideos(resp);
 };
 
 var loadSimilar = function(artistName){
@@ -528,12 +584,37 @@ var renderPlayer = function(videoInfo){
       function(){ FBC2.PostStream(videoInfo); }
     )
   ).append(
+   $('<a href="#" class="player-save">Save video</a>').click(function(){
+     UVJ.saveVideo(videoInfo);
+     $('.player-save').hide();
+     $('.player-unsave').show();
+     UVJ.favorites[UVJ.favorites.length] = videoInfo['youtube_id'];
+   })
+  ).append(
+   $('<a href="#" class="player-unsave">Unsave video</a>').click(function(){
+     UVJ.unSaveVideo(videoInfo['youtube_id']);
+     $('.player-unsave').hide();
+     $('.player-save').show();
+     UVJ.favorites.splice(UVJ.indexOf(videoInfo['youtube_id']), 1);
+   })
+  ).append(
     $('<div class="player-title">'+videoInfo['title']+'</div>')
   ).append(
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
+
+  if( UVJ.favorites.indexOf(videoInfo['youtube_id']) >= 0 ){
+    $('.player-save').hide();
+    $('.player-unsave').show();
+  }else{
+    $('.player-unsave').hide();
+    $('.player-save').show();
+  }
+
   $('#featureVideo').show();
 };
+
+
 
 var flipImages = function(e){
   flipImages.counter++;

@@ -1,6 +1,21 @@
 import config
 import MySQLdb
 
+COLS = {
+    'youtube_videos':[
+        'youtube_id',
+        'title',
+        'artist',
+        'description',
+        'view_count',
+        'duration',
+        'thumbnail_1',
+        'thumbnail_2',
+        'thumbnail_3',
+        'flash_url'
+        ]
+}
+
 def get_conn():
     conn = MySQLdb.connect( **config.db )
     return conn
@@ -32,6 +47,17 @@ def load(table, col_list, where=''):
     if where:
         query_str += " WHERE "+where
 
+    cursor.execute(query_str)
+    rows = cursor.fetchall()
+    cursor.close()
+    return rows
+
+def delete(table, where=''):
+    conn = get_conn()
+    cursor = conn.cursor()
+    query_str = "DELETE FROM %s" % table
+    if where:
+        query_str += " WHERE "+where
     cursor.execute(query_str)
     rows = cursor.fetchall()
     cursor.close()

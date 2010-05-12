@@ -18,6 +18,7 @@ import vidquery
 import vidmapper
 import config
 import vidlogger
+import viddb
 import genres
 from lib import memcache, facebook, minifb
 
@@ -80,14 +81,16 @@ class FBRequest(object):
             return  {'fb':{}, 'uid':0}
             
         self._req._uvj_session = getattr(self._req, '_uvj_session', {})
-        uvj_has_fb = not self._req._uvj_session.get('fb',None)
+        uvj_has_fb = self._req._uvj_session.get('fb',None)
 
         if not self._req._uvj_session or ( fb_session and not uvj_has_fb ):
             _sess_str = self.getCookie('uvj_session')
             _sess = _sess_str and cgi.parse_qs(_sess_str) or {}
             _sess = dict([ (k,len(v) == 1 and v[0] or v) for k, v in _sess.iteritems()])
+
+            _sess['uid'] = int(_sess.get('uid','0'))
             self._req._uvj_session = _sess
-            if fb_session and not self._req._uvj_session:
+            if fb_session and not self._req._uvj_session['uid']:
                 self.setSession(vidmapper.tset_fbid(fb_session["uid"]))
         session = self._req._uvj_session.copy()
         session['fb'] = fb_session
@@ -125,10 +128,14 @@ class FBRequest(object):
             return None
 
     def getUser(self):
-        return {'fb':self.getFBUser()}
+        sess = self.getSession()
+        return {'id':sess['uid'], 'fb':self.getFBUser()}
 
     def getFBUser(self):
         fb_session = self.getSession()['fb']
+        if not fb_session.get('uid',0):
+            return {}
+
         if not getattr(self._req, '_fbUser', None):
             self._req._fbUser = self.mem.get('_fbUser_%s' % fb_session['uid'])
         if not self._req._fbUser:
@@ -348,47 +355,56 @@ class FindSimilar(JSONController):
 
 class SaveVideo(JSONController):    
     def respond(self, ctx):
-        
-        saveArgs = ['youtube_id',
-                    'title',
-                    'artist',
-                    'description',
-                    'view_count',
-                    'duration',
-                    'thumbnail_1',
-                    'thumbnail_2',
-                    'thumbnail_3',
-                    'flash_url']
+        uid = ctx.getSession()['uid']
+        if not uid:
+            return False
+
+        saveArgs = viddb.COLS['youtube_videos']
         vidData = {}
         for a in saveArgs:
             vidData[a] = ctx.args.get(a)[0]
+        vidData['description'] = vidData['description'][:255]
 
-        viddb.insert('youtube_videos', _ignore = True, **vidData)
+        vidmapper.saveVideo(vidData, uid)
         
         return True
 
-    def fetchSimilar(self, artist):
-        cacheKey = 'similar_%s' % vidquery._makeMinTitle(artist)
-        cachedRes = self.mem.get(cacheKey)
-        if not cachedRes:
-            cachedRes = lastfm.get_similar(artist)
-            self.mem.set(cacheKey, cachedRes)
-        return cachedRes
+
+class ListSavedVideos(JSONController):    
+    def respond(self, ctx):
+        uid = ctx.getSession()['uid']
+        if not uid:
+            return []
+        yids = vidmapper.listSavedVideos(uid)
+        vids = vidmapper.retrieveVideos(yids)
+        return vids
+
+class UnSaveVideo(JSONController):    
+    def respond(self, ctx):
+        uid = ctx.getSession()['uid']
+        youtube_id = ctx.args.get('youtube_id')[0]
+        vidmapper.unSaveVideo(youtube_id, uid)
+        return 1
 
 class Toplevel(HTMLController):
     addSlash = True
     def respond(self, ctx):
         arguments = dict( (k,v[0]) for k,v in ctx.args.iteritems() )
         
-        template_args = {}
+        user = ctx.getUser()
+        template_args = {
+            'fbSession':ctx.getSession()['fb'],
+            'fbUser':ctx.getUser()['fb'],
+            'user':ctx.getSession()['uid']
+            }
+
+        if user.get('id',0):
+            template_args['favorites'] = vidmapper.listSavedVideos(user['id'])
+        else:
+            template_args['favorites'] = []
         if self.init_args.get('problempath',None):
              template_args['onLoadSearch'] = self.init_args['problempath'].split(',')
 
-        if ctx.getSession()['fb']:
-            profile = ctx.getUser()['fb']
-            if profile:
-                template_args['fbSession'] = ctx.getSession()['fb']
-                template_args['fbUser'] = profile
 
         return self.template("index", **template_args)
 

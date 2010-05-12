@@ -69,14 +69,11 @@ Look for videos
       #if $hasVar('onLoadSearch')
       UVJ.onLoadSearch = $json.dumps($onLoadSearch);
       #end if
-
+      UVJ.favorites = $json.dumps($favorites);
       var FBC2 = {};
-      #if $hasVar('fbUser')
       FBC2.fbSession = $json.dumps($fbSession);
       FBC2.user = $json.dumps($fbUser);
-      #else
-      FBC2.user = {};
-      #end if
+
     </script> 
     <script src="/js/vidtunes.js" type="text/javascript"></script>
       
