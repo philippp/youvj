@@ -23,7 +23,7 @@ SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `playlist_youtube_map`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-CREATE TABLE `user_youtube_map` (
+CREATE TABLE `playlist_youtube_map` (
   `id` int(64) unsigned NOT NULL auto_increment,
   `playlist_id` int(64) NOT NULL,
   `youtube_id` varchar(16) NOT NULL,
@@ -37,15 +37,17 @@ CREATE TABLE `user_youtube_map` (
 SET character_set_client = @saved_cs_client;
 
 --
--- Table structure for table `user_playlist_map`
+-- Table structure for table `playlists`
 --
-DROP TABLE IF EXISTS `user_playlist_map`;
+DROP TABLE IF EXISTS `playlists`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-CREATE TABLE `user_playlist_map` (
+CREATE TABLE `playlists` (
   `id` int(64) unsigned NOT NULL auto_increment,
   `user_id` int(64) NOT NULL,
-  `playlist_id` varchar(16) NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `subdomain` varchar(100) DEFAULT NULL,
+  `deleted_at` timestamp default NULL,
   `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX us (user_id)

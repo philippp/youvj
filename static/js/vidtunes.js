@@ -643,19 +643,9 @@ var jsonPost = function(path, params, success, fail){
     if( !fail ){
 	fail = alert;
     }
-    $.post(path,
+    $.getJSON('http://notphil.com:8080'+path,
 	   params,
-	   function(resp){
-             if( resp.length == 0 ) resp = "0";
-	     try{
-		   resp = eval("("+resp+")");
-	       }catch(e){
-                 alert(e);
-               }
-	       success(resp);
-	   },
-	   fail,
-	   'json'
+	   success
 	   );
 };
 

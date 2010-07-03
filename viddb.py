@@ -13,17 +13,27 @@ COLS = {
         'thumbnail_2',
         'thumbnail_3',
         'flash_url'
+        ],
+    'playlists':[
+        'id',
+        'user_id',
+        'title',
+        'subdomain',
+        'created_at'
         ]
 }
+
+def get_cursor():
+    conn = MySQLdb.connect( **config.db )
+    return conn.cursor()
 
 def get_conn():
     conn = MySQLdb.connect( **config.db )
     return conn
 
-def insert(table, **kwargs):
-    conn = get_conn()
-    cursor = conn.cursor()
+def insert(conn, table, **kwargs):
     ignore = ""
+    cursor = conn.cursor()
     if '_ignore' in kwargs:
         ignore = "IGNORE"
         del kwargs['_ignore']
@@ -38,8 +48,7 @@ def insert(table, **kwargs):
     cursor.close()
     return last_id
 
-def load(table, col_list, where=''):
-    conn = get_conn()
+def load(conn, table, col_list, where=''):
     cursor = conn.cursor()
     query_str = "SELECT %s FROM %s" % \
         (",".join(col_list),
@@ -50,10 +59,9 @@ def load(table, col_list, where=''):
     cursor.execute(query_str)
     rows = cursor.fetchall()
     cursor.close()
-    return rows
+    return [ dict( zip( col_list, r ) ) for r in rows ]
 
-def delete(table, where):
-    conn = get_conn()
+def delete(conn, table, where):
     cursor = conn.cursor()
     query_str = "DELETE FROM %s" % table
     query_str += " WHERE "+where
@@ -62,8 +70,7 @@ def delete(table, where):
     cursor.close()
     return rows
 
-def update(table, set_dict, where):
-    conn = get_conn()
+def update(conn, table, set_dict, where):
     cursor = conn.cursor()
     set_str = ','.join(['='.join(i) for i in set_dict.items()])
     query_str = "UPDATE %s SET %s WHERE %s" % \

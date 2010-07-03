@@ -16,4 +16,5 @@ def log(*args, **kwargs):
         del kwargs['ctx']
     keylist = ['session_id','fbid','data_1','data_2','data_3','data_4','data_5','data_6','text_info']
     #[ assert (k in keylist) for k in kwargs.keys() ]
-    viddb.insert('log', **kwargs)
+    conn = viddb.get_conn()
+    viddb.insert(conn, 'log', **kwargs)

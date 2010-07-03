@@ -91,7 +91,8 @@ class FBRequest(object):
             _sess['uid'] = int(_sess.get('uid','0'))
             self._req._uvj_session = _sess
             if fb_session and not self._req._uvj_session['uid']:
-                self.setSession(vidmapper.tset_fbid(fb_session["uid"]))
+                self.setSession(vidmapper.tset_fbid(viddb.get_conn(),
+                                                    fb_session["uid"]))
         session = self._req._uvj_session.copy()
         session['fb'] = fb_session
         return session
@@ -289,7 +290,6 @@ class JSONController(Controller, resource.PostableResource):
         pass
 
     def render(self, ctx):
-
         resp = http.Response(
             responsecode.OK,
             {'last-modified': self.creation_time,
@@ -329,6 +329,7 @@ class FindVideos(JSONController):
         return artistVids
 
     def fetchVideos(self, artist):
+        print "in fetchVideos"
         cacheKey = 'videos_%s' % vidquery._makeMinTitle(artist)
         cachedRes = self.mem.get(cacheKey)
         if not cachedRes:
@@ -364,14 +365,12 @@ class SaveVideo(JSONController):
         uid = ctx.getSession()['uid']
         if not uid:
             return False
-
         saveArgs = viddb.COLS['youtube_videos']
         vidData = {}
         for a in saveArgs:
             vidData[a] = ctx.args.get(a)[0]
         vidData['description'] = vidData['description'][:255]
-
-        vidmapper.saveVideo(vidData, uid)
+        vidmapper.saveVideo(viddb.get_conn(), vidData, uid)
         
         return True
 
@@ -381,15 +380,16 @@ class ListSavedVideos(JSONController):
         uid = ctx.getSession()['uid']
         if not uid:
             return []
-        yids = vidmapper.listSavedVideos(uid)
-        vids = vidmapper.retrieveVideos(yids)
+        conn = viddb.get_conn()
+        yids = vidmapper.listSavedVideos(conn, uid)
+        vids = vidmapper.retrieveVideos(conn, yids)
         return vids
 
 class UnSaveVideo(JSONController):    
     def respond(self, ctx):
         uid = ctx.getSession()['uid']
         youtube_id = ctx.args.get('youtube_id')[0]
-        vidmapper.unSaveVideo(youtube_id, uid)
+        vidmapper.unSaveVideo(viddb.get_conn(), youtube_id, uid)
         return 1
 
 class Toplevel(HTMLController):
@@ -405,7 +405,7 @@ class Toplevel(HTMLController):
             }
 
         if user.get('id',0):
-            template_args['favorites'] = vidmapper.listSavedVideos(user['id'])
+            template_args['favorites'] = vidmapper.listSavedVideos(viddb.get_conn(), user['id'])
         else:
             template_args['favorites'] = []
         if self.init_args.get('problempath',None):
