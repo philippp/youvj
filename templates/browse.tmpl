@@ -1,0 +1,20 @@
+#extends base
+#import config
+#import json
+
+#def head()
+#end def
+
+#def title()
+You are the VJ with youvj!
+#end def
+
+#def body()
+<dev id="top"></dev>
+<dev id="middle">
+</dev>
+<dev id="bottom"></dev>
+<script>
+	var artistVids = $json.dumps($artistVids);
+</script>
+#end def

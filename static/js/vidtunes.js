@@ -1,3 +1,190 @@
+$(document).ready(function(){
+  $('#queryForm').dialog({ autoOpen: false,
+                           title : 'Search Artists',
+                           buttons: { "OK": function() { UVJ.searchArtists(parseArtistNames( $('#artistnames').val() )); $(this).dialog("close"); } }});
+
+  $('#friendForm').dialog({ autoOpen: false,
+                            width: '560px',
+                            title : "Browse your Friends' Favorites"});
+
+
+  $('#search').click(function(){
+                       $('#queryForm').show();
+                       $('#queryForm').dialog('open');
+                     });
+  $('#search').hide();
+  $('#welcome-search').button().click(
+    function(){UVJ.searchArtists(parseArtistNames( $('#welcome-artistnames').val() ));}
+  );
+
+  $('#videos').css({'height':$(document).height()});
+  if( UVJ.onLoadSearch ){
+    UVJ.searchArtists(UVJ.onLoadSearch);
+  }else{
+    UVJ.searchArtists([]);
+  };
+  FBC2.init();
+});
+
+FBC2.makeMenuArtistTitle = function(f){
+  return $('<span></span>').append(
+  $("<img class='menu-artist-title-pic' align='left' src='"+FBC2.user_pic(f['id'])+"' alt='profile pic'/>")
+  ).append(
+    $("<div class='medium menu-artist-title-name'>"+f['name']+"</div>")
+  );
+};
+
+
+FBC2.user_pic = function(id, size){
+  if( !size ){
+    size = 'square';
+  }
+  return "http://graph.facebook.com/"+id+"/picture?type="+size;
+};
+
+FBC2.user.renderBands = function(){
+  $("#artistGrouping_u"+FBC2.user.id).remove();
+  renderArtistsGrouping(FBC2.user.bands,
+                FBC2.makeMenuArtistTitle(FBC2.user),
+                "_u"+FBC2.user.id);
+};
+
+FBC2.init = function(){
+  if( FBC2.user.id ){
+    FBC2.user['pic_square'] = FBC2.user_pic(FBC2.user.id);
+    var user_box = document.getElementById("fb-login");
+    user_box.innerHTML = "<div id='fb-login-userpic' class='fb-login-pic''>" + "<img src='"+FBC2.user_pic(FBC2.user.id)+"'/></div>" +
+      "Logged in as: "+FBC2.user.name+"</span><br/><a href='#' onclick='FBCLogout();'>Logout</a>";
+    $("#fb_logout_image").show();
+    $('#fb-login-userpic').click(FBC2.user.renderBands);
+    $('#fb-explain').hide();
+    $('#fb-friends').show();
+    $('#fb-friends-pager-up').click(function(){FBC2.renderFriends(-1); return false;});
+    $('#fb-friends-pager-down').click(function(){FBC2.renderFriends(1); return false;});
+    $('#fb-friends-list').html("Loading friends, please wait...");
+    FBC2.loadFriends();
+  }
+};
+
+var FBCLogin = function(){
+  window.location.reload();
+};
+
+var FBCLogout = function(){
+  FB.logout(function(response){ window.location.reload(); });
+};
+
+
+FBC2.PostStream = function(vidEntry){
+
+  var media = {
+    "type":"flash",
+    "swfsrc" : vidEntry['flash_url'],
+    "imgsrc" : vidEntry['thumbnail_1'],
+    "width" : "130",
+    "height" : "97",
+    "expanded_width" : "480",
+    "expanded_height" : "385"
+    };
+
+  FB.ui(
+    {
+      method:'stream.publish',
+      message:'Check out this video',
+      action_links : [{'text':"See all videos", 'href':'http://youvj.com'}],
+      user_prompt_message: 'Share this video on your wall',
+      attachment : { 'name': vidEntry['title'],
+                 'href': ' http://youvj.com',
+                 'caption': '{*actor*} found this music video',
+                 'description': vidEntry['description'],
+                 'media': [ media ]
+                 }
+    }
+  );
+  UVJ.log({'data_1':4, 'text_info':vidEntry['flash_url']});
+};
+
+FBC2.loadFriends = function(){
+  if( FBC2.friends ){
+    FBC2._browseFriends(FBC2.friends);
+  }else{
+    jsonPost('/fb_friends',
+             {},
+             function(resp){ FBC2._onLoadFriends(resp); }
+    );
+  }
+};
+
+FBC2._onLoadFriends = function(friends){
+  FBC2.friends = friends;
+  $('#fb-friends-pager').show();
+  FBC2.renderFriends();
+};
+
+
+
+/**
+ * Render friend pages
+ * @int pageDir - 0 for first page, -1 for previous page (if available), +1 for next page
+ */
+FBC2.renderFriends = function(pageDir){
+
+  var friendCount = Math.floor( ($(window).width() - $('#fb-login').width()- $('#fb-friends-pager').width()) / 100) - 1;
+  var startIdx = 0, endIdx = 0, maxIdx = FBC2.friends.friends.length-1; // First and last idx to be rendered
+
+  if( pageDir == 1 ){
+    startIdx = FBC2.renderFriends.endIdx+1;
+    endIdx = Math.min(startIdx + friendCount, maxIdx);
+  }else if( pageDir == -1){
+    endIdx = FBC2.renderFriends.startIdx-1;
+    startIdx = Math.max(endIdx - friendCount, 0);
+  }else{
+    endIdx = Math.min(friendCount-1, maxIdx);
+  }
+
+  var friendsList = $("#fb-friends-list");
+  friendsList.empty();
+  for( var i = startIdx; i <= endIdx; i++ ){
+    var friend = FBC2.friends.friends[i];
+    var bandCnt = friend['bands'].length;
+    var likeTitle = friend['name'] + " likes "+bandCnt+" bands.";
+      friendsList.append(
+        $("<div class='friend'></div>").append(
+          $("<span class='info' title='"+likeTitle+"'>"+friend['bands'].length+"<img src='/images/heart.gif' alt='heart' class='friend-info-heart'/></span>")
+        ).append(
+          $("<img src='"+FBC2.user_pic(friend['id'])+"'/>")
+        ).append(
+          $("<span class='name'>"+friend['name']+"</span><br/>")
+        ).click(
+          function(f){return function(){
+            FBC2.clickFriend(f);
+          };}(friend)
+        )
+      );
+  }
+  if( startIdx == 0 ){
+    $('#fb-friends-pager-up').hide();
+  }else {
+    $('#fb-friends-pager-up').show();
+  }
+
+  if( endIdx == maxIdx ){
+    $('#fb-friends-pager-down').hide();
+  }else{
+    $('#fb-friends-pager-down').show();
+  }
+  FBC2.renderFriends.startIdx = startIdx;
+  FBC2.renderFriends.endIdx = endIdx;
+};
+
+FBC2.clickFriend = function(f){
+  UVJ.log({'data_1':3, 'data_2':f['id']});
+  renderArtistsGrouping(f['bands'], FBC2.makeMenuArtistTitle(f), "_u"+f['id']);
+};
+
+FBC2.renderFriends.startIdx = 0;
+FBC2.renderFriends.endIdx = 0;
+
 UVJ.log = function(logObj){
   jsonPost('/log',
            logObj,

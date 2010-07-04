@@ -1,0 +1,21 @@
+.screencaps {
+   background-color:black;
+   border:2px solid black;
+   cursor:pointer;
+   height:90px;
+   margin-bottom:5px;
+   overflow:hidden;
+   text-align:center;
+   width:128px;
+}
+
+.screenspace {
+   width: 128px;
+   height: 90px;
+}
+
+.title{
+   font-size:15px;
+   overflow:hidden;
+   text-show: white 1px 1px 0;
+}

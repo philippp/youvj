@@ -80,7 +80,7 @@ class Browse(HTMLController):
         artistVids = []
 
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
-        artistVids.append( self.fetchVideos(artist) )
+        artistVids = self.fetchVideos(artist)
         return self.template("browse",
                              artistVids = artistVids
                              )
