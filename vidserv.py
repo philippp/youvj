@@ -8,9 +8,9 @@ import time
 import cgi
 import urllib
 
-from twisted.web2 import server, http, resource, channel, stream
-from twisted.web2 import static, http_headers, responsecode
-from twisted.web2.http_headers import Cookie
+#from twisted.web2 import server, http, resource, channel, stream
+#from twisted.web2 import static, http_headers, responsecode
+#from twisted.web2.http_headers import Cookie
 
 import lastfm
 import pylast
@@ -21,6 +21,17 @@ import vidlogger
 import viddb
 import genres
 from lib import memcache, facebook, minifb
+
+class Cookie(object):
+    @staticmethod
+    def generateDateTime(secSinceEpoch):
+        """Convert seconds since epoch to HTTP datetime string."""
+        year, month, day, hh, mm, ss, wd, y, z = time.gmtime(secSinceEpoch)
+        s = "%s, %02d %3s %4d %02d:%02d:%02d GMT" % (
+            weekdayname[wd],
+            day, monthname[month], year,
+            hh, mm, ss)
+        return s
 
 class FBRequest(object):
     def __init__(self, ctx, mem=None):
