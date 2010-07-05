@@ -31,7 +31,8 @@ UVJ.renderVideo = function(videoInfo){
                   'handle':'drag-handle',
                   'zIndex':9999,
                   'revert':'invalid',
-                  'helper':'clone'
+                  'helper':'clone',
+                  'connectToSortable':'ul#playlist'
                 });
   vid.mouseenter(function(e){UVJ.flipImages.start(e);});
   vid.mouseleave(UVJ.flipImages.stop);

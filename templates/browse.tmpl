@@ -10,23 +10,28 @@ You are the VJ with youvj!
 #end def
 
 #def body()
-<dev id="top">
-  <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
-    <input type="text" id="browseInput"/>
-  </form>
-</dev>
-<dev id="middle">
-</dev>
-<dev id="bottom"></dev>
+<dev id="container">
+  <dev id="top">
+    <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
+      <input type="text" id="browseInput"/>
+    </form>
+  </dev>
+  <dev id="middle">
+  </dev>
+  <dev id="footer"><ul id="playlist"></ul></dev>
+</dev><!-- #container -->
 <script>
   var artistVids = $json.dumps($artistVids);
+
   jQuery(document).ready(function(){
     if( artistVids ){
       for( var i = 0; i < artistVids.length; i++ ){
           jQuery('#middle').append( UVJ.renderVideo(artistVids[i]) );
       }
     }
+    jQuery('#playlist').sortable();
   });
+
   UVJ.browse = function( artist ){
     jQuery.post('/findvideos',
               {'artist':artist},
@@ -35,7 +40,8 @@ You are the VJ with youvj!
               },'json');
     return false;
   };
-  UVJ.onBrowseCallback = function( resp, artist ){
+
+UVJ.onBrowseCallback = function( resp, artist ){
     jQuery('.videoInfo').remove();
     for( var i = 0; i < resp.length; i++ ){
       jQuery('#middle').append( UVJ.renderVideo(resp[i]) );
