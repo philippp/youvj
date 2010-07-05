@@ -1,1 +1,4 @@
 mtv for y3k
+requires:
+ unix file package w/ magic, magic python bindings
+ gogreen w/ wsgi branch

@@ -1,17 +1,14 @@
 $(document).ready(function(){
   for( var i = 0; i < artistVids.length; i++ ){
-    var ts = UVJ.renderTitleSection(artistVids[i][0]);
-    for( var j = 0; j < artistVids[i][1].length; j++ ){
-      ts.append( UVJ.renderVideo(artistVids[i][1][j]) );
-    }
-    $('#middle').append(ts);
+    $('#middle').append( UVJ.renderVideo(artistVids[i]) );
   }
 });
 
 UVJ = {};
 
 UVJ.renderTitleSection = function(title){
-  return $('<div class="titleSection">'+title+'</div>');
+  return $('<div class="titleSection"><div class="title">'+
+           title+'</div></div>');
 };
 
 UVJ.renderVideo = function(videoInfo){

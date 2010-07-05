@@ -7,7 +7,8 @@ import sys
 import os.path
 import traceback
 
-import feather.wsgi
+#import feather.wsgi
+import gogreen.wsgi
 import vidserv
 import config
 import magic
@@ -52,6 +53,8 @@ def wsgiapp(env, start_response):
     fpath = config.path + '/static' + request.path_info
     if os.path.isfile(fpath):
         mime = magic.from_file(fpath, mime=True)
+        if fpath[-4:] == ".css":
+            mime = "text/css"
         resp = file(fpath, 'r').read()
         start_response("200 OK",
                        [('content-type',mime),
@@ -67,5 +70,5 @@ if __name__ == "__main__":
     parser.add_option("-h", "--host", default=config.host)
 
     options, args = parser.parse_args()
-    feather.wsgi.serve((options.host, options.port), wsgiapp,
-            traceback_body=True)
+    gogreen.wsgi.serve((options.host, options.port), wsgiapp,
+            access_log='access.log')

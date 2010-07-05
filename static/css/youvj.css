@@ -19,3 +19,23 @@
    overflow:hidden;
    text-show: white 1px 1px 0;
 }
+
+.titleSection .title {
+   clear:both;
+}
+
+.description{
+   display:none;
+}
+
+.videoInfo {
+   background-color:#EFEFEF;
+   border-bottom:2px solid #FFFFFF;
+   border-right:2px solid #FFFFFF;
+   float:left;
+   height:150px;
+   margin-bottom:30px;
+   margin-right:12px;
+   padding:6px 14px;
+   width:132px;
+}
