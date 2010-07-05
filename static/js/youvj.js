@@ -1,9 +1,3 @@
-$(document).ready(function(){
-  for( var i = 0; i < artistVids.length; i++ ){
-    $('#middle').append( UVJ.renderVideo(artistVids[i]) );
-  }
-});
-
 UVJ = {};
 
 UVJ.renderTitleSection = function(title){
@@ -13,9 +7,9 @@ UVJ.renderTitleSection = function(title){
 
 UVJ.renderVideo = function(videoInfo){
   var vid = $('<div class="videoInfo"></div>').append(
-    $('<div class="title"></div>').text(videoInfo['title'])
+    $('<div class="drag-handle">drag</div>')
   ).append(
-    $('<div class="description"></div>').text(videoInfo['description'])
+    $('<div class="title"></div>').text(videoInfo['title'])
   ).append(
     $('<div class="screencaps"></div>').append(
       $('<img class="t0" src="'+videoInfo['thumbnail_1']+'"/>')
@@ -33,8 +27,14 @@ UVJ.renderVideo = function(videoInfo){
   );
   $('.screencaps img',vid).hide();
   $('.screencaps .t0',vid).show();
-  $(vid).mouseenter(function(e){UVJ.flipImages.start(e);});
-  $(vid).mouseleave(UVJ.flipImages.stop);
+  vid.draggable({
+                  'handle':'drag-handle',
+                  'zIndex':9999,
+                  'revert':'invalid',
+                  'helper':'clone'
+                });
+  vid.mouseenter(function(e){UVJ.flipImages.start(e);});
+  vid.mouseleave(UVJ.flipImages.stop);
   $('a',vid).click(function(){renderPlayer(videoInfo);});
   $('.screencaps',vid).click(function(){renderPlayer(videoInfo);});
   $('a',vid).button();

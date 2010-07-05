@@ -76,17 +76,16 @@ class FrontPage(HTMLController):
 
 class Browse(HTMLController):
     def respond(self, req):
-        artist = req.args.get('artist')
+        artist = req.args.get('artist','')
         artistVids = []
 
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
-        artistVids = self.fetchVideos(artist)
+        artistVids = artist and self.fetchVideos(artist) or []
         return self.template("browse",
                              artistVids = artistVids
                              )
 
     def fetchVideos(self, artist):
-        print "in fetchVideos"
         cacheKey = 'videos_%s' % vidquery._makeMinTitle(artist)
         cachedRes = self.mem.get(cacheKey)
         if not cachedRes:
@@ -96,17 +95,12 @@ class Browse(HTMLController):
 
 class FindVideos(JSONController):    
     def respond(self, req):
-        artists = req.args.get('artist',[])
-        artistVids = []
-        ip_addr = getattr(req.remote_addr,'host','10.169.107.32')
-        for artist in artists:
-            #vidlogger.log(data_1=vidlogger.EVENT_SEARCH,
-            #              text_info=artist)
-            artistVids.append( self.fetchVideos(artist) )
+        artist = req.args.get('artist')
+        ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
+        artistVids = self.fetchVideos(artist)
         return artistVids
 
     def fetchVideos(self, artist):
-        print "in fetchVideos"
         cacheKey = 'videos_%s' % vidquery._makeMinTitle(artist)
         cachedRes = self.mem.get(cacheKey)
         if not cachedRes:

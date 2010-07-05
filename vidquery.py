@@ -10,7 +10,8 @@ from optparse import OptionParser
 track_code = None
 
 def log(msg):
-    print msg
+    #print msg
+    pass
 
 def runJob(fileName):
     mVids = {}
@@ -22,11 +23,19 @@ def runJob(fileName):
 def fetchVideos(artistName):
     artistName = re.sub("^[Tt]he","",artistName).strip()
     videos = _fetchVideos(artistName,  orderby='relevance')
+
     if track_code and filter( lambda v: track_code in v['page_url'], videos ):
         log("TRACKER: Found tracked video, about to filter")
     hits = lastfm.getHits(artistName)
-    title_videos = filterSimilar(videos)
-    videos = orderPopular(title_videos, hits)
+    videos = filterSimilar(videos)
+    if track_code and filter( lambda v: track_code in v['page_url'], videos ):
+        log("TRACKER: Found tracked video after filterSimilar")
+    log( "after filterSimilar: %s" % [v['title'] for v in videos] )
+    videos = orderPopular(videos, hits)
+    if track_code and filter( lambda v: track_code in v['page_url'], videos ):
+        log("TRACKER: Found tracked video after orderPopular")
+    log( "after orderPopular: %s" % [v['title'] for v in videos] )
+    
     return videos
 
 def _track_in_list(videos):
@@ -40,27 +49,20 @@ def filterSimilar(allVideos):
     for video in allVideos:
         minTitle = _makeMinTitle(video['match_title'])
         vidByTitle[minTitle] = vidByTitle.get(minTitle,[]) + [video]
-
     for minTitle, videos in vidByTitle.iteritems():
         videosNoRmx = filter( lambda v: (('remix' not in v['title']) and ('rmx' not in v['title'])), videos )
         if videosNoRmx:
             videos = videosNoRmx
-        vidByTitle[minTitle] = sorted(videos,
-                                      key = lambda v: int(v['view_count']),
-                                      reverse = True)
-        vidByTitle[minTitle] = sorted( videos,
-                                       key = _score_officiality,
-                                       reverse = True)
-    return vidByTitle
+        vidByTitle[minTitle] = sorted(videos, key = lambda v: -int(v['view_count']))[:2]
+        officialVid = filter( lambda v: 'vevo.com' in v['description'], videos )
+        if officialVid:
+            vidByTitle[minTitle] = [officialVid[0]]
 
-def _score_officiality(video):
-    score = 0
-    desc = video['description'].replace(' ','')
-    if 'vevo.com' in desc:
-        score += 2
-    if 'musicvideo' in desc or 'official' in desc:
-        score += 1
-    return score
+    topVideos = []
+    for vidList in vidByTitle.values():
+        topVideos += vidList
+    return sorted(topVideos,
+                  key = lambda v: -int(v['view_count']))
 
 def _makeMinTitle(videoTitle):
     junkWords = [
@@ -70,10 +72,11 @@ def _makeMinTitle(videoTitle):
         ]
     minTitle = videoTitle.lower().strip()
     minTitle = _replaceUmlauts(minTitle)
+
     for word in junkWords:
         minTitle = minTitle.replace(word,"")
     minTitle = re.sub("^[Tt]he","",minTitle)
-    minTitle = re.sub("\(.*?\)", "", minTitle, count=0)
+    minTitle = re.sub("\(.*\)", "", minTitle, count=0)
     minTitle = re.sub("[^a-zA-Z\-\"]", "", minTitle, count=0)
 
     return str(minTitle)
@@ -107,7 +110,7 @@ def _replaceUmlauts(minTitle):
     minTitle = minTitle.lower()
     return minTitle
     
-def orderPopular(title_videos, hitNames):
+def orderPopular(videos, hitNames):
     ordered_videos = []
     minHits = [ _makeMinTitle(h) for h in hitNames ]
     log( "hit names are %s" % minHits )
@@ -117,13 +120,17 @@ def orderPopular(title_videos, hitNames):
             _m.append(h)
     minHits = _m
 
-    for h in minHits:
-        if h in title_videos.keys():
-            ordered_videos.append((h, title_videos[h]))
-            del title_videos[h]
-
-    for t in title_videos:
-        ordered_videos.append((t, title_videos[t]))
+    for hitName in minHits:
+        for video in list(videos):
+            desc = video['description'].lower()
+            if str(hitName) == video['match_title'] and \
+                    ('official' in desc or 'music video' in desc):
+                log( "appending %s because it is a hit and seems official" % video['title'] )
+                ordered_videos.append(video)
+    for video in list(videos):
+        if video not in ordered_videos:
+            log( "appending %s because it has not been added" % video['title'] )
+            ordered_videos.append(video)
 
     return ordered_videos
 
@@ -238,5 +245,4 @@ if __name__ == "__main__":
     if len(args) != 1:
         print parser.print_help()
     else:
-        import pprint
-        pprint.pprint(fetchVideos(args[0]))
+        fetchVideos(args[0])
