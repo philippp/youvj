@@ -20,6 +20,29 @@ html, body{
    margin: 0;
 }
 
+#playlist .videoInfo{
+
+}
+
+#featureVideo{
+-moz-border-radius-bottomleft:2px;
+-moz-border-radius-bottomright:1px;
+-moz-border-radius-topleft:1px;
+-moz-border-radius-topright:2px;
+-webkit-border-radius-bottomleft:2px;
+-webkit-border-radius-bottomright:1px;
+-webkit-border-radius-topleft:1px;
+-webkit-border-radius-topright:2px;
+
+background-color:#EFEFEF;
+display:none;
+float:right;
+height:522px;
+margin-bottom:20px;
+padding:20px;
+width:480px;
+}
+
 .screencaps {
    background-color:black;
    border:2px solid black;
