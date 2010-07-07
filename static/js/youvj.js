@@ -7,7 +7,7 @@ UVJ.renderTitleSection = function(title){
 
 UVJ.renderVideo = function(videoInfo){
   var vid = $('<div class="videoInfo"></div>').append(
-    $('<div class="drag-handle">drag</div>')
+    $('<div class="drag-handle">[d]</div>')
   ).append(
     $('<div class="title"></div>').text(videoInfo['title'])
   ).append(
@@ -39,9 +39,13 @@ UVJ.renderVideo = function(videoInfo){
   $('a',vid).click(function(){renderPlayer(videoInfo);});
   $('.screencaps',vid).click(function(){renderPlayer(videoInfo);});
   $('a',vid).button();
+  vid[0].info = videoInfo;
   return vid;
 };
 
+UVJ.renderVideoDragHelper = function( e ){
+  return $('<img src="'+e.currentTarget.info.thumbnail_1+'"/>').draggable();
+};
 
 UVJ.flipImages = function(e){
   UVJ.flipImages.counter++;
