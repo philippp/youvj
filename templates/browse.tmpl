@@ -33,7 +33,8 @@ You are the VJ with youvj!
     jQuery('#playlist').sortable({
                                  'over':function(e, ui){
                                    e.target.style.border = '1px solid red';
-                                 }
+                                 },
+			         'tolerance': 'pointer'
                                  });
   });
 
