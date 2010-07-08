@@ -68,7 +68,8 @@ UVJ.flipImages.stop = function(){
 };
 
 UVJ.renderPlayer = function(videoInfo){
-  $("#featureVideo").empty();
+  var fV = $("#featureVideo");
+  fV.empty();
   purl = videoInfo['flash_url'];
   purl += '&autoplay=1&fs=1';
   var pstr = '<object width="480" height="385">'
@@ -80,9 +81,13 @@ UVJ.renderPlayer = function(videoInfo){
     + '</object>';
   var featVidObj = $('<div id="featureVideo-obj"></div>');
   featVidObj.html(pstr);
-  $('#featureVideo').append(featVidObj);
 
-  $('#featureVideo').append(
+  var featVidClose = $('<div id="featureVideo-close>[X]</div>');
+  featVidClose.click(function(){fV.empty().hide();});
+  fV.append(featVidClose);
+  fV.append(featVidObj);
+
+  fV.append(
     $('<div class="player-fbpost"><a href="#"></a></div>').append(
       $('<img src="/images/facebook_share_button.png" alt="share on facebook"/>')
     ).click(
