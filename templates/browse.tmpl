@@ -34,13 +34,13 @@ You are the VJ with youvj!
   var easeFooter = function(){
     if( easeFooter.dir == 'up' ){
       if( easeFooter.f.height() >= easeFooter.up ){
-        clearInterval(easeFooter);
+        clearInterval(easeFooter.t);
       }else{
         easeFooter.f.height( easeFooter.f.height() + 2 );
       }
     }else{ //down
       if( easeFooter.f.height() <= easeFooter.down ){
-        clearInterval(easeFooter);
+        clearInterval(easeFooter.t);
       }else{
         easeFooter.f.height( easeFooter.f.height() - 2 );
       }
@@ -50,6 +50,7 @@ You are the VJ with youvj!
   easeFooter.down = 50;
   easeFooter.dir = 'up';
   easeFooter.f = jQuery('#footer');
+  easeFooter.t = null;
 
 jQuery(document).ready(function(){
     if( artistVids ){
@@ -57,27 +58,33 @@ jQuery(document).ready(function(){
           jQuery('#middle').append( UVJ.renderVideo(artistVids[i]) );
       }
     }
-    jQuery('#playlist').sortable({
-                                 'over':function(e, ui){
-                                   e.target.style.border = '1px solid red';
-                                 },
-			         'tolerance': 'pointer'
-                                 });
-
+    UVJ.configureSortable();
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
-                                 setInterval( easeFooter, 20 );
+                                 easeFooter.t = setInterval( easeFooter, 20 );
                                  this.style.display = 'none';
                                  jQuery('#footer-down').show();
                                });
     jQuery('#footer-down').click(function(){
                                  easeFooter.dir = 'down';
-                                 setInterval( easeFooter, 20 );
+                                 easeFooter.t = setInterval( easeFooter, 20 );
                                  this.style.display = 'none';
                                  jQuery('#footer-up').show();
                                });
 
   });
+
+  UVJ.configureSortable = function(){
+    jQuery('#playlist').sortable({
+                                 'over':function(e, ui){
+                                   e.target.style.border = '1px solid red';
+                                 },
+                                 'out':function(e, ui){
+                                   e.target.style.border = 'none';
+                                 },
+			         'tolerance': 'pointer'
+                                 });
+  };
 
   UVJ.browse = function( artist ){
     jQuery.post('/findvideos',

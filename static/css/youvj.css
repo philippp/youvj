@@ -17,6 +17,12 @@ html, body{
    display:none;
 }
 
+#footer-up, #footer-down{
+   float: right;
+   position: relative;
+   top: -20px;
+}
+
 #playlist{
    height: 100%;
    width: 100%;
