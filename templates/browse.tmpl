@@ -58,7 +58,7 @@ jQuery(document).ready(function(){
           jQuery('#middle').append( UVJ.renderVideo(artistVids[i]) );
       }
     }
-    UVJ.configureSortable();
+    UVJ.configurePlaylist();
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );
@@ -73,18 +73,6 @@ jQuery(document).ready(function(){
                                });
 
   });
-
-  UVJ.configureSortable = function(){
-    jQuery('#playlist').sortable({
-                                 'over':function(e, ui){
-                                   e.target.style.border = '1px solid red';
-                                 },
-                                 'out':function(e, ui){
-                                   e.target.style.border = 'none';
-                                 },
-			         'tolerance': 'pointer'
-                                 });
-  };
 
   UVJ.browse = function( artist ){
     jQuery.post('/findvideos',

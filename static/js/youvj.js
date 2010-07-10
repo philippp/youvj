@@ -6,7 +6,7 @@ UVJ.renderTitleSection = function(title){
 };
 
 UVJ.renderVideo = function(videoInfo){
-  var vid = $('<div class="videoInfo" id="'+videoInfo['youtube_id']+'"></div>').append(
+  var vid = $('<div class="videoInfo vid_'+videoInfo['youtube_id']+'"></div>').append(
     $('<div class="videoInfo-top"></div>').append(
       $('<div class="drag-handle">[d]</div>')
     ).append(
@@ -70,6 +70,7 @@ UVJ.flipImages.stop = function(){
 UVJ.renderPlayer = function(videoInfo){
   var fV = $("#featureVideo");
   fV.empty();
+  fV[0].info = videoInfo;
   purl = videoInfo['flash_url'];
   purl += '&autoplay=1&fs=1';
   var pstr = '<object width="480" height="385">'
@@ -121,5 +122,41 @@ UVJ.renderPlayer = function(videoInfo){
     $('.player-save').show();
   }
 
-  $('#featureVideo').show();
+  fV.show();
+};
+
+UVJ.updatePlayerPlaylist = function(){
+  var curInfo = $('#featureVideo')[0].info;
+  if( !curInfo )
+    return;
+  var pl = $('#playlist').childen();
+  for( var i = 0; i < pl.length; i++ ){
+  }
+};
+
+UVJ.configurePlaylist = function(){
+  jQuery('#playlist').sortable({
+    'over':function(e, ui){
+      e.target.style.border = '2px solid blue';
+    },
+    'out':function(e, ui){
+      e.target.style.border = 'none';
+    },
+    'tolerance': 'pointer',
+    'beforeStop' : function(e, ui){
+      var i = 0;
+      var classNames = ui.item.attr('class').split(' ');
+      var className = '';
+      for( i = 0; i < classNames.length; i++ ){
+        if( classNames[i].indexOf('vid_') == 0 ){
+          className = classNames[i];
+        }
+      }
+      var orig = $('#middle .'+className);
+      var all = $('.'+className);
+      for( i = 0; i < all.length; i++ ){
+        all[i].info = orig[0].info;
+      }
+    }
+  });
 };
