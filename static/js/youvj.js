@@ -8,16 +8,16 @@ UVJ.renderTitleSection = function(title){
 UVJ.renderVideo = function(videoInfo){
   var vid = $('<div class="videoInfo vid_'+videoInfo['youtube_id']+'"></div>').append(
     $('<div class="videoInfo-top"></div>').append(
-      $('<div class="drag-handle">[d]</div>')
+      $('<div class="drag-handle"><img src="/images/drag_handle.png" alt="drag"/></div>')
     ).append(
       $('<div class="title"></div>').text(videoInfo['title'])
     )).append(
     $('<div class="screencaps"></div>').append(
-      $('<img class="t0" src="'+videoInfo['thumbnail_1']+'"/>')
+      $('<img class="thumb t0" src="'+videoInfo['thumbnail_1']+'"/>')
     ).append(
-      $('<img class="t1" src="'+videoInfo['thumbnail_2']+'"/>')
+      $('<img class="thumb t1" src="'+videoInfo['thumbnail_2']+'"/>')
     ).append(
-      $('<img class="t2" src="'+videoInfo['thumbnail_3']+'"/>')
+      $('<img class="rhumb t2" src="'+videoInfo['thumbnail_3']+'"/>')
     ).append(
       $('<div class="screenspace">&nbsp;</div>')
     )
@@ -33,6 +33,7 @@ UVJ.renderVideo = function(videoInfo){
                   'zIndex':9999,
                   'revert':'invalid',
                   'helper':'clone',
+                  'scroll':false,
                   'connectToSortable':'ul#playlist'
                 });
   vid.mouseenter(function(e){UVJ.flipImages.start(e);});
@@ -47,7 +48,7 @@ UVJ.renderVideo = function(videoInfo){
 UVJ.flipImages = function(e){
   UVJ.flipImages.counter++;
   var targetCls = '.t'+(UVJ.flipImages.counter % 3);
-  $('img',e.currentTarget).hide();
+  $('.screencaps img',e.currentTarget).hide();
   $(targetCls, e.currentTarget).show();
 };
 
@@ -68,12 +69,12 @@ UVJ.flipImages.stop = function(){
 };
 
 UVJ.renderPlayer = function(videoInfo){
-  var fV = $("#featureVideo");
+  var fV = $("#player-container");
   fV.empty();
   fV[0].info = videoInfo;
   purl = videoInfo['flash_url'];
-  purl += '&autoplay=1&fs=1';
-  var pstr = '<object width="480" height="385">'
+  purl += '&autoplay=1&fs=1&enablejsapi=1&version=3';
+  var pstr = '<object width="480" height="385" id="yt-player-obj">'
     + '<param name="movie" value="'+purl+'"></param>'
     + '<param name="fs" value="1"></param>'
     + '<param name="allowfullscreen" value="true"></param>'
@@ -89,11 +90,7 @@ UVJ.renderPlayer = function(videoInfo){
   fV.append(featVidObj);
 
   fV.append(
-    $('<div class="player-fbpost"><a href="#"></a></div>').append(
-      $('<img src="/images/facebook_share_button.png" alt="share on facebook"/>')
-    ).click(
-      function(){ FBC2.PostStream(videoInfo); }
-    )
+    $('<div id="player-next-info"></div>')
   ).append(
    $('<a href="#" class="player-save">Save video</a>').click(function(){
      UVJ.saveVideo(videoInfo);
@@ -121,17 +118,31 @@ UVJ.renderPlayer = function(videoInfo){
     $('.player-unsave').hide();
     $('.player-save').show();
   }
-
+  $('#yt-player-obj')[0].addEventListener('onStateChange','UVJ.playerStateChange');
   fV.show();
 };
 
+UVJ.playerStateChange = function(state){
+  alert(state);
+};
+
 UVJ.updatePlayerPlaylist = function(){
-  var curInfo = $('#featureVideo')[0].info;
+  var curInfo = $('#player-container')[0].info;
   if( !curInfo )
     return;
-  var pl = $('#playlist').childen();
+  var pl = $('#playlist .videoInfo');
   for( var i = 0; i < pl.length; i++ ){
-  }
+    if( pl[i].info['youtube_id'] == curInfo['youtube_id'] ){
+      if( i + 1 < pl.length ){
+        var nextSong = pl[i+1].info['artist'] + ' - ' + pl[i+1].info['title'];
+        $('#player-next-info').empty().append(
+          $("<span>Next Video: </span><span>"+nextSong+"</span>")
+        )[0].info = pl[i+1].info;
+        return;
+      }
+    }
+  }// for
+  $('#player-next-info').replace('Last one! Queue up more')[0].info = null;
 };
 
 UVJ.configurePlaylist = function(){
@@ -143,7 +154,7 @@ UVJ.configurePlaylist = function(){
       e.target.style.border = 'none';
     },
     'tolerance': 'pointer',
-    'beforeStop' : function(e, ui){
+    'receive' : function(e, ui){
       var i = 0;
       var classNames = ui.item.attr('class').split(' ');
       var className = '';
@@ -157,6 +168,9 @@ UVJ.configurePlaylist = function(){
       for( i = 0; i < all.length; i++ ){
         all[i].info = orig[0].info;
       }
-    }
+    },
+    'stop' : UVJ.updatePlayerPlaylist
   });
 };
+
+
