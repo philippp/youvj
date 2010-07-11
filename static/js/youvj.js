@@ -118,7 +118,6 @@ UVJ.renderPlayer = function(videoInfo){
     $('.player-unsave').hide();
     $('.player-save').show();
   }
-  $('#yt-player-obj')[0].addEventListener('onStateChange','UVJ.playerStateChange');
   fV.show();
 };
 
