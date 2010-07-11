@@ -6,8 +6,8 @@ import optparse
 import sys
 import os.path
 import traceback
+import urllib2
 
-#import feather.wsgi
 import gogreen.wsgi
 import vidserv
 import config
@@ -39,7 +39,6 @@ def wsgiapp(env, start_response):
                 resp = c().render(request)
             except Exception, e:
                 traceback.print_exc()
-                print e
                 e_msg = "Oh snaps, I messed up. SOWEE."
                 start_response("500 SERVER ERROR",
                                [('content-type','text/html'),
@@ -62,8 +61,21 @@ def wsgiapp(env, start_response):
         return [resp]
 
     # Oh snaps! I guess the user is searching for an artist.
-    
-
+    artist_name = urllib2.unquote(request.path.split('/')[1])
+    request.args['artist'] = artist_name
+    try:
+        resp = vidserv.Browse().render(request)
+    except Exception, e:
+        traceback.print_exc()
+        e_msg = "Oh snaps, I messed up. SOWEE."
+        start_response("500 SERVER ERROR",
+                       [('content-type','text/html'),
+                        ('content-length',len(e_msg))])
+        return [e_msg]
+    start_response(resp.status,
+                   resp.headerlist)
+    return [resp.body]
+        
 if __name__ == "__main__":
     parser = optparse.OptionParser(add_help_option=False)
     parser.add_option("-p", "--port", type="int", default=config.port)
