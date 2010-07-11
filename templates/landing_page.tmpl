@@ -3,19 +3,50 @@
 #import json
 
 #def head()
+<style type='text/css'>
+  .front-banner {
+  font-size: 20px;
+  }
+  input {
+  font-size: 30px;
+  }
+</style>
 #end def
 
 #def title()
-You are the VJ with youvj!
+You are the VJ with youvj! Music Videos, VJ, ...
 #end def
 
 #def body()
 <dev id="top"></dev>
 <dev id="middle">
-  <form method="post" action="/browse">
+  <div class="front-banner">Enter an artist or a band, watch and share music videos!</div>
+  <form id="main-form" method="post" action="/browse">
     <input name="artist" type="text" />
-    <input type="submit" value="send" />
+    <input type="submit" value="Show Videos!" />
   </form>
+  <div id="recent">
+    <div class="legend">Recent Searches:</div>  
+    <ul>
+      <li><a href='/lady%20gaga'>Lady Gaga</a></li>
+      <li><a href='/the%20knife'>The Knife</a></li>
+      <li><a href='/outkast'>Outkast</a></li>
+      <li><a href='/tool'>Tool</a></li>
+      <li><a href='/yeasayer'>Yeasayer</a></li>
+      <li><a href='/fleetwood%20mac'>Fleetwood Mac</a></li>
+      <li><a href='/ZZ%20Top'>ZZ Top</a></li>
+      <li><a href='/OK%20Go'>OK Go</a></li>
+    </ul>
+  </div>
+
+  <div id="trending">
+    <div class="legend">Hot Playlists:</div>  
+  </div>
+
 </dev>
 <dev id="bottom"></dev>
+<script>
+
+</script>
+
 #end def
