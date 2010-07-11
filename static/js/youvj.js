@@ -141,7 +141,7 @@ UVJ.updatePlayerPlaylist = function(){
       }
     }
   }// for
-  $('#player-next-info').replace('Last one! Queue up more')[0].info = null;
+  $('#player-next-info').empty().append('Last one! Queue up more')[0].info = null;
 };
 
 UVJ.configurePlaylist = function(){
