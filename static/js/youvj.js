@@ -136,8 +136,14 @@ UVJ.renderPlayer = function(videoInfo){
   UVJ.updatePlayerPlaylist();
 };
 
-UVJ.playerStateChange = function(state){
-  alert(state);
+UVJ.playerStateChange = function(newState) {
+  if( newState == 0 ){ // If the video stopped, play the next one in the queue
+    var nextInfo = $('#player-next-info')[0].info;
+    if( nextInfo ){
+      UVJ.renderPlayer( nextInfo );
+    }
+  }
+
 };
 
 UVJ.updatePlayerPlaylist = function(){
@@ -264,3 +270,10 @@ var renderSimilar = function(pairing){
                              });
   return(similarArtist);
 };
+
+function onYouTubePlayerReady(playerId) {
+  ytplayer = document.getElementById("myytplayer");
+  ytplayer.addEventListener("onStateChange", "UVJ.playerStateChange");
+}
+
+
