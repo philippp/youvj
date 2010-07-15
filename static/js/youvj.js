@@ -5,7 +5,11 @@ UVJ.renderTitleSection = function(title){
            title+'</div></div>');
 };
 
-UVJ.renderVideo = function(videoInfo){
+/**
+ * Render a draggable video thumbnail and preview box
+ * @return div.videInfo
+ */
+UVJ.makeThumb = function(videoInfo){
   var vid = $('<div class="videoInfo vid_'+videoInfo['youtube_id']+'"></div>').append(
     $('<div class="videoInfo-top"></div>').append(
       $('<div class="drag-handle"><img src="/images/drag_handle.png" alt="drag"/></div>')
@@ -17,7 +21,7 @@ UVJ.renderVideo = function(videoInfo){
     ).append(
       $('<img class="thumb t1" src="'+videoInfo['thumbnail_2']+'"/>')
     ).append(
-      $('<img class="rhumb t2" src="'+videoInfo['thumbnail_3']+'"/>')
+      $('<img class="thumb t2" src="'+videoInfo['thumbnail_3']+'"/>')
     ).append(
       $('<div class="screenspace">&nbsp;</div>')
     )
@@ -36,8 +40,8 @@ UVJ.renderVideo = function(videoInfo){
                   'scroll':false,
                   'connectToSortable':'ul#playlist'
                 });
-  vid.mouseenter(function(e){UVJ.flipImages.start(e);});
-  vid.mouseleave(UVJ.flipImages.stop);
+  vid.mouseenter(function(e){UVJ.makeThumb.flipImages.start(e);});
+  vid.mouseleave(UVJ.makeThumb.flipImages.stop);
   $('a',vid).click(function(){UVJ.renderPlayer(videoInfo);});
   $('.screencaps',vid).click(function(){UVJ.renderPlayer(videoInfo);});
   $('a',vid).button();
@@ -45,26 +49,27 @@ UVJ.renderVideo = function(videoInfo){
   return vid;
 };
 
-UVJ.flipImages = function(e){
-  UVJ.flipImages.counter++;
-  var targetCls = '.t'+(UVJ.flipImages.counter % 3);
+UVJ.makeThumb.flipImages = function(e){
+  UVJ.makeThumb.flipImages.counter++;
+  var targetCls = '.t'+(UVJ.makeThumb.flipImages.counter % 3);
   $('.screencaps img',e.currentTarget).hide();
   $(targetCls, e.currentTarget).show();
 };
 
-UVJ.flipImages.counter = 0;
-UVJ.flipImages.timer = null;
+UVJ.makeThumb.flipImages.counter = 0;
+UVJ.makeThumb.flipImages.timer = null;
 
-UVJ.flipImages.start = function(e){
-  if(UVJ.flipImages.timer) return false;
-  UVJ.flipImages(e);
-  UVJ.flipImages.timer = setInterval(function(){UVJ.flipImages(e);},500);
+UVJ.makeThumb.flipImages.start = function(e){
+  var flip = UVJ.makeThumb.flipImages;
+  if(flip.timer) return false;
+  flip(e);
+  flip.timer = setInterval(function(){UVJ.makeThumb.flipImages(e);},500);
   return false;
 };
 
-UVJ.flipImages.stop = function(){
-  clearInterval(UVJ.flipImages.timer);
-  UVJ.flipImages.timer = null;
+UVJ.makeThumb.flipImages.stop = function(){
+  clearInterval(UVJ.makeThumb.flipImages.timer);
+  UVJ.makeThumb.flipImages.timer = null;
   return false;
 };
 
@@ -173,3 +178,76 @@ UVJ.configurePlaylist = function(){
 };
 
 
+UVJ.browse = function( artist ){
+  jQuery.post('/findvideos',
+              {'artist':artist},
+              function(resp){
+                UVJ.onBrowseCallback(resp, artist);
+              },
+              'json'
+  );
+  jQuery.post('/findsimilar',
+              {'artist':artist},
+              function(resp){
+                UVJ.onLoadSimilar(resp, artist);
+              },
+              'json'
+  );
+  UVJ.artist = artist;
+  $('#browseInput')[0].value = artist;
+  return false;
+};
+
+UVJ.onBrowseCallback = function( resp, artist ){
+  jQuery('#middle .videoInfo').remove();
+  for( var i = 0; i < resp.length; i++ ){
+    jQuery('#middle').append( UVJ.makeThumb(resp[i]) );
+  }
+};
+
+UVJ.loadSimilar = function(artistName){
+  UVJ.artist = artistName;
+  $('.similar-artist').remove();
+  jQuery.post('/findsimilar',
+           {'artist':artistName},
+           function(resp){UVJ.onLoadSimilar(resp, artistName);},
+           'json'
+          );
+};
+
+UVJ.onLoadSimilar = function(resp, artistName){
+  if( artistName != UVJ.artist ){
+    return;
+  }
+  var extraCls = "";
+  var similarDiv = $('#browse-similar');
+  similarDiv.empty();
+  for( i=0; i < Math.min(10,resp.length); i++){
+    var curArtist = resp[i][0];
+    similarDiv.append(
+      $("<a href='#' class='browse-similar-entry "+extraCls+"' title='"+resp[i][0]+"'>"+curArtist+"</a>").click(
+        (function(f){return function(e){
+                       UVJ.browse(f);
+                       return false;
+                     };})(curArtist)
+      )
+    );
+  }
+
+  if( resp.length > 0 ){
+    similarDiv.prepend(
+            $("<span class='browse-similar-legend'> similar to </span>")
+    );
+  }
+
+};
+
+var renderSimilar = function(pairing){
+  var similarArtist = $("<div class='similar-artist'></div>").append(
+                        $("<a href='#'></a>").text(pairing[0])
+                        );
+  $('a',similarArtist).click(function(){
+                               UVJ.searchArtists([pairing[0]]);
+                             });
+  return(similarArtist);
+};

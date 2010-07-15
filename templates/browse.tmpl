@@ -15,6 +15,7 @@ You are the VJ with youvj!
     <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
       <input type="text" id="browseInput"/>
     </form>
+    <div id="browse-similar"></div>
   </dev>
   <dev id="middle">
     <div id="player-container"></div>
@@ -30,7 +31,8 @@ You are the VJ with youvj!
   </dev>
 </dev><!-- #container -->
 <script>
-  var artistVids = $json.dumps($artistVids);
+  UVJ.artistVids = $json.dumps($artistVids);
+  UVJ.artist = "$artist";
   var easeFooter = function(){
     if( easeFooter.dir == 'up' ){
       if( easeFooter.f.height() >= easeFooter.up ){
@@ -53,10 +55,11 @@ You are the VJ with youvj!
   easeFooter.t = null;
 
 jQuery(document).ready(function(){
-    if( artistVids ){
-      for( var i = 0; i < artistVids.length; i++ ){
-          jQuery('#middle').append( UVJ.renderVideo(artistVids[i]) );
+    if( UVJ.artistVids ){
+      for( var i = 0; i < UVJ.artistVids.length; i++ ){
+          jQuery('#middle').append( UVJ.makeThumb(UVJ.artistVids[i]) );
       }
+    UVJ.loadSimilar(UVJ.artist);
     }
     UVJ.configurePlaylist();
     jQuery('#footer-up').click(function(){
@@ -73,22 +76,5 @@ jQuery(document).ready(function(){
                                });
 
   });
-
-  UVJ.browse = function( artist ){
-    jQuery.post('/findvideos',
-              {'artist':artist},
-              function(resp){
-                UVJ.onBrowseCallback(resp, artist);
-              },'json');
-    return false;
-  };
-
-  UVJ.onBrowseCallback = function( resp, artist ){
-    jQuery('#middle .videoInfo').remove();
-    for( var i = 0; i < resp.length; i++ ){
-      jQuery('#middle').append( UVJ.renderVideo(resp[i]) );
-    }
-  };
-
 </script>
 #end def

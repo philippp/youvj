@@ -82,7 +82,8 @@ class Browse(HTMLController):
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
         artistVids = artist and self.fetchVideos(artist) or []
         return self.template("browse",
-                             artistVids = artistVids
+                             artistVids = artistVids,
+                             artist = artist
                              )
 
     def fetchVideos(self, artist):
@@ -116,7 +117,7 @@ class ClientLogger(JSONController):
 
 class FindSimilar(JSONController):    
     def respond(self, req):
-        artist = req.args.get('artist')[0]
+        artist = req.args.get('artist')
         try:
             similar = self.fetchSimilar(artist)
         except pylast.WSError:
