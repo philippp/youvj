@@ -77,24 +77,14 @@ UVJ.renderPlayer = function(videoInfo){
   var fV = $("#player-container");
   fV.empty();
   fV[0].info = videoInfo;
-  purl = videoInfo['flash_url'];
-  purl += '&autoplay=1&fs=1&enablejsapi=1&version=3';
-  var pstr = '<object width="480" height="385" id="yt-player-obj">'
-    + '<param name="movie" value="'+purl+'"></param>'
-    + '<param name="fs" value="1"></param>'
-    + '<param name="allowfullscreen" value="true"></param>'
-    + '<param name="allowscriptaccess" value="always"></param>'
-    + '<embed src="'+purl+'" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" fs="1" width="480" height="385"></embed>'
-    + '</object>';
-  var featVidObj = $('<div id="featureVideo-obj"></div>');
-  featVidObj.html(pstr);
-
-  var featVidClose = $('<div id="featureVideo-close>[X]</div>');
-  featVidClose.click(function(){fV.empty().hide();});
-  fV.append(featVidClose);
-  fV.append(featVidObj);
 
   fV.append(
+    $('<div id="featureVideo-close>[X]</div>').click(
+      function(){fV.empty().hide();}
+    )
+  ).append(
+    $('<div id="featureVideo-obj"></div>')
+  ).append(
     $('<div id="player-next-info"></div>')
   ).append(
    $('<a href="#" class="player-save">Save video</a>').click(function(){
@@ -123,6 +113,25 @@ UVJ.renderPlayer = function(videoInfo){
     $('.player-unsave').hide();
     $('.player-save').show();
   }
+
+  purl = videoInfo['flash_url'];
+  purl += '&autoplay=1&fs=1&enablejsapi=1&version=3';
+  swfobject.embedSWF(purl,
+                     'featureVideo-obj', //replace ID
+                     '480', //width
+                     '385', //height
+                     '9',
+                     null,
+                     {'movie':purl,
+                      'fs':1,
+                      'allowfullscreen':true,
+                      'allowscriptaccess':'always'},
+                     {'movie':purl,
+                      'fs':1,
+                      'allowfullscreen':true,
+                      'allowScriptAccess':'always'},
+                     {'id':'myytplayer'}
+  );
   fV.show();
   UVJ.updatePlayerPlaylist();
 };
