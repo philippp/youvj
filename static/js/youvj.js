@@ -124,6 +124,7 @@ UVJ.renderPlayer = function(videoInfo){
     $('.player-save').show();
   }
   fV.show();
+  UVJ.updatePlayerPlaylist();
 };
 
 UVJ.playerStateChange = function(state){
@@ -143,10 +144,13 @@ UVJ.updatePlayerPlaylist = function(){
           $("<span>Next Video: </span><span>"+nextSong+"</span>")
         )[0].info = pl[i+1].info;
         return;
+      }else{
+          $('#player-next-info').empty().append('Last video in playlist! Queue up more')[0].info = null;
+          return;
       }
     }
   }// for
-  $('#player-next-info').empty().append('Last one! Queue up more')[0].info = null;
+  $('#player-next-info').empty().append('This video is not in your playlist')[0].info = null;
 };
 
 UVJ.configurePlaylist = function(){
