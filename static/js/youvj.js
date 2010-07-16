@@ -18,9 +18,7 @@ UVJ.makeThumb = function(videoInfo, options){
     $('<div class="videoInfo-top"></div>').append(
       $('<div class="thumb-play-indicator">Playing Now</div>')
     ).append(
-      $('<div class="drag-handle"><img src="/images/drag_handle.png" alt="drag"/></div>')
-    ).append(
-      $('<div class="title"></div>').text(videoInfo['title'])
+      $('<div class="drag-handle"><img src="/images/drag_handle.png" alt="drag"/><span class="title">'+videoInfo['title']+'</span></div>')
     )).append(
     $('<div class="screencaps"></div>').append(
       $('<img class="thumb t0" src="'+videoInfo['thumbnail_1']+'"/>')
@@ -40,7 +38,7 @@ UVJ.makeThumb = function(videoInfo, options){
   $('.screencaps .t0',vid).show();
   if( options.draggable ){
     vid.draggable({
-      'handle':'drag-handle',
+      'handle':'.drag-handle',
       'zIndex':9999,
       'revert':'invalid',
       'helper':'clone',
@@ -48,26 +46,30 @@ UVJ.makeThumb = function(videoInfo, options){
       'connectToSortable':'ul#playlist'
     });
   }
-  vid.mouseenter(
+  vid[0].info = videoInfo;
+  UVJ.initThumb(vid);
+  return vid;
+};
+
+UVJ.initThumb = function(thumbElem){
+  thumbElem.mouseenter(
     function(v){
       return function(e){UVJ.makeThumb.flipImages.start(e);
                          $('.play-video',v).show();
                         };
-    }(vid)
+    }(thumbElem)
   );
-  vid.mouseleave(
+  thumbElem.mouseleave(
     function(v){
       return function(e){
-        UVJ.makeThumb.flipImages.stop();
+       UVJ.makeThumb.flipImages.stop();
         $('.play-video',v).hide();
       };
-    }(vid)
+    }(thumbElem)
   );
-  $('a',vid).click(function(){UVJ.renderPlayer(videoInfo);});
-  $('.screencaps',vid).click(function(){UVJ.renderPlayer(videoInfo);});
-  $('a',vid).button();
-  vid[0].info = videoInfo;
-  return vid;
+  $('a',thumbElem).click(function(){UVJ.renderPlayer(thumbElem[0].info);});
+  $('.screencaps',thumbElem).click(function(){UVJ.renderPlayer(thumbElem[0].info);});
+  $('a',thumbElem).button();
 };
 
 UVJ.makeThumb.flipImages = function(e){
@@ -150,6 +152,7 @@ UVJ.player.addToPlaylist = function(){
   if( player.info ){
     var thumb = UVJ.makeThumb( player.info, {'draggable':false} );
     $('#playlist').append(thumb).sortable('refresh');
+    UVJ.playlist.onAddItem( thumb );
   }
   return false;
 };
@@ -203,12 +206,13 @@ UVJ.player.updatePlaylist = function(){
     $(selector).show();
     return;
   }
-  $('#player-next-info').empty().append('Not in this playlist:')[0].info = null;
-  $('#player-next-info').append($('&nbsp;<a href="#">Add it!</a>').click(
+  $('#player-next-info').empty().append('Not in this playlist:&nbsp;')[0].info = null;
+  $('#player-next-info').append($('<a href="#">Add it!</a>').click(
                                   function(){ return UVJ.player.addToPlaylist(); }
                                   ));
 };
 
+UVJ.playlist = {};
 UVJ.configurePlaylist = function(){
   jQuery('#playlist').sortable({
     'over':function(e, ui){
@@ -219,24 +223,42 @@ UVJ.configurePlaylist = function(){
     },
     'tolerance': 'pointer',
     'receive' : function(e, ui){
-      var i = 0;
-      var classNames = ui.item.attr('class').split(' ');
-      var className = '';
-      for( i = 0; i < classNames.length; i++ ){
-        if( classNames[i].indexOf('vid_') == 0 ){
-          className = classNames[i];
-        }
-      }
-      var orig = $('#middle .'+className);
-      var all = $('.'+className);
-      for( i = 0; i < all.length; i++ ){
-        all[i].info = orig[0].info;
-      }
+      UVJ.playlist.onAddItem( ui.item );
     },
     'stop' : UVJ.player.updatePlaylist
   });
 };
 
+UVJ.playlist.onAddItem = function(elem){
+  var i = 0;
+  var classNames = elem.attr('class').split(' ');
+  var className = '';
+  for( i = 0; i < classNames.length; i++ ){
+    if( classNames[i].indexOf('vid_') == 0 ){
+      className = classNames[i];
+    }
+  }
+
+  var orig = $('#middle .'+className);
+  var dst = $('#playlist .'+className);
+  for( i = 0; i < dst.length; i++ ){
+    dst[i].info = orig[0].info;
+  }
+
+  UVJ.initThumb(dst);
+  $('.title',dst).width(90);
+  $('.videoInfo-top',dst).append(
+    $('<a class="playlist-del" href="#">[X]</a>').click(
+      function(e){
+        $(this.parentNode).remove();
+        $('#playlist').sortable('refresh');
+        UVJ.player.updatePlaylist();
+        return false;
+      }
+    )
+  );
+  dst.height(125);
+};
 
 UVJ.browse = function( artist ){
   jQuery.post('/findvideos',
