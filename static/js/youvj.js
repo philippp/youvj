@@ -9,9 +9,15 @@ UVJ.renderTitleSection = function(title){
  * Render a draggable video thumbnail and preview box
  * @return div.videInfo
  */
-UVJ.makeThumb = function(videoInfo){
+UVJ.makeThumb = function(videoInfo, options){
+  if( !options ) options = {};
+  if( options.draggable === undefined ){
+    options.draggable = true;
+  }
   var vid = $('<div class="videoInfo vid_'+videoInfo['youtube_id']+'"></div>').append(
     $('<div class="videoInfo-top"></div>').append(
+      $('<div class="thumb-play-indicator">Playing Now</div>')
+    ).append(
       $('<div class="drag-handle"><img src="/images/drag_handle.png" alt="drag"/></div>')
     ).append(
       $('<div class="title"></div>').text(videoInfo['title'])
@@ -32,14 +38,16 @@ UVJ.makeThumb = function(videoInfo){
   );
   $('.screencaps img',vid).hide();
   $('.screencaps .t0',vid).show();
-  vid.draggable({
-                  'handle':'drag-handle',
-                  'zIndex':9999,
-                  'revert':'invalid',
-                  'helper':'clone',
-                  'scroll':false,
-                  'connectToSortable':'ul#playlist'
-                });
+  if( options.draggable ){
+    vid.draggable({
+      'handle':'drag-handle',
+      'zIndex':9999,
+      'revert':'invalid',
+      'helper':'clone',
+      'scroll':false,
+      'connectToSortable':'ul#playlist'
+    });
+  }
   vid.mouseenter(function(e){UVJ.makeThumb.flipImages.start(e);});
   vid.mouseleave(UVJ.makeThumb.flipImages.stop);
   $('a',vid).click(function(){UVJ.renderPlayer(videoInfo);});
@@ -73,35 +81,23 @@ UVJ.makeThumb.flipImages.stop = function(){
   return false;
 };
 
+
+UVJ.player = {};
 UVJ.renderPlayer = function(videoInfo){
   var fV = $("#player-container");
   fV.empty();
   fV[0].info = videoInfo;
 
   fV.append(
-    $('<div id="featureVideo-close>[X]</div>').click(
+    $('<div id="player-close" title="close player">[X]</div>').click(
       function(){fV.empty().hide();}
     )
+  ).append(
+    $('<div class="player-title">'+videoInfo['artist']+' - '+videoInfo['title']+'</div>')
   ).append(
     $('<div id="featureVideo-obj"></div>')
   ).append(
     $('<div id="player-next-info"></div>')
-  ).append(
-   $('<a href="#" class="player-save">Save video</a>').click(function(){
-     UVJ.saveVideo(videoInfo);
-     $('.player-save').hide();
-     $('.player-unsave').show();
-     UVJ.favorites[UVJ.favorites.length] = videoInfo['youtube_id'];
-   })
-  ).append(
-   $('<a href="#" class="player-unsave">Unsave video</a>').click(function(){
-     UVJ.unSaveVideo(videoInfo['youtube_id']);
-     $('.player-unsave').hide();
-     $('.player-save').show();
-     UVJ.favorites.splice(UVJ.indexOf(videoInfo['youtube_id']), 1);
-   })
-  ).append(
-    $('<div class="player-title">'+videoInfo['title']+'</div>')
   ).append(
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
@@ -133,39 +129,71 @@ UVJ.renderPlayer = function(videoInfo){
                      {'id':'myytplayer'}
   );
   fV.show();
-  UVJ.updatePlayerPlaylist();
+  UVJ.player.updatePlaylist();
+};
+
+UVJ.player.addToPlaylist = function(){
+  var player = $('#player-container')[0];
+  if( player.info ){
+    var thumb = UVJ.makeThumb( player.info, {'draggable':false} );
+    $('#playlist').append(thumb).sortable('refresh');
+  }
+  return false;
+};
+
+UVJ.player.next = function(){
+  var nextInfo = $('#player-next-info')[0].info;
+  if( nextInfo ){
+    UVJ.renderPlayer( nextInfo );
+  }
 };
 
 UVJ.playerStateChange = function(newState) {
   if( newState == 0 ){ // If the video stopped, play the next one in the queue
-    var nextInfo = $('#player-next-info')[0].info;
-    if( nextInfo ){
-      UVJ.renderPlayer( nextInfo );
-    }
+    UVJ.player.next();
   }
 
 };
 
-UVJ.updatePlayerPlaylist = function(){
+UVJ.player.updatePlaylist = function(){
   var curInfo = $('#player-container')[0].info;
   if( !curInfo )
     return;
   var pl = $('#playlist .videoInfo');
+  var videoIdx = -1;
   for( var i = 0; i < pl.length; i++ ){
     if( pl[i].info['youtube_id'] == curInfo['youtube_id'] ){
       if( i + 1 < pl.length ){
         var nextSong = pl[i+1].info['artist'] + ' - ' + pl[i+1].info['title'];
+
+        // Render the next song indicator in the player
         $('#player-next-info').empty().append(
-          $("<span>Next Video: </span><span>"+nextSong+"</span>")
+          $("<span>Next video:&nbsp;</span>")
+        ).append(
+          $("(<a href='#'>"+nextSong+"</a>").click(
+            function(){ UVJ.player.next(); return false;}
+          )
         )[0].info = pl[i+1].info;
-        return;
+        videoIdx = i;
+        break;
       }else{
-          $('#player-next-info').empty().append('Last video in playlist! Queue up more')[0].info = null;
-          return;
+        $('#player-next-info').empty().append('Last video: Queue up more!')[0].info = null;
+        videoIdx = i;
+        break;
       }
     }
   }// for
-  $('#player-next-info').empty().append('This video is not in your playlist')[0].info = null;
+  if( videoIdx != -1 ){
+    // Update what is currently playing in the playlist
+    $("#playlist .thumb-play-indicator").hide();
+    var selector = "#playlist .vid_"+pl[videoIdx].info['youtube_id']+" .thumb-play-indicator";
+    $(selector).show();
+    return;
+  }
+  $('#player-next-info').empty().append('Not in this playlist:')[0].info = null;
+  $('#player-next-info').append($(' <a href="#">Add it!</a>').click(
+                                  function(){ return UVJ.player.addToPlaylist(); }
+                                  ));
 };
 
 UVJ.configurePlaylist = function(){
@@ -192,7 +220,7 @@ UVJ.configurePlaylist = function(){
         all[i].info = orig[0].info;
       }
     },
-    'stop' : UVJ.updatePlayerPlaylist
+    'stop' : UVJ.player.updatePlaylist
   });
 };
 
@@ -219,9 +247,11 @@ UVJ.browse = function( artist ){
 
 UVJ.onBrowseCallback = function( resp, artist ){
   jQuery('#middle .videoInfo').remove();
+  UVJ.artistVids = resp;
   for( var i = 0; i < resp.length; i++ ){
     jQuery('#middle').append( UVJ.makeThumb(resp[i]) );
   }
+  $('#middle').append($("<br style='clear: both'/>"));
 };
 
 UVJ.loadSimilar = function(artistName){
@@ -255,7 +285,7 @@ UVJ.onLoadSimilar = function(resp, artistName){
 
   if( resp.length > 0 ){
     similarDiv.prepend(
-            $("<span class='browse-similar-legend'> similar to </span>")
+            $("<span class='browse-similar-legend'>Similar artists: </span>")
     );
   }
 

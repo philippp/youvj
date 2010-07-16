@@ -3,8 +3,12 @@ html, body{
    font-family: helvetica, verdana, sans-serif;
 }
 
+#footer-spacer{
+height: 150px;
+}
+
 #footer{
-   height: 50px;
+   height: 150px;
    position: fixed;
    bottom: 0;
    left: 0;
@@ -13,7 +17,7 @@ html, body{
    
 }
 
-#footer-down{
+#footer-up{
    display:none;
 }
 
@@ -24,13 +28,14 @@ html, body{
 }
 
 #playlist{
-   height: 150px;
+   height: 200px;
    width: 100%;
    padding: 0 10px;
    margin: -50px 0 0 0;
 }
 
 #browse-similar{
+   padding-top: 5px;
    font-size: 12px;
 }
 
@@ -57,8 +62,17 @@ display:none;
 float:right;
 height:522px;
 margin-bottom:20px;
-padding:20px;
+padding: 10px 20px;
 width:480px;
+}
+
+#player-title, #player-close{
+   margin-bottom: 10px;
+}
+
+#player-close{
+   float: right;
+   cursor: pointer;
 }
 
 .screencaps {
@@ -112,12 +126,25 @@ width:480px;
    border-right:2px solid #FFFFFF;
    float:left;
    height:110px;
-   margin:10px 12px 10px 0;
+   margin:10px 25px 10px 0;
    padding:5px;
    width:130px;
+}
+
+.thumb-play-indicator {
+   position: absolute;
+   display: none;
+   background-color:#EFEFEF;
+   margin: -24px 0 0 -5px;
+   padding: 5px;
+   font-size: 11px;
 }
 
 .ui-button-text {
    font-size: 10px;
    padding: 0.2em 0.4em;
+}
+.ui-sortable{
+   display: block;
+   padding: 2px;
 }

@@ -20,6 +20,7 @@ You are the VJ with youvj!
   <dev id="middle">
     <div id="player-container"></div>
   </dev>
+  <div id="footer-spacer">&nbsp;</div>
   <dev id="footer">
     <div id="footer-up">
       <a href='#'>UP</a>
@@ -60,8 +61,11 @@ jQuery(document).ready(function(){
       for( var i = 0; i < UVJ.artistVids.length; i++ ){
           jQuery('#middle').append( UVJ.makeThumb(UVJ.artistVids[i]) );
       }
-    UVJ.loadSimilar(UVJ.artist);
+      if( UVJ.artist && UVJ.artist.length ){
+        UVJ.loadSimilar(UVJ.artist);
+      }
     }
+
     UVJ.configurePlaylist();
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
