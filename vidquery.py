@@ -145,7 +145,7 @@ def _fetchVideos(artistName,
     query.max_results=50
     query.format = '5'
     feed = ytService.YouTubeQuery(query)
-    _blockWords = ['unofficial','parody','anime']
+    _blockWords = ['notofficial', 'unofficial','parody','anime']
     artistNameMin = _makeMinTitle(artistName)
 
     for entry in feed.entry:
@@ -163,7 +163,8 @@ def _fetchVideos(artistName,
 
         _blockFound = False
         for _w in _blockWords:
-            if _w in  vidTitle or _w in vidDescription.lower():
+            if _w in vidTitle.lower().replace(' ','') or \
+                    _w in vidDescription.lower().replace(' ',''):
                 _blockFound = True
                 break
         if _blockFound:
