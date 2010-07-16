@@ -250,7 +250,7 @@ UVJ.playlist.onAddItem = function(elem){
   $('.videoInfo-top',dst).append(
     $('<a class="playlist-del" href="#">[X]</a>').click(
       function(e){
-        $(this.parentNode).remove();
+        $(this.parentNode.parentNode).remove();
         $('#playlist').sortable('refresh');
         UVJ.player.updatePlaylist();
         return false;
