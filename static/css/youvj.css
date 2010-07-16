@@ -93,9 +93,10 @@ width:480px;
 }
 
 .play-video{
+   display: none;
    position: relative;
-   top: -33px;
-   left: 3px;
+   top: -45px;
+   left: 20px;
 }
 
 
@@ -142,7 +143,7 @@ width:480px;
 }
 
 .ui-button-text {
-   font-size: 10px;
+   font-size: 13px;
    padding: 0.2em 0.4em;
 }
 .ui-sortable{

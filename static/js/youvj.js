@@ -48,8 +48,21 @@ UVJ.makeThumb = function(videoInfo, options){
       'connectToSortable':'ul#playlist'
     });
   }
-  vid.mouseenter(function(e){UVJ.makeThumb.flipImages.start(e);});
-  vid.mouseleave(UVJ.makeThumb.flipImages.stop);
+  vid.mouseenter(
+    function(v){
+      return function(e){UVJ.makeThumb.flipImages.start(e);
+                         $('.play-video',v).show();
+                        };
+    }(vid)
+  );
+  vid.mouseleave(
+    function(v){
+      return function(e){
+        UVJ.makeThumb.flipImages.stop();
+        $('.play-video',v).hide();
+      };
+    }(vid)
+  );
   $('a',vid).click(function(){UVJ.renderPlayer(videoInfo);});
   $('.screencaps',vid).click(function(){UVJ.renderPlayer(videoInfo);});
   $('a',vid).button();
@@ -191,7 +204,7 @@ UVJ.player.updatePlaylist = function(){
     return;
   }
   $('#player-next-info').empty().append('Not in this playlist:')[0].info = null;
-  $('#player-next-info').append($(' <a href="#">Add it!</a>').click(
+  $('#player-next-info').append($('&nbsp;<a href="#">Add it!</a>').click(
                                   function(){ return UVJ.player.addToPlaylist(); }
                                   ));
 };
