@@ -247,6 +247,7 @@ UVJ.browse = function( artist ){
 
 UVJ.onBrowseCallback = function( resp, artist ){
   jQuery('#middle .videoInfo').remove();
+  jQuery('#middle br').remove();
   UVJ.artistVids = resp;
   for( var i = 0; i < resp.length; i++ ){
     jQuery('#middle').append( UVJ.makeThumb(resp[i]) );
