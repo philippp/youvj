@@ -1,10 +1,16 @@
 html, body{
    height: 100%;
    font-family: helvetica, verdana, sans-serif;
+   background-color: #94C8E9;
 }
 
 #footer-spacer{
 height: 150px;
+}
+
+#top{
+   background-color: #62A8D4;
+   border-bottom: 2px solid #2992D4;
 }
 
 #footer{
@@ -13,8 +19,8 @@ height: 150px;
    bottom: 0;
    left: 0;
    width: 100%;
-   background-color: #CC0099;
-   
+   background-color: #62A8D4;
+   border-top: 2px solid #2992D4;
 }
 
 #footer-up{
