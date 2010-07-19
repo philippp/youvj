@@ -42,11 +42,12 @@ CREATE TABLE `users` (
   `id` int(64) unsigned NOT NULL auto_increment,
   `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `subdomain` varchar(64) default NULL,
-  `nickname` varchar(64) default NULL,
+  `email` varchar(64) NOT NULL,
   `origin_network` int(64) default NULL,
   `salt` varchar(64) default NULL,
   `passwd_hash` varchar(64) default NULL,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  UNIQUE KEY k_email (email)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
