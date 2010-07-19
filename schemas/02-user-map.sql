@@ -39,11 +39,14 @@ DROP TABLE IF EXISTS `users`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `users` (
-  `user_id` int(64) unsigned NOT NULL auto_increment,
+  `id` int(64) unsigned NOT NULL auto_increment,
   `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  `subdomain` varchar(16) default NULL,
+  `subdomain` varchar(64) default NULL,
+  `nickname` varchar(64) default NULL,
   `origin_network` int(64) default NULL,
-  PRIMARY KEY (user_id)
+  `salt` varchar(64) default NULL,
+  `passwd_hash` varchar(64) default NULL,
+  PRIMARY KEY (id)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 

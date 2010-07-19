@@ -47,7 +47,7 @@ CREATE TABLE `playlists` (
   `user_id` int(64) NOT NULL,
   `title` varchar(100) NOT NULL,
   `subdomain` varchar(100) DEFAULT NULL,
-  `deleted_at` timestamp default NULL,
+  `deleted_at` timestamp DEFAULT 0,
   `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX us (user_id)

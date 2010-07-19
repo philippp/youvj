@@ -20,6 +20,15 @@ COLS = {
         'title',
         'subdomain',
         'created_at'
+        ],
+    'user':[
+        'id',
+        'created_at',
+        'subdomain',
+        'nickname',
+        'origin_network',
+        'salt',
+        'passwd_hash'
         ]
 }
 
