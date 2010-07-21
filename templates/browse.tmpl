@@ -66,7 +66,8 @@ jQuery(document).ready(function(){
       }
     }
 
-    UVJ.configurePlaylist();
+    UVJ.playlist.configure();
+
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );

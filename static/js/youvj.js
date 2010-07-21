@@ -153,6 +153,7 @@ UVJ.player.addToPlaylist = function(){
     var thumb = UVJ.makeThumb( player.info, {'draggable':false} );
     $('#playlist').append(thumb).sortable('refresh');
     UVJ.playlist.onAddItem( thumb );
+    UVJ.player.updatePlaylist();
   }
   return false;
 };
@@ -177,7 +178,9 @@ UVJ.player.updatePlaylist = function(){
     return;
   var pl = $('#playlist .videoInfo');
   var videoIdx = -1;
+  var playlistIds = [];
   for( var i = 0; i < pl.length; i++ ){
+    playlistIds[playlistIds.length] = pl[i].info['youtube_id'];
     if( pl[i].info['youtube_id'] == curInfo['youtube_id'] ){
       if( i + 1 < pl.length ){
         var nextSong = pl[i+1].info['artist'] + ' - ' + pl[i+1].info['title'];
@@ -191,14 +194,13 @@ UVJ.player.updatePlaylist = function(){
           )
         )[0].info = pl[i+1].info;
         videoIdx = i;
-        break;
       }else{
         $('#player-next-info').empty().append('Last video: Queue up more!')[0].info = null;
         videoIdx = i;
-        break;
       }
     }
   }// for
+  UVJ.playlist.saveCookie(playlistIds);
   if( videoIdx != -1 ){
     // Update what is currently playing in the playlist
     $("#playlist .thumb-play-indicator").hide();
@@ -213,7 +215,8 @@ UVJ.player.updatePlaylist = function(){
 };
 
 UVJ.playlist = {};
-UVJ.configurePlaylist = function(){
+
+UVJ.playlist.configure = function(){
   jQuery('#playlist').sortable({
     'over':function(e, ui){
       e.target.style.border = '2px solid blue';
@@ -258,6 +261,11 @@ UVJ.playlist.onAddItem = function(elem){
     )
   );
   dst.height(125);
+};
+
+UVJ.playlist.saveCookie = function( youtube_ids ){
+  var saveList = youtube_ids.join(',');
+  UVJ.setCookie('playlist',saveList,365);
 };
 
 UVJ.browse = function( artist ){
@@ -325,6 +333,29 @@ UVJ.onLoadSimilar = function(resp, artistName){
     );
   }
 
+};
+
+UVJ.setCookie = function(c_name,value,expiredays)
+{
+  var exdate=new Date();
+  exdate.setDate(exdate.getDate()+expiredays);
+  document.cookie=c_name+ "=" +escape(value)+
+    ((expiredays==null) ? "" : ";expires="+exdate.toUTCString());
+};
+
+UVJ.getCookie = function(c_name){
+  if (document.cookie.length>0)
+  {
+    var c_start=document.cookie.indexOf(c_name + "=");
+    if (c_start!=-1)
+    {
+      c_start=c_start + c_name.length+1;
+      var c_end=document.cookie.indexOf(";",c_start);
+      if (c_end==-1) c_end=document.cookie.length;
+      return unescape(document.cookie.substring(c_start,c_end));
+    }
+  }
+  return "";
 };
 
 var renderSimilar = function(pairing){

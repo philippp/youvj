@@ -20,6 +20,15 @@ COLS = {
         'title',
         'subdomain',
         'created_at'
+        ],
+    'users':[
+        'id',
+        'created_at',
+        'subdomain',
+        'email',
+        'origin_network',
+        'salt',
+        'passwd_hash'
         ]
 }
 
@@ -72,10 +81,9 @@ def delete(conn, table, where):
 
 def update(conn, table, set_dict, where):
     cursor = conn.cursor()
-    set_str = ','.join(['='.join(i) for i in set_dict.items()])
+    set_str = ','.join(['='.join(conn.escape_string(i)) for i in set_dict.items()])
     query_str = "UPDATE %s SET %s WHERE %s" % \
         (table, set_str, where)
-    query_str += " WHERE "+where
     cursor.execute(query_str)
     rows = cursor.fetchall()
     cursor.close()

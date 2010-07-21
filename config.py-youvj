@@ -9,6 +9,8 @@ FB_APP_SECRET = "99ead8444dbbd10beea77df966e8836f"
 domain = 'http://youvj.com'
 title = 'YouVJ'
 
+session_secret = 'DmtW>:V2FQIp3\\ICEeh4G0@CAZBp4G<EFVxQ:6GRr\\WJ];49\\:;qL=oepxDk`]d<'
+
 path = '/var/www/youvj.com'
 port = '8080'
 

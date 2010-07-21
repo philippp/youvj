@@ -12,6 +12,7 @@ import gogreen.wsgi
 import vidserv
 import config
 import magic
+import daemon
 from webob import Request, Response
 
 handlers = {}
@@ -76,18 +77,43 @@ def wsgiapp(env, start_response):
                    resp.headerlist)
     return [resp.body]
 
-
 def from_file(fname):
     ms = magic.open(magic.MAGIC_NONE)
     ms.load()
     type =  ms.file(fname)
     return type
 
+
+class MyDaemon(daemon.Daemon):
+    def run(self):
+        gogreen.wsgi.serve((self.host, self.port), wsgiapp,
+                           access_log='access.log')
+
 if __name__ == "__main__":
     parser = optparse.OptionParser(add_help_option=False)
     parser.add_option("-p", "--port", type="int", default=config.port)
     parser.add_option("-h", "--host", default=config.host)
+    parser.add_option("-d", "--daemon", default='')
 
     options, args = parser.parse_args()
-    gogreen.wsgi.serve((options.host, options.port), wsgiapp,
-            access_log='access.log')
+
+    if not options.daemon:
+        gogreen.wsgi.serve((options.host, options.port), wsgiapp,
+                           access_log='access.log')
+    else:
+        d = MyDaemon('/tmp/youvj.pid',
+                     port = options.port,
+                     host = options.host)
+        if options.daemon == 'start':
+            d.start()
+        elif options.daemon == 'stop':
+            d.stop()
+        elif options.daemon == 'restart':
+            d.restart()
+        else:
+            print "Unknown command. Valid operations are start|stop|restart."
+            sys.exit(2)
+        sys.exit(0)
+
+        
+        

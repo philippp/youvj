@@ -1,5 +1,8 @@
 import pdb
 import viddb
+import vidauth
+import vidfail
+import _mysql_exceptions
 
 def createPlaylist(conn, user_id, title, subdomain=None):
     playlist = {'title':title,
@@ -22,10 +25,37 @@ def deletePlaylist(conn, playlist_id):
 
 def renamePlaylist(conn, playlist_id, title):
     cursor = conn.cursor()
-    cursor.execute("UPDATE playlists SET title = \"%\" WHERE id = %s" % \
+    cursor.execute("UPDATE playlists SET title = \"%s\" WHERE id = %s" % \
                            (title, playlist_id))
 
 
+def getUser(conn, email):
+    email = conn.escape_string(email)    
+    user = viddb.load(conn,
+                      'users',
+                      viddb.COLS['users'],
+                      where= "email = \"%s\"" % email)
+    user = user and user[0] or None
+    return user
+
+def addUser(conn, email, password=None):
+    email = conn.escape_string(email)
+    if not password:
+        # Make a temp pw and sent the user a session
+        password = vidauth.make_salt()
+    salt = vidauth.make_salt()
+    user_data = {
+        'salt' : salt,
+        'email' : email,
+        'passwd_hash' : vidauth.hash_pass( password, salt )
+        }
+    try:
+        viddb.insert(conn,
+                     'users',
+                     **user_data)
+    except _mysql_exceptions.IntegrityError:
+        raise vidfail.UserExists()
+        
 def saveVideo(conn, vidInfo, user_id, playlist_id):
     tail_node_id = 0
     cursor = conn.cursor()

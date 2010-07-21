@@ -9,15 +9,16 @@ FB_APP_SECRET = "fe7a9bb66b092c645fe1b8a9256612a4"
 domain = 'http://notphil.com:8080'
 title = 'YouVJ'
 
-session_secret = 'a;:1\\;Fpl2\\:;:A2Bk4tqTtIC4lJ8h7F>YB2U692649YI3CEo39yYUJQE6an\\dn;'
+session_secret = 'UI<73OuII:Y?<fFUCR0>6>A`<<Iqs88vm=s\\C98Q6=Ht[sn<95SEs3=4>t58fucI'
 
-path = '/home/philippp/youvj'
-port = '8080'
+host = 'localhost'
+path = '/usr/src/youvj'
+port = '9000'
 
 db = {
     'host':'localhost',
-    'user':'httpd',
-    'passwd':'httpd_db',
+    'user':'philippp',
+    'passwd':'philippp',
     'db':'youvj',
     }
 
