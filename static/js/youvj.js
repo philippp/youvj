@@ -268,6 +268,30 @@ UVJ.playlist.saveCookie = function( youtube_ids ){
   UVJ.setCookie('playlist',saveList,365);
 };
 
+UVJ.user = {};
+UVJ.user.login = function( email, password ){
+  jQuery.post('/user/login',
+              {'email':email,
+               'password':password},
+              function(resp){
+                window.location = window.location;
+              },
+              'json');
+  return false;
+};
+
+UVJ.user.create = function( email, password ){
+  jQuery.post('/user/create',
+              {'email':email,
+               'password':password},
+              function(resp){
+                window.location = window.location;
+              },
+              'json');
+  return false;
+};
+
+
 UVJ.browse = function( artist ){
   jQuery.post('/findvideos',
               {'artist':artist},

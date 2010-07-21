@@ -6,14 +6,14 @@ FB_APP_ID = 117642398250692
 FB_APP_KEY = "e58f4142b9e80748c9f4826fb9ab23cc"
 FB_APP_SECRET = "fe7a9bb66b092c645fe1b8a9256612a4"
 
-domain = 'http://notphil.com:8080'
 title = 'YouVJ'
 
 session_secret = 'UI<73OuII:Y?<fFUCR0>6>A`<<Iqs88vm=s\\C98Q6=Ht[sn<95SEs3=4>t58fucI'
 
-host = 'localhost'
+hostname = 'localhost'
 path = '/usr/src/youvj'
 port = '9000'
+domain = 'http://%s:%s' % (hostname, port)
 
 db = {
     'host':'localhost',

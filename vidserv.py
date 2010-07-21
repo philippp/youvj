@@ -8,15 +8,17 @@ import pdb
 import time
 import urllib
 
-import webob
+import config
+import genres
 import lastfm
 import pylast
-import vidquery
-import vidmapper
-import config
-import vidlogger
+import vidauth
 import viddb
-import genres
+import vidlogger
+import vidmapper
+import vidquery
+import webob
+
 from lib import memcache
 
 class Controller(object):
@@ -56,6 +58,7 @@ class JSONController(Controller):
 
     def render(self, req):
         res = webob.Response()
+        self.res = res
         res.content_type = 'text/json'
         res.charset = 'utf8'
         res.body = json.dumps(self.respond(req))
@@ -67,6 +70,7 @@ class HTMLController(Controller):
 
     def render(self, req):
         res = webob.Response()
+        self.res = res
         res.body = self.respond(req)
         return res
 
@@ -94,6 +98,49 @@ class Browse(HTMLController):
             self.mem.set(cacheKey, cachedRes)
         return cachedRes
 
+class UserLogin(JSONController):
+    def respond( self, req ):
+        email = req.args.get('email','')
+        raw_password = req.args.get('password','')
+        user_data = vidmapper.getUser( viddb.get_conn(),
+                                       email )
+        if not user_data:
+            raise vidfail.InvalidEmail()
+        
+        if not vidauth.auth_user( user_data, raw_password ):
+            raise vidfail.InvalidPassword()
+
+        session_str = vidauth.encode_session_str( user_data )
+        self.res.set_cookie('session',session_str,
+                             max_age = 60*60*24*10,
+                             path = '/',
+                             domain = config.hostname,
+                             secure = True)
+        return True
+
+class UserCreate(JSONController):
+    def respond( self, req ):
+        email = req.args.get('email','')
+        raw_password = req.args.get('password','')
+        user_data = vidmapper.getUser( viddb.get_conn(),
+                                       email )
+        if user_data:
+            raise vidfail.UserExists()
+        
+        vidmapper.addUser( viddb.get_conn(),
+                           user_data,
+                           raw_password )
+
+        user_data = vidmapper.getUser( viddb.get_conn(),
+                                       email )
+
+        session_str = vidauth.encode_session_str( user_data )
+        self.res.set_cookie('session',session_str,
+                             max_age = 60*60*24*10,
+                             path = '/',
+                             domain = config.hostname,
+                             secure = True)
+        return 
 class FindVideos(JSONController):    
     def respond(self, req):
         artist = req.args.get('artist')

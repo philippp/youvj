@@ -15,6 +15,16 @@ You are the VJ with youvj!
     <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
       <input type="text" id="browseInput"/>
     </form>
+    <div id="login">
+      <form onsubmit="return UVJ.user.login(jQuery('#login_email').val(), jQuery('#login_password').val());">
+    	email: <input type="text" id="login_email"/>
+	<a href='#'>Create a free account!</a>
+	<br/>
+    	password: <input type="text" id="login_password"/>
+	<input type="submit" value="login"/>
+
+      </form>
+    </div>
     <div id="browse-similar"></div>
   </dev>
   <dev id="middle">
