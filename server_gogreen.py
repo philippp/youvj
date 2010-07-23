@@ -52,7 +52,7 @@ def wsgiapp(env, start_response):
     # If that fails, look for a file at this location
     fpath = config.path + '/static' + request.path_info
     if os.path.isfile(fpath):
-        mime = magic.from_file(fpath, mime=True)
+        mime = from_file(fpath)
         if fpath[-4:] == ".css":
             mime = "text/css"
         resp = file(fpath, 'r').read()
@@ -76,6 +76,13 @@ def wsgiapp(env, start_response):
     start_response(resp.status,
                    resp.headerlist)
     return [resp.body]
+
+def from_file(fname):
+    ms = magic.open(magic.MAGIC_NONE)
+    ms.load()
+    type =  ms.file(fname)
+    return type
+
 
 class MyDaemon(daemon.Daemon):
     def run(self):
