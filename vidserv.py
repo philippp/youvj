@@ -154,8 +154,7 @@ class UserCreate(JSONController):
         self.res.set_cookie('session',session_str,
                              max_age = 60*60*24*10,
                              path = '/',
-                             domain = config.hostname,
-                             secure = True)
+                             domain = config.hostname)
         return 
 class FindVideos(JSONController):    
     def respond(self, req):
