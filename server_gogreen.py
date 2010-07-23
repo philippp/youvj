@@ -55,7 +55,10 @@ def wsgiapp(env, start_response):
     # If that fails, look for a file at this location
     fpath = config.path + '/static' + request.path_info
     if os.path.isfile(fpath):
-        mime = from_file(fpath)
+        if hasattr( magic, 'from_file' ):
+            mime = magic.from_file(fpath, mime=True)
+        else:
+            mime = from_file(fpath)
         if fpath[-4:] == ".css":
             mime = "text/css"
         resp = file(fpath, 'r').read()
