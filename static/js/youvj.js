@@ -20,6 +20,8 @@ UVJ.makeThumb = function(videoInfo, options){
     ).append(
       $('<div class="drag-handle"><img src="/images/drag_handle.png" alt="drag"/><span class="title">'+videoInfo['title']+'</span></div>')
     )).append(
+      $('<div style="clear:both;"></div>')
+    ).append(
     $('<div class="screencaps"></div>').append(
       $('<img class="thumb t0" src="'+videoInfo['thumbnail_1']+'"/>')
     ).append(
