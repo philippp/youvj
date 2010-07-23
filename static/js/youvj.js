@@ -1,9 +1,59 @@
 UVJ = {};
 
-UVJ.renderTitleSection = function(title){
-  return $('<div class="titleSection"><div class="title">'+
-           title+'</div></div>');
+UVJ.user = {};
+UVJ.user.makeLogin = function(){
+  var email = $("<input id='lf_email' type='text'/>");
+  var password = $("<input id='lf_pass' type='password'/>");
+  var lf = $("<form>").append(
+    $("<span>email:</span>")
+  ).append(email).append(
+    $("<span>password:</span>")
+  ).append(password).append(
+    $("<br/>")
+  ).append(
+    $("<input type='button' value='log on'/>").click(
+      function(e){
+        UVJ.user.login( email.val(), password.val() );
+        return false;
+      }
+    )
+  ).append(
+    $('<span>or</span>')
+  ).append(
+    $("<input type='button' value='sign up'/>").click(
+      function(e){
+        UVJ.user.create( email.val(), password.val() );
+        return false;
+      }
+    )
+  ).submit(
+    function(){return false;}
+  );
+  return lf;
 };
+
+UVJ.user.login = function( email, password ){
+  jQuery.post('/user/login',
+              {'email':email,
+               'password':password},
+              function(resp){
+                window.location = window.location;
+              },
+              'json');
+  return false;
+};
+
+UVJ.user.create = function( email, password ){
+  jQuery.post('/user/create',
+              {'email':email,
+               'password':password},
+              function(resp){
+                window.location = window.location;
+              },
+              'json');
+  return false;
+};
+
 
 /**
  * Render a draggable video thumbnail and preview box
@@ -172,6 +222,10 @@ UVJ.player.next = function(){
 UVJ.playerStateChange = function(newState) {
   if( newState == 0 ){ // If the video stopped, play the next one in the queue
     UVJ.player.next();
+  }else if( newState == 3){ // Video is buffering
+    ytplayer = document.getElementById("myytplayer");
+    var levels = ytplayer.getAvailableQualityLevels();
+    ytplayer.setPlaybackQuality(levels[0]);
   }
 
 };
@@ -271,30 +325,6 @@ UVJ.playlist.saveCookie = function( youtube_ids ){
   var saveList = youtube_ids.join(',');
   UVJ.setCookie('playlist',saveList,365);
 };
-
-UVJ.user = {};
-UVJ.user.login = function( email, password ){
-  jQuery.post('/user/login',
-              {'email':email,
-               'password':password},
-              function(resp){
-                window.location = window.location;
-              },
-              'json');
-  return false;
-};
-
-UVJ.user.create = function( email, password ){
-  jQuery.post('/user/create',
-              {'email':email,
-               'password':password},
-              function(resp){
-                window.location = window.location;
-              },
-              'json');
-  return false;
-};
-
 
 UVJ.browse = function( artist ){
   jQuery.post('/findvideos',
