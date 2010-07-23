@@ -56,6 +56,16 @@ font-style: italic;
    border-top: 2px solid #2992D4;
 }
 
+#footer-tip{
+   color:#2992D4;
+   font-size:30px;
+   position:absolute;
+   text-align:center;
+   top:25px;
+   width:100%;
+   z-index:2;
+}
+
 #footer-down{
    display:none;
 }
@@ -64,6 +74,7 @@ font-style: italic;
    float: right;
    position: relative;
    top: -20px;
+   z-index: 5;
 }
 
 #playlist{
@@ -72,6 +83,8 @@ font-style: italic;
    padding: 50px 0 0 10px;
    margin: -50px 0 0 0;
    overflow: hidden;
+   position: absolute;
+   z-index: 3;
 }
 
 #playlist .videoInfo{
