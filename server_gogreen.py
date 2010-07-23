@@ -27,6 +27,7 @@ handlers = {
     'listsavedvideos' : vidserv.ListSavedVideos,
     'log' : vidserv.ClientLogger,
     'user/login' : vidserv.UserLogin,
+    'user/logout' : vidserv.UserLogout,
     'user/create' : vidserv.UserCreate,
 }
 

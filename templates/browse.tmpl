@@ -12,13 +12,14 @@ You are the VJ with youvj!
 #def body()
 <dev id="container">
   <dev id="top">
+    <div id="login">
+    </div>
     <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
       <input type="text" id="browseInput"/>
     </form>
-    <div id="login">
-    </div>
     <div id="browse-similar"></div>
   </dev>
+  <div class="clear"></div>
   <dev id="middle">
     <div id="player-container"></div>
   </dev>
@@ -69,7 +70,7 @@ jQuery(document).ready(function(){
     }
 
     UVJ.playlist.configure();
-    jQuery('#login').append(UVJ.user.makeLogin());
+    UVJ.user.updateLoginStatus();
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );

@@ -10,7 +10,7 @@ title = 'YouVJ'
 
 session_secret = 'UI<73OuII:Y?<fFUCR0>6>A`<<Iqs88vm=s\\C98Q6=Ht[sn<95SEs3=4>t58fucI'
 
-hostname = 'localhost'
+hostname = 'ppp.com'
 path = '/usr/src/youvj'
 port = '9000'
 domain = 'http://%s:%s' % (hostname, port)

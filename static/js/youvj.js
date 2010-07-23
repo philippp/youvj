@@ -1,6 +1,24 @@
 UVJ = {};
 
 UVJ.user = {};
+
+UVJ.user.updateLoginStatus = function(){
+    if( UVJ.getCookie('session') && UVJ.getCookie('session') != '0' ){
+        jQuery('#login').empty().append(UVJ.user.makeLogout());
+    }else{
+        jQuery('#login').empty().append(UVJ.user.makeLogin());
+    }
+};
+
+UVJ.user.makeLogout = function(){
+  return $('<a class="logout" href="#">Log Out</a>').click(
+    function(){
+      UVJ.user.logout();
+      return false;
+    }
+  );
+};
+
 UVJ.user.makeLogin = function(){
   var email = $("<input id='lf_email' type='text'/>");
   var password = $("<input id='lf_pass' type='password'/>");
@@ -9,22 +27,22 @@ UVJ.user.makeLogin = function(){
   ).append(email).append(
     $("<span>password:</span>")
   ).append(password).append(
-    $("<br/>")
-  ).append(
-    $("<input type='button' value='log on'/>").click(
-      function(e){
-        UVJ.user.login( email.val(), password.val() );
-        return false;
-      }
-    )
-  ).append(
-    $('<span>or</span>')
-  ).append(
-    $("<input type='button' value='sign up'/>").click(
-      function(e){
-        UVJ.user.create( email.val(), password.val() );
-        return false;
-      }
+    $("<div class='buttons'></div>").append(
+      $("<input class='button' type='button' value='log on'/>").click(
+        function(e){
+          UVJ.user.login( email.val(), password.val() );
+          return false;
+        }
+      )
+    ).append(
+      $('<span>or</span>')
+    ).append(
+      $("<input class='button' type='button' value='sign up'/>").click(
+        function(e){
+          UVJ.user.create( email.val(), password.val() );
+          return false;
+        }
+      )
     )
   ).submit(
     function(){return false;}
@@ -32,12 +50,22 @@ UVJ.user.makeLogin = function(){
   return lf;
 };
 
+UVJ.user.logout = function(){
+  jQuery.post('/user/logout',
+              {},
+              function(resp){
+                UVJ.user.updateLoginStatus();
+              },
+              'json');
+  return false;
+};
+
 UVJ.user.login = function( email, password ){
   jQuery.post('/user/login',
               {'email':email,
                'password':password},
               function(resp){
-                window.location = window.location;
+                UVJ.user.updateLoginStatus();
               },
               'json');
   return false;
@@ -48,7 +76,7 @@ UVJ.user.create = function( email, password ){
               {'email':email,
                'password':password},
               function(resp){
-                window.location = window.location;
+                UVJ.user.updateLoginStatus();
               },
               'json');
   return false;
@@ -395,6 +423,8 @@ UVJ.onLoadSimilar = function(resp, artistName){
 
 UVJ.setCookie = function(c_name,value,expiredays)
 {
+  if( !value || value.length == 0 )
+    return;
   var exdate=new Date();
   exdate.setDate(exdate.getDate()+expiredays);
   document.cookie=c_name+ "=" +escape(value)+

@@ -115,8 +115,15 @@ class UserLogin(JSONController):
         self.res.set_cookie('session',session_str,
                              max_age = 60*60*24*10,
                              path = '/',
-                             domain = config.hostname,
-                             secure = True)
+                             domain = '.'+config.hostname)
+        return True
+
+class UserLogout(JSONController):
+    def respond( self, req ):
+        self.res.set_cookie('session','0',
+                             max_age = 60*60*24*10,
+                             path = '/',
+                             domain = config.hostname)
         return True
 
 class UserCreate(JSONController):
@@ -129,7 +136,7 @@ class UserCreate(JSONController):
             raise vidfail.UserExists()
         
         vidmapper.addUser( viddb.get_conn(),
-                           user_data,
+                           email,
                            raw_password )
 
         user_data = vidmapper.getUser( viddb.get_conn(),
