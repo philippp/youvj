@@ -14,6 +14,7 @@ import lastfm
 import pylast
 import vidauth
 import viddb
+import vidfail
 import vidlogger
 import vidmapper
 import vidquery
