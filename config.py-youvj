@@ -13,7 +13,7 @@ session_secret = 'DmtW>:V2FQIp3\\ICEeh4G0@CAZBp4G<EFVxQ:6GRr\\WJ];49\\:;qL=oepxD
 hostname = 'youvj.com'
 path = '/var/www/youvj.com'
 port = '8080'
-domain = 'http://%s:%s' % (hostname, port)
+domain = 'http://%s' % hostname
 
 db = {
     'host':'localhost',
