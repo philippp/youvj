@@ -28,6 +28,8 @@ UVJ.user.makeLogin = function(){
     $("<span>password:</span>")
   ).append(password).append(
     $("<div class='buttons'></div>").append(
+      $("<span id='login-error-msg'></span>")
+    ).append(
       $("<input class='button' type='button' value='log on'/>").click(
         function(e){
           UVJ.user.login( email.val(), password.val() );
@@ -65,7 +67,12 @@ UVJ.user.login = function( email, password ){
               {'email':email,
                'password':password},
               function(resp){
-                UVJ.user.updateLoginStatus();
+                if( !resp.rc ){
+                  UVJ.user.updateLoginStatus();
+                }else{
+                  $('#login-error-msg').html(resp.msg);
+                }
+
               },
               'json');
   return false;
@@ -76,7 +83,11 @@ UVJ.user.create = function( email, password ){
               {'email':email,
                'password':password},
               function(resp){
-                UVJ.user.updateLoginStatus();
+                if( !resp.rc ){
+                  UVJ.user.updateLoginStatus();
+                }else{
+                  $('#login-error-msg').html(resp.msg);
+                }
               },
               'json');
   return false;

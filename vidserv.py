@@ -62,7 +62,11 @@ class JSONController(Controller):
         self.res = res
         res.content_type = 'text/json'
         res.charset = 'utf8'
-        res.body = json.dumps(self.respond(req))
+        try:
+            raw_response = self.respond(req)
+        except vidfail.VidFail, vf:
+            raw_response = {'rc':vf.rc, 'msg':vf.msg}
+        res.body = json.dumps(raw_response)
         return res
 
 class HTMLController(Controller):
@@ -130,6 +134,10 @@ class UserCreate(JSONController):
     def respond( self, req ):
         email = req.args.get('email','')
         raw_password = req.args.get('password','')
+
+        if len(raw_password) < 4:
+            raise vidfail.WeakPassword()
+
         user_data = vidmapper.getUser( viddb.get_conn(),
                                        email )
         if user_data:

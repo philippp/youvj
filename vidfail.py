@@ -8,11 +8,15 @@ class VidFail(Exception):
 
 class InvalidEmail(VidFail):
     rc = 1000
-    msg = "Invalid email"
+    msg = "If you're new, click sign up!"
 
 class InvalidPassword(VidFail):
     rc = 1001
-    msg = "Invalid email"
+    msg = "Wrong Password"
+
+class WeakPassword(VidFail):
+    rc = 1001
+    msg = "Pick a better password :)"
 
 class UserExists(VidFail):
     rc = 1002
