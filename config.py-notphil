@@ -6,13 +6,15 @@ FB_APP_ID = 117642398250692
 FB_APP_KEY = "e58f4142b9e80748c9f4826fb9ab23cc"
 FB_APP_SECRET = "fe7a9bb66b092c645fe1b8a9256612a4"
 
-domain = 'http://notphil.com:8080'
+
 title = 'YouVJ'
 
 session_secret = 'a;:1\\;Fpl2\\:;:A2Bk4tqTtIC4lJ8h7F>YB2U692649YI3CEo39yYUJQE6an\\dn;'
 
+hostname = 'notphil.com'
 path = '/home/philippp/youvj'
 port = '8080'
+domain = 'http://%s:%s' % (hostname, port)
 
 db = {
     'host':'localhost',

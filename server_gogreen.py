@@ -85,7 +85,7 @@ class MyDaemon(daemon.Daemon):
 if __name__ == "__main__":
     parser = optparse.OptionParser(add_help_option=False)
     parser.add_option("-p", "--port", type="int", default=config.port)
-    parser.add_option("-h", "--host", default=config.host)
+    parser.add_option("-h", "--host", default=config.hostname)
     parser.add_option("-d", "--daemon", default='')
 
     options, args = parser.parse_args()
