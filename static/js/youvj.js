@@ -136,9 +136,11 @@ UVJ.renderPlayer = function(videoInfo){
                      {'movie':purl,
                       'fs':1,
                       'allowfullscreen':true,
+                      'version':3,
                       'allowscriptaccess':'always'},
                      {'movie':purl,
                       'fs':1,
+                      'version':3,
                       'allowfullscreen':true,
                       'allowScriptAccess':'always'},
                      {'id':'myytplayer'}
