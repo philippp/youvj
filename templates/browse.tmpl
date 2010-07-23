@@ -43,19 +43,19 @@ You are the VJ with youvj!
       if( easeFooter.f.height() >= easeFooter.up ){
         clearInterval(easeFooter.t);
       }else{
-        easeFooter.f.height( easeFooter.f.height() + 2 );
+        easeFooter.f.height( easeFooter.f.height() + 4 );
       }
     }else{ //down
       if( easeFooter.f.height() <= easeFooter.down ){
         clearInterval(easeFooter.t);
       }else{
-        easeFooter.f.height( easeFooter.f.height() - 2 );
+        easeFooter.f.height( easeFooter.f.height() - 4 );
       }
     }
   };
   easeFooter.up = 150;
-  easeFooter.down = 50;
-  easeFooter.dir = 'up';
+  easeFooter.down = 80;
+  easeFooter.dir = 'down';
   easeFooter.f = jQuery('#footer');
   easeFooter.t = null;
 
