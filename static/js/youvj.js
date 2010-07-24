@@ -121,7 +121,7 @@ UVJ.makeVidTile = function(videoInfo){
  * Render a draggable video thumbnail and preview box
  * @return div.videInfo
  */
-UVJ.makeThumb = function(videoInfo){
+UVJ.makeThumb = function(videoInfo, options){
   if( !options ) options = {};
   if( options.draggable === undefined ){
     options.draggable = true;
