@@ -95,6 +95,10 @@ font-style: italic;
    clear:both;
 }
 
+.default-value {
+   color: #777777;
+}
+
 .playlist-del {
    float: right;
 }
@@ -105,8 +109,12 @@ font-style: italic;
    font-size: 12px;
 }
 
-#browseInput{
+form.browse input{
    font-size: 20px;
+}
+
+#browse-button{
+   margin-left: 10px;
 }
 
 .browse-similar-entry{

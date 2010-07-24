@@ -14,8 +14,8 @@ You are the VJ with youvj!
   <dev id="top">
     <div id="login">
     </div>
-    <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
-      <input type="text" id="browseInput"/>
+    <form class="browse">
+      <input type="text" id="browseInput"/><input type="submit" id="browse-button" value="Search"/>
     </form>
     <div id="browse-similar"></div>
   </dev>
@@ -73,8 +73,18 @@ jQuery(document).ready(function(){
       }
     }
 
+    jQuery('form.browse').submit(function(e){
+	jQuery('#browseInput').focus();
+	var artistName = jQuery('#browseInput').val();
+	if( artistName.length > 0 ){
+	    UVJ.browse(artistName);
+	}
+	return false;
+    });
+
     UVJ.playlist.configure();
     UVJ.user.updateLoginStatus();
+    jQuery('#browseInput').defaultValue('Artist Name');
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );
