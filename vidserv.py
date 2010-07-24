@@ -81,7 +81,9 @@ class HTMLController(Controller):
 
 class FrontPage(HTMLController):
     def respond(self, req):
-        return self.template("landing_page")
+        recent_videos = json.dumps(vidquery.recentSampleGet(self.mem))
+        return self.template("landing_page",
+                             recent_videos = recent_videos)
 
 class Browse(HTMLController):
     def respond(self, req):
@@ -158,10 +160,7 @@ class FindVideos(JSONController):
 
 class Recent(JSONController):    
     def respond(self, req):
-        artists = vidquery.recentSampleGet(self.mem)
-        print artists
-        videos = [ vidquery.fetchCached(self.mem, a) for a in artists ]
-        return zip(artists, videos)
+        return vidquery.recentSampleGet(self.mem)
 
 class ClientLogger(JSONController):
     def respond(self, req):

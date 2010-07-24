@@ -27,25 +27,21 @@ You are the VJ with youvj! Music Videos, VJ, ...
   </form>
   <div id="recent">
     <div class="legend">Recent Searches:</div>  
-    <ul>
-      <li><a href='/lady%20gaga'>Lady Gaga</a></li>
-      <li><a href='/the%20knife'>The Knife</a></li>
-      <li><a href='/outkast'>Outkast</a></li>
-      <li><a href='/tool'>Tool</a></li>
-      <li><a href='/yeasayer'>Yeasayer</a></li>
-      <li><a href='/fleetwood%20mac'>Fleetwood Mac</a></li>
-      <li><a href='/ZZ%20Top'>ZZ Top</a></li>
-      <li><a href='/OK%20Go'>OK Go</a></li>
-    </ul>
-  </div>
-
-  <div id="trending">
-    <div class="legend">Hot Playlists:</div>  
   </div>
 
 </dev>
 <dev id="bottom"></dev>
 <script>
+var recent = $recent_videos;
+var recentList = jQuery('<ul></ul>');
+for( var i = 0; i < recent.length; i++ ){
+     recentList.append(
+	jQuery('<li></li>').append(
+		jQuery('<a href="/'+recent[i][0]+'">'+recent[i][0]+'</a>')
+	)
+     )
+}
+jQuery("#recent").append(recentList);
 
 </script>
 
