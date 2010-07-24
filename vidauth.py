@@ -32,7 +32,7 @@ def sign_dict(to_sign):
     signature = trimBase64(base64.encodestring(my_digest))
     return signature
 
-def generate_secret(length=64):
+def generate_secret(length=32):
     random.seed()
     alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+'
     return reduce(lambda x,y: x+y, random.sample(alphabet, length))

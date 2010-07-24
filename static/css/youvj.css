@@ -13,8 +13,41 @@ height: 150px;
    border-bottom: 2px solid #2992D4;
 }
 
+#login{
+   float: right;
+   font-size: 13px;
+}
+
+form input{
+   font-size: 13px;
+}
+
+#lf_email{
+   margin: 0 10px 0 5px;
+   width: 150px;
+}
+
+#lf_pass { 
+   width: 100px;
+   margin-left: 5px
+}
+
+#login .buttons {
+   margin-top: 5px;
+   text-align: right;
+}
+
+#login-error-msg {
+font-style: italic;
+}
+
+#login .buttons span {
+   margin-left: 5px;
+   margin-right: 5px;
+}
+
 #footer{
-   height: 150px;
+   height: 80px;
    position: fixed;
    bottom: 0;
    left: 0;
@@ -23,7 +56,17 @@ height: 150px;
    border-top: 2px solid #2992D4;
 }
 
-#footer-up{
+#footer-tip{
+   color:#2992D4;
+   font-size:30px;
+   position:absolute;
+   text-align:center;
+   top:25px;
+   width:100%;
+   z-index:2;
+}
+
+#footer-down{
    display:none;
 }
 
@@ -31,6 +74,7 @@ height: 150px;
    float: right;
    position: relative;
    top: -20px;
+   z-index: 5;
 }
 
 #playlist{
@@ -39,10 +83,20 @@ height: 150px;
    padding: 50px 0 0 10px;
    margin: -50px 0 0 0;
    overflow: hidden;
+   position: absolute;
+   z-index: 3;
 }
 
 #playlist .videoInfo{
 
+}
+
+.clear { 
+   clear:both;
+}
+
+.default-value {
+   color: #777777;
 }
 
 .playlist-del {
@@ -53,6 +107,14 @@ height: 150px;
 #browse-similar{
    padding-top: 5px;
    font-size: 12px;
+}
+
+form.browse input{
+   font-size: 20px;
+}
+
+#browse-button{
+   margin-left: 10px;
 }
 
 .browse-similar-entry{

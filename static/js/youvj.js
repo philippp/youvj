@@ -1,9 +1,98 @@
 UVJ = {};
 
-UVJ.renderTitleSection = function(title){
-  return $('<div class="titleSection"><div class="title">'+
-           title+'</div></div>');
+UVJ.user = {};
+
+UVJ.user.updateLoginStatus = function(){
+    if( UVJ.getCookie('session') && UVJ.getCookie('session') != '0' ){
+        jQuery('#login').empty().append(UVJ.user.makeLogout());
+    }else{
+        jQuery('#login').empty().append(UVJ.user.makeLogin());
+    }
 };
+
+UVJ.user.makeLogout = function(){
+  return $('<a class="logout" href="#">Log Out</a>').click(
+    function(){
+      UVJ.user.logout();
+      return false;
+    }
+  );
+};
+
+UVJ.user.makeLogin = function(){
+  var email = $("<input id='lf_email' type='text'/>");
+  var password = $("<input id='lf_pass' type='password'/>");
+  var lf = $("<form>").append(
+    $("<span>email:</span>")
+  ).append(email).append(
+    $("<span>password:</span>")
+  ).append(password).append(
+    $("<div class='buttons'></div>").append(
+      $("<span id='login-error-msg'></span>")
+    ).append(
+      $("<input class='button' type='button' value='log on'/>").click(
+        function(e){
+          UVJ.user.login( email.val(), password.val() );
+          return false;
+        }
+      )
+    ).append(
+      $('<span>or</span>')
+    ).append(
+      $("<input class='button' type='button' value='sign up'/>").click(
+        function(e){
+          UVJ.user.create( email.val(), password.val() );
+          return false;
+        }
+      )
+    )
+  ).submit(
+    function(){return false;}
+  );
+  return lf;
+};
+
+UVJ.user.logout = function(){
+  jQuery.post('/user/logout',
+              {},
+              function(resp){
+                UVJ.user.updateLoginStatus();
+              },
+              'json');
+  return false;
+};
+
+UVJ.user.login = function( email, password ){
+  jQuery.post('/user/login',
+              {'email':email,
+               'password':password},
+              function(resp){
+                if( !resp.rc ){
+                  UVJ.user.updateLoginStatus();
+                }else{
+                  $('#login-error-msg').html(resp.msg);
+                }
+
+              },
+              'json');
+  return false;
+};
+
+UVJ.user.create = function( email, password ){
+  jQuery.post('/user/create',
+              {'email':email,
+               'password':password},
+              function(resp){
+                if( !resp.rc ){
+                  UVJ.user.updateLoginStatus();
+                }else{
+                  $('#login-error-msg').html(resp.msg);
+                }
+              },
+              'json');
+  return false;
+};
+
 
 /**
  * Render a draggable video thumbnail and preview box
@@ -172,6 +261,10 @@ UVJ.player.next = function(){
 UVJ.playerStateChange = function(newState) {
   if( newState == 0 ){ // If the video stopped, play the next one in the queue
     UVJ.player.next();
+  }else if( newState == 3){ // Video is buffering
+    ytplayer = document.getElementById("myytplayer");
+    var levels = ytplayer.getAvailableQualityLevels();
+    ytplayer.setPlaybackQuality(levels[0]);
   }
 
 };
@@ -341,6 +434,8 @@ UVJ.onLoadSimilar = function(resp, artistName){
 
 UVJ.setCookie = function(c_name,value,expiredays)
 {
+  if( !value || value.length == 0 )
+    return;
   var exdate=new Date();
   exdate.setDate(exdate.getDate()+expiredays);
   document.cookie=c_name+ "=" +escape(value)+

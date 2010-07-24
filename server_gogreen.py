@@ -26,6 +26,9 @@ handlers = {
     'unsavevideo' : vidserv.UnSaveVideo,
     'listsavedvideos' : vidserv.ListSavedVideos,
     'log' : vidserv.ClientLogger,
+    'user/login' : vidserv.UserLogin,
+    'user/logout' : vidserv.UserLogout,
+    'user/create' : vidserv.UserCreate,
 }
 
 def wsgiapp(env, start_response):
@@ -52,7 +55,10 @@ def wsgiapp(env, start_response):
     # If that fails, look for a file at this location
     fpath = config.path + '/static' + request.path_info
     if os.path.isfile(fpath):
-        mime = from_file(fpath)
+        if hasattr( magic, 'from_file' ):
+            mime = magic.from_file(fpath, mime=True)
+        else:
+            mime = from_file(fpath)
         if fpath[-4:] == ".css":
             mime = "text/css"
         resp = file(fpath, 'r').read()
@@ -111,7 +117,7 @@ if __name__ == "__main__":
         elif options.daemon == 'restart':
             d.restart()
         else:
-            print "Unknown command. Valid operations are start|stop|restart."
+            print "Unknown command. Valid daemon values are start|stop|restart."
             sys.exit(2)
         sys.exit(0)
 

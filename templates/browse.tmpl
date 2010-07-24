@@ -12,11 +12,14 @@ You are the VJ with youvj!
 #def body()
 <dev id="container">
   <dev id="top">
-    <form onsubmit="return UVJ.browse(jQuery('#browseInput').val());">
-      <input type="text" id="browseInput"/>
+    <div id="login">
+    </div>
+    <form class="browse">
+      <input type="text" id="browseInput"/><input type="submit" id="browse-button" value="Search"/>
     </form>
     <div id="browse-similar"></div>
   </dev>
+  <div class="clear"></div>
   <dev id="middle">
     <div id="player-container"></div>
   </dev>
@@ -28,6 +31,10 @@ You are the VJ with youvj!
     <div id="footer-down">
       <a href='#'>DOWN</a>
     </div>
+    <div id="footer-tip">
+      Drag, drop, and arrange videos here! 
+    </div>
+    
     <ul id="playlist"></ul>
   </dev>
 </dev><!-- #container -->
@@ -40,19 +47,19 @@ You are the VJ with youvj!
       if( easeFooter.f.height() >= easeFooter.up ){
         clearInterval(easeFooter.t);
       }else{
-        easeFooter.f.height( easeFooter.f.height() + 2 );
+        easeFooter.f.height( easeFooter.f.height() + 4 );
       }
     }else{ //down
       if( easeFooter.f.height() <= easeFooter.down ){
         clearInterval(easeFooter.t);
       }else{
-        easeFooter.f.height( easeFooter.f.height() - 2 );
+        easeFooter.f.height( easeFooter.f.height() - 4 );
       }
     }
   };
   easeFooter.up = 150;
-  easeFooter.down = 50;
-  easeFooter.dir = 'up';
+  easeFooter.down = 80;
+  easeFooter.dir = 'down';
   easeFooter.f = jQuery('#footer');
   easeFooter.t = null;
 
@@ -66,8 +73,18 @@ jQuery(document).ready(function(){
       }
     }
 
-    UVJ.playlist.configure();
+    jQuery('form.browse').submit(function(e){
+	jQuery('#browseInput').focus();
+	var artistName = jQuery('#browseInput').val();
+	if( artistName.length > 0 ){
+	    UVJ.browse(artistName);
+	}
+	return false;
+    });
 
+    UVJ.playlist.configure();
+    UVJ.user.updateLoginStatus();
+    jQuery('#browseInput').defaultValue('Artist Name');
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );

@@ -6,14 +6,22 @@ class VidFail(Exception):
             self.msg = msg
             Exception.__init__(self, self.msg)
 
-class InvalidPassword(VidFail):
+class InvalidEmail(VidFail):
     rc = 1000
-    msg = "Invalid email or password"
+    msg = "If you're new, click sign up!"
+
+class InvalidPassword(VidFail):
+    rc = 1001
+    msg = "Wrong Password"
+
+class WeakPassword(VidFail):
+    rc = 1001
+    msg = "Pick a better password :)"
 
 class UserExists(VidFail):
-    rc = 1001
+    rc = 1002
     msg = "User already exists"
 
 class InvalidSessionSignature(VidFail):
-    rc = 1002
+    rc = 1003
     msg = "Invalid Session Signature"

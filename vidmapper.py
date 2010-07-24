@@ -42,8 +42,8 @@ def addUser(conn, email, password=None):
     email = conn.escape_string(email)
     if not password:
         # Make a temp pw and sent the user a session
-        password = vidauth.make_salt()
-    salt = vidauth.make_salt()
+        password = vidauth.generate_secret()
+    salt = vidauth.generate_secret()
     user_data = {
         'salt' : salt,
         'email' : email,
