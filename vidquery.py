@@ -20,6 +20,31 @@ def runJob(fileName):
         entries = fetchVideos(artist)
         mVids['artist'] = entries
 
+def fetchCached(mc, artist):
+    recentSampleAdd(mc, artist)
+    cacheKey = 'videos_%s' % _makeMinTitle(artist)
+    cachedRes = mc.get(cacheKey)
+    if not cachedRes:
+        cachedRes = fetchVideos(artist)
+        mc.set(cacheKey, cachedRes)
+        return cachedRes
+    return cachedRes
+
+def recentSampleAdd(mc, artist):
+    artist = artist.lower()
+    cacheKey = 'recent_artists'
+    cachedRes = mc.get(cacheKey) or []
+    if artist in cachedRes:
+        del cachedRes[ cachedRes.index(artist) ]
+    cachedRes.append(artist)
+    cachedRes = cachedRes[-10:]
+    mc.set(cacheKey, cachedRes)
+
+def recentSampleGet(mc):
+    cacheKey = 'recent_artists'
+    cachedRes = mc.get(cacheKey)
+    return cachedRes
+
 def fetchVideos(artistName):
     artistName = re.sub("^[Tt]he","",artistName).strip()
     videos = _fetchVideos(artistName,  orderby='relevance')

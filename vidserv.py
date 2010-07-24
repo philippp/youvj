@@ -89,20 +89,12 @@ class Browse(HTMLController):
         artistVids = []
 
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
-        artistVids = artist and self.fetchVideos(artist) or []
+        artistVids = artist and vidquery.fetchCached(self.mem, artist) or []
         return self.template("browse",
                              artistVids = artistVids,
                              artist = artist
                              )
-
-    def fetchVideos(self, artist):
-        cacheKey = 'videos_%s' % vidquery._makeMinTitle(artist)
-        cachedRes = self.mem.get(cacheKey)
-        if not cachedRes:
-            cachedRes = vidquery.fetchVideos(artist)
-            self.mem.set(cacheKey, cachedRes)
-        return cachedRes
-
+        
 class UserLogin(JSONController):
     def respond( self, req ):
         email = req.args.get('email','')
@@ -156,20 +148,20 @@ class UserCreate(JSONController):
                              path = '/',
                              domain = config.hostname)
         return 
+
 class FindVideos(JSONController):    
     def respond(self, req):
         artist = req.args.get('artist')
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
-        artistVids = self.fetchVideos(artist)
+        artistVids = vidquery.fetchCached(self.mem, artist)
         return artistVids
 
-    def fetchVideos(self, artist):
-        cacheKey = 'videos_%s' % vidquery._makeMinTitle(artist)
-        cachedRes = self.mem.get(cacheKey)
-        if not cachedRes:
-            cachedRes = vidquery.fetchVideos(artist)
-            self.mem.set(cacheKey, cachedRes)
-        return cachedRes
+class Recent(JSONController):    
+    def respond(self, req):
+        artists = vidquery.recentSampleGet(self.mem)
+        print artists
+        videos = [ vidquery.fetchCached(self.mem, a) for a in artists ]
+        return zip(artists, videos)
 
 class ClientLogger(JSONController):
     def respond(self, req):

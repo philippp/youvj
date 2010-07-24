@@ -20,6 +20,7 @@ handlers = {}
 handlers = {
     '' : vidserv.FrontPage,
     'browse' : vidserv.Browse,
+    'recent' : vidserv.Recent,
     'findvideos' : vidserv.FindVideos,
     'findsimilar' : vidserv.FindSimilar,
     'savevideo' : vidserv.SaveVideo,
