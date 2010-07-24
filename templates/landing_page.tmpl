@@ -26,22 +26,31 @@ You are the VJ with youvj! Music Videos, VJ, ...
     <input type="submit" value="Show Videos!" />
   </form>
   <div id="recent">
-    <div class="legend">Recent Searches:</div>  
+     <ul class="recent-artists"></ul>
+     <div class="video-thumbs"></div>
   </div>
 
 </dev>
 <dev id="bottom"></dev>
 <script>
 var recent = $recent_videos;
-var recentList = jQuery('<ul></ul>');
+var recentList = jQuery('ul.recent-artists');
+var recentThumbs = [];
+
 for( var i = 0; i < recent.length; i++ ){
      recentList.append(
 	jQuery('<li></li>').append(
 		jQuery('<a href="/'+recent[i][0]+'">'+recent[i][0]+'</a>')
 	)
      )
+     for( var j = 0; j < Math.min(recent[i][1].length, 5); j++ ){
+     	  recentThumbs[recentThumbs.length] = jQuery(UVJ.makeVidTile(recent[i][1][j]));
+     }
 }
-jQuery("#recent").append(recentList);
+recentThumbs.sort( function(){ return Math.round(Math.random()) - 0.5 });
+for( var t = 0; t < recentThumbs.length; t++ ){
+     jQuery('#recent .video-thumbs').append(recentThumbs[t]);
+}
 
 </script>
 

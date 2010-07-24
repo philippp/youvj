@@ -93,12 +93,35 @@ UVJ.user.create = function( email, password ){
   return false;
 };
 
+/**
+ * Render an artist-associated title for a video. For use on the front page.
+ * @return div.videoInfo
+ */
+UVJ.makeVidTile = function(videoInfo){
+  var vid = $('<div class="videoTile vid_'+videoInfo['youtube_id']+'"></div>').append(
+    $('<div class="screencaps"></div>').append(
+      $('<img class="thumb t0" src="'+videoInfo['thumbnail_1']+'"/>')
+    ).append(
+      $('<img class="thumb t1" src="'+videoInfo['thumbnail_2']+'"/>')
+    ).append(
+      $('<img class="thumb t2" src="'+videoInfo['thumbnail_3']+'"/>')
+    ).append(
+      $('<div class="screenspace">&nbsp;</div>')
+    )
+  );
+  $('.screencaps img',vid).hide();
+  $('.screencaps .t0',vid).show();
+  vid[0].info = videoInfo;
+  UVJ.initThumb(vid);
+  return vid;
+};
+
 
 /**
  * Render a draggable video thumbnail and preview box
  * @return div.videInfo
  */
-UVJ.makeThumb = function(videoInfo, options){
+UVJ.makeThumb = function(videoInfo){
   if( !options ) options = {};
   if( options.draggable === undefined ){
     options.draggable = true;
