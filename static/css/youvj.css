@@ -18,8 +18,12 @@ height: 150px;
    font-size: 13px;
 }
 
-form input{
+#top form input{
    font-size: 13px;
+}
+
+#browse-form input{
+   font-size: 30px;
 }
 
 #lf_email{
@@ -89,6 +93,13 @@ font-style: italic;
 
 #playlist .videoInfo{
 
+}
+
+#recent .title {
+   float: left;
+   margin-top: 10px;
+   overflow-x: hidden;
+   width: 150px;
 }
 
 .recent-artists { 
@@ -179,7 +190,7 @@ width:480px;
 }
 
 
-.title{
+.videoInfo-top .title{
    display:inline-block;
    font-size:11px;
    width: 110px;
@@ -223,7 +234,7 @@ width:480px;
 .videoTile {
    float:left;
    height:85px;
-   margin:10px 25px 10px 10px;
+   margin:10px 20px 10px 10px;
    overflow:hidden;
    width:100px;
 }

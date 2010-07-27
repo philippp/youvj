@@ -43,7 +43,6 @@ def recentSampleAdd(mc, artist):
 def recentSampleGet(mc):
     cacheKey = 'recent_artists'
     artists = mc.get(cacheKey) or []
-    artists.reverse()
     artist_videos = []
     if artists:
         videos = [ fetchCached(mc, a) for a in artists ]

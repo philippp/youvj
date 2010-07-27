@@ -21,37 +21,49 @@ You are the VJ with youvj! Music Videos, VJ, ...
 <dev id="top"></dev>
 <dev id="middle">
   <div class="front-banner">Enter an artist or a band, watch and share music videos!</div>
-  <form id="main-form" method="post" action="/browse">
+  <form id="browse-form" method="post" action="/browse">
     <input name="artist" type="text" />
     <input type="submit" value="Show Videos!" />
   </form>
   <div id="recent">
-     <ul class="recent-artists"></ul>
      <div class="video-thumbs"></div>
   </div>
 
 </dev>
 <dev id="bottom"></dev>
 <script>
-var recent = $recent_videos;
-var recentList = jQuery('ul.recent-artists');
-var recentThumbs = [];
+var recent_videos = $recent_videos;
 
-for( var i = 0; i < recent.length; i++ ){
-     recentList.append(
-	jQuery('<li></li>').append(
-		jQuery('<a href="/'+recent[i][0]+'">'+recent[i][0]+'</a>')
-	)
-     )
-     for( var j = 0; j < Math.min(recent[i][1].length, 5); j++ ){
-     	  recentThumbs[recentThumbs.length] = jQuery(UVJ.makeVidTile(recent[i][1][j]));
+var LP = {};
+LP.rowIdx = 0;
+
+LP.rotateRow = function(i){
+     var row = jQuery("<div class='scrollrow'></div>");
+     row.append("<div class='title'>"+recent_videos[i][0]+"</div>");
+     for( var j = 0; j < Math.min(recent_videos[i][1].length, 4); j++ ){
+     	  row.append(jQuery(UVJ.makeVidTile(recent_videos[i][1][j])));
      }
-}
-recentThumbs.sort( function(){ return Math.round(Math.random()) - 0.5 });
-for( var t = 0; t < recentThumbs.length; t++ ){
-     jQuery('#recent .video-thumbs').append(recentThumbs[t]);
-}
+     row.append('<div class="clear"></div>');
+     row.css({'display':'none'});
+     var thumbList = jQuery('#recent .video-thumbs');
+     thumbList.prepend(row);
+     var thumbRows = jQuery('#recent .video-thumbs .scrollrow');
+     if( thumbRows.length > 4 ){
+          thumbRows.last().remove();
+     }    
+     row.slideDown();
+};
 
+LP.onScrollTime = function(){
+	LP.rotateRow(LP.rowIdx);
+	LP.rowIdx += 1;
+	if( LP.rowIdx >= recent_videos.length ){
+	    LP.rowIdx = 0;
+	}
+};
+
+LP.timeDriver = setInterval(LP.onScrollTime,3000);
+LP.onScrollTime();
 </script>
 
 #end def
