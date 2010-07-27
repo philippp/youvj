@@ -91,9 +91,11 @@ class Browse(HTMLController):
         artistVids = []
 
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
-        vidquery.recentSampleAdd(self.mem, artist)
 
         artistVids = artist and vidquery.fetchCached(self.mem, artist) or []
+        if len( artistVids ) >= 4:
+            vidquery.recentSampleAdd(self.mem, artist)
+
         return self.template("browse",
                              artistVids = artistVids,
                              artist = artist
@@ -157,8 +159,9 @@ class FindVideos(JSONController):
     def respond(self, req):
         artist = req.args.get('artist')
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
-        vidquery.recentSampleAdd(self.mem, artist)
         artistVids = vidquery.fetchCached(self.mem, artist)
+        if len( artistVids ) >= 4:
+            vidquery.recentSampleAdd(self.mem, artist)
         return artistVids
 
 class Recent(JSONController):    
