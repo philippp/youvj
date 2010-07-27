@@ -91,6 +91,8 @@ class Browse(HTMLController):
         artistVids = []
 
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
+        vidquery.recentSampleAdd(self.mem, artist)
+
         artistVids = artist and vidquery.fetchCached(self.mem, artist) or []
         return self.template("browse",
                              artistVids = artistVids,
@@ -155,6 +157,7 @@ class FindVideos(JSONController):
     def respond(self, req):
         artist = req.args.get('artist')
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
+        vidquery.recentSampleAdd(self.mem, artist)
         artistVids = vidquery.fetchCached(self.mem, artist)
         return artistVids
 
