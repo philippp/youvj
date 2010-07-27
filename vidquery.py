@@ -36,8 +36,8 @@ def recentSampleAdd(mc, artist):
     cachedRes = mc.get(cacheKey) or []
     if artist in cachedRes:
         del cachedRes[ cachedRes.index(artist) ]
-    cachedRes.append(artist)
-    cachedRes = cachedRes[-10:]
+    cachedRes.insert(0,artist)
+    cachedRes = cachedRes[:10]
     mc.set(cacheKey, cachedRes)
 
 def recentSampleGet(mc):
