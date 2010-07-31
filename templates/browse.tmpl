@@ -98,7 +98,11 @@ jQuery(document).ready(function(){
                                  jQuery('#footer-up').show();
                                });
 
-    UVJ.playlist.loadCookie();
+    UVJ.init = {};
+    UVJ.init.pl = $json.dumps($playlist);
+    UVJ.init.c_domain = ".${config.hostname}";
+    UVJ.playlist.addFromInfo(UVJ.init.pl);
+
   });
 </script>
 #end def

@@ -255,18 +255,6 @@ UVJ.renderPlayer = function(videoInfo){
   UVJ.player.updatePlaylist();
 };
 
-UVJ.player.addToPlaylist = function(info){
-  if( !info.length ){
-    info = [info];
-  }
-  for( var i = 0; i < info.length; i++ ){
-    var thumb = UVJ.makeThumb( info[i], {'draggable':false} );
-    $('#playlist').append(thumb).sortable('refresh');
-    UVJ.playlist.onAddItem( thumb );
-  }
-  UVJ.player.updatePlaylist();
-};
-
 UVJ.player.next = function(){
   var nextInfo = $('#player-next-info')[0].info;
   if( nextInfo ){
@@ -319,7 +307,7 @@ UVJ.player.updatePlaylist = function(){
   if( !curInfo ){
     return;
   }
-  
+
   if( videoIdx != -1 ){
     // Update what is currently playing in the playlist
     $("#playlist .thumb-play-indicator").hide();
@@ -331,7 +319,7 @@ UVJ.player.updatePlaylist = function(){
   $('#player-next-info').append($('<a href="#">Add it!</a>').click(
                                   (function(i){
                                      return (function(){
-                                       UVJ.player.addToPlaylist(i);
+                                       UVJ.playlist.addFromInfo(i);
                                        UVJ.api.saveVideo(i);
                                      });
                                   })(curInfo)
@@ -350,32 +338,45 @@ UVJ.playlist.configure = function(){
     },
     'tolerance': 'pointer',
     'receive' : function(e, ui){
-      var vidInfo = UVJ.playlist.onAddItem( ui.item );
+      var classNames = ui.item.attr('class').split(' ');
+      var className = '';
+      for( var i = 0; i < classNames.length; i++ ){
+        if( classNames[i].indexOf('vid_') == 0 ){
+          className = classNames[i];
+          break;
+        }
+      }
+
+      var orig = $('#middle .'+className);
+      var dst = $('#playlist .'+className);
+      for( i = 0; i < dst.length; i++ ){
+        dst[i].info = orig[0].info;
+      }
+      var vidInfo = UVJ.playlist.onAddItem( dst );
       UVJ.player.updatePlaylist();
-      UVJ.api.saveVideo( vidInfo );
+      UVJ.api.saveVideo( orig[0].info );
     },
     'stop' : UVJ.player.updatePlaylist
   });
 };
 
-UVJ.playlist.onAddItem = function(elem){
-  var i = 0;
-  var classNames = elem.attr('class').split(' ');
-  var className = '';
-  for( i = 0; i < classNames.length; i++ ){
-    if( classNames[i].indexOf('vid_') == 0 ){
-      className = classNames[i];
-    }
+UVJ.playlist.addFromInfo = function(info){
+  if( info.length === undefined ){
+    info = [info];
   }
+  for( var i = 0; i < info.length; i++ ){
+    var thumb = UVJ.makeThumb( info[i], {'draggable':false} );
+    thumb[0].info = info[i];
+    $('#playlist').append(thumb).sortable('refresh');
+    UVJ.playlist.onAddItem( thumb );
+  }
+  UVJ.player.updatePlaylist();
+};
 
-  var orig = $('#middle .'+className);
-  var dst = $('#playlist .'+className);
-  for( i = 0; i < dst.length; i++ ){
-    dst[i].info = orig[0].info;
-  }
-  UVJ.initThumb(dst);
-  $('.title',dst).width(90);
-  $('.videoInfo-top',dst).append(
+UVJ.playlist.onAddItem = function(elem){
+  UVJ.initThumb(elem);
+  $('.title',elem).width(90);
+  $('.videoInfo-top',elem).append(
     $('<a class="playlist-del" href="#">[X]</a>').click(
       function(e){
         $(this.parentNode.parentNode).remove();
@@ -385,8 +386,7 @@ UVJ.playlist.onAddItem = function(elem){
       }
     )
   );
-  dst.height(125);
-  return orig[0].info;
+  elem.height(125);
 };
 
 UVJ.playlist.saveCookie = function(youtube_ids){
@@ -403,7 +403,7 @@ UVJ.playlist.loadCookie = function(){
   jQuery.post('/loadvideo',
               {'ytid':list.split(',')},
               function(vidInfos){
-                UVJ.player.addToPlaylist(vidInfos);
+                UVJ.playlist.addFromInfo(vidInfos);
               },
               'json');
 };
@@ -508,7 +508,8 @@ UVJ.setCookie = function(c_name,value,expiredays)
   var exdate=new Date();
   exdate.setDate(exdate.getDate()+expiredays);
   document.cookie=c_name+ "=" +escape(value)+
-    ((expiredays==null) ? "" : ";expires="+exdate.toUTCString());
+    ((expiredays==null) ? "" : ";expires="+exdate.toUTCString()+
+    ';domain='+UVJ.init.c_domain);
 };
 
 UVJ.getCookie = function(c_name){

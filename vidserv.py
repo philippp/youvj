@@ -6,7 +6,7 @@ import json
 import os.path
 import pdb
 import time
-import urllib
+import urllib2
 
 import config
 import genres
@@ -95,9 +95,17 @@ class Browse(HTMLController):
         if len( artistVids ) >= 4:
             vidquery.recentSampleAdd(self.mem, artist)
 
+        playlist = req.cookies.get('pl', [])
+        if playlist:
+            playlist = urllib2.unquote(playlist).split(',')
+            conn = viddb.get_conn()
+            playlist = vidmapper.retrieveVideos(conn,
+                                                playlist)
+
         return self.template("browse",
                              artistVids = artistVids,
-                             artist = artist
+                             artist = artist,
+                             playlist = playlist
                              )
         
 class UserLogin(JSONController):
@@ -124,7 +132,7 @@ class UserLogout(JSONController):
         self.res.set_cookie('session','0',
                              max_age = 60*60*24*10,
                              path = '/',
-                             domain = config.hostname)
+                             domain = '.'+config.hostname)
         return True
 
 class UserCreate(JSONController):
