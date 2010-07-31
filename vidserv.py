@@ -6,7 +6,7 @@ import json
 import os.path
 import pdb
 import time
-import urllib
+import urllib2
 
 import config
 import genres
@@ -50,7 +50,6 @@ class Controller(object):
         tmpl = getattr(mod, components[-1])()
         [setattr(tmpl, k, v) for k,v in kwargs.items()]
         return str(tmpl)
-
 
 class JSONController(Controller):
 
@@ -96,9 +95,17 @@ class Browse(HTMLController):
         if len( artistVids ) >= 4:
             vidquery.recentSampleAdd(self.mem, artist)
 
+        playlist = req.cookies.get('pl', [])
+        if playlist:
+            playlist = urllib2.unquote(playlist).split(',')
+            conn = viddb.get_conn()
+            playlist = vidmapper.retrieveVideos(conn,
+                                                playlist)
+
         return self.template("browse",
                              artistVids = artistVids,
-                             artist = artist
+                             artist = artist,
+                             playlist = playlist
                              )
         
 class UserLogin(JSONController):
@@ -125,7 +132,7 @@ class UserLogout(JSONController):
         self.res.set_cookie('session','0',
                              max_age = 60*60*24*10,
                              path = '/',
-                             domain = config.hostname)
+                             domain = '.'+config.hostname)
         return True
 
 class UserCreate(JSONController):
@@ -191,32 +198,46 @@ class FindSimilar(JSONController):
             self.mem.set(cacheKey, cachedRes)
         return cachedRes
 
-class SaveVideo(JSONController):    
+def authenticated(fn):
+    def _authenticated(s, req):
+        if not req.cookies.get('session'):
+            raise vidfail.NotAuthenticated()
+        session_info = vidauth.decode_session_str(
+            req.cookies.get('session'))
+        req.user_id = session_info['id']
+        return fn(s, req)
+    return _authenticated
+
+class SaveVideo(JSONController):
+    ''' Save a video's metadata to our DB, for cookie-based retrival '''
     def respond(self, req):
-        uid = req.user_id
-        if not uid:
-            return False
         saveArgs = viddb.COLS['youtube_videos']
         vidData = {}
         for a in saveArgs:
-            vidData[a] = req.args.get(a)[0]
+            vidData[a] = req.args.get(a)
         vidData['description'] = vidData['description'][:255]
-        vidmapper.saveVideo(viddb.get_conn(), vidData, uid)
-        
+        vidmapper.saveVideo(viddb.get_conn(), vidData)
         return True
 
+class LoadVideo(JSONController):
+    def respond( self, req):
+        v_arr = lambda k: [y[1] for y in filter(lambda i: i[0] == '%s[]' % k,
+                                                req.args.items())]
+        ytIds = v_arr('ytid')
+        conn = viddb.get_conn()
+        vids = vidmapper.retrieveVideos(conn, ytIds)
+        return vids
 
 class ListSavedVideos(JSONController):    
+    @authenticated
     def respond(self, req):
-        uid = req.user_id
-        if not uid:
-            return []
         conn = viddb.get_conn()
-        yids = vidmapper.listSavedVideos(conn, uid)
+        yids = vidmapper.listSavedVideos(conn, req.user_id)
         vids = vidmapper.retrieveVideos(conn, yids)
         return vids
 
 class UnSaveVideo(JSONController):    
+    @authenticated
     def respond(self, req):
         uid = req.user_id
         youtube_id = req.args.get('youtube_id')[0]

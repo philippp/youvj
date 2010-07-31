@@ -55,25 +55,9 @@ def addUser(conn, email, password=None):
                      **user_data)
     except _mysql_exceptions.IntegrityError:
         raise vidfail.UserExists()
-        
-def saveVideo(conn, vidInfo, user_id, playlist_id):
-    tail_node_id = 0
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM playlist_youtube_map WHERE playlist_id = %s and next_id IS NULL" % user_id)
-    tail_nodes = cursor.fetchall()
-    if tail_nodes:
-        tail_node_id = tail_nodes[0][0]
 
+def saveVideo(conn, vidInfo):
     viddb.insert(conn, 'youtube_videos', _ignore = True, **vidInfo)
-    inserted_id = viddb.insert(conn,
-                               'user_youtube_map',
-                               _ignore = True,
-                               youtube_id = vidInfo['youtube_id'],
-                               user_id = user_id)
-
-    if tail_node_id:
-        cursor.execute("UPDATE user_youtube_map SET next_id = %s WHERE id = %s" % \
-                           (inserted_id, tail_node_id))
 
 def unSaveVideo(conn, youtube_id, user_id):
     cursor = conn.cursor()
