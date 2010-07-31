@@ -51,7 +51,6 @@ class Controller(object):
         [setattr(tmpl, k, v) for k,v in kwargs.items()]
         return str(tmpl)
 
-
 class JSONController(Controller):
 
     def respond(self, form):
@@ -191,32 +190,39 @@ class FindSimilar(JSONController):
             self.mem.set(cacheKey, cachedRes)
         return cachedRes
 
-class SaveVideo(JSONController):    
+def authenticated(fn):
+    def _authenticated(s, req):
+        if not req.cookies.get('session'):
+            raise vidfail.NotAuthenticated()
+        session_info = vidauth.decode_session_str(
+            req.cookies.get('session'))
+        req.user_id = session_info['id']
+        return fn(s, req)
+    return _authenticated
+
+class SaveVideo(JSONController):
+    ''' Save a video's metadata to our DB, for cookie-based retrival '''
     def respond(self, req):
-        uid = req.user_id
-        if not uid:
-            return False
         saveArgs = viddb.COLS['youtube_videos']
         vidData = {}
         for a in saveArgs:
-            vidData[a] = req.args.get(a)[0]
+            vidData[a] = req.args.get(a)
         vidData['description'] = vidData['description'][:255]
-        vidmapper.saveVideo(viddb.get_conn(), vidData, uid)
-        
+        vidmapper.saveVideo(viddb.get_conn(), vidData)
         return True
 
 
 class ListSavedVideos(JSONController):    
+
+    @authenticated
     def respond(self, req):
-        uid = req.user_id
-        if not uid:
-            return []
         conn = viddb.get_conn()
-        yids = vidmapper.listSavedVideos(conn, uid)
+        yids = vidmapper.listSavedVideos(conn, req.user_id)
         vids = vidmapper.retrieveVideos(conn, yids)
         return vids
 
 class UnSaveVideo(JSONController):    
+    @authenticated
     def respond(self, req):
         uid = req.user_id
         youtube_id = req.args.get('youtube_id')[0]

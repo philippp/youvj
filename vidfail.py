@@ -25,3 +25,7 @@ class UserExists(VidFail):
 class InvalidSessionSignature(VidFail):
     rc = 1003
     msg = "Invalid Session Signature"
+
+class NotAuthenticated(VidFail):
+    rc = 1004
+    msg = "Not Authenticated"

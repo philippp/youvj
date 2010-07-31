@@ -367,7 +367,7 @@ UVJ.playlist.onAddItem = function(elem){
   for( i = 0; i < dst.length; i++ ){
     dst[i].info = orig[0].info;
   }
-
+  UVJ.api.saveVideo( dst[0].info );
   UVJ.initThumb(dst);
   $('.title',dst).width(90);
   $('.videoInfo-top',dst).append(
@@ -385,7 +385,22 @@ UVJ.playlist.onAddItem = function(elem){
 
 UVJ.playlist.saveCookie = function( youtube_ids ){
   var saveList = youtube_ids.join(',');
-  UVJ.setCookie('playlist',saveList,365);
+  UVJ.setCookie('pl',saveList,365);
+};
+
+UVJ.playlist.loadCookie = function(){
+  var list = UVJ.getCookie('pl');
+
+  if(!list){
+    return;
+  }
+
+  jQuery.post('/loadytid',
+              {'ytid':list.split(',')},
+              function(){
+
+              },
+              'json');
 };
 
 UVJ.browse = function( artist ){
@@ -416,6 +431,32 @@ UVJ.onBrowseCallback = function( resp, artist ){
     jQuery('#middle').append( UVJ.makeThumb(resp[i]) );
   }
   $('#middle').append($("<br style='clear: both'/>"));
+};
+
+UVJ.api = {};
+
+UVJ.api.saveVideo = function( videoInfo ){
+
+  var toSend = {}, i = 0;
+  var sameArgs = ['title',
+                  'artist',
+                  'description',
+                  'view_count',
+                  'duration',
+                  'flash_url',
+                  'youtube_id',
+                  'thumbnail_1',
+                  'thumbnail_2',
+                  'thumbnail_3'];
+  for( i=0; i < sameArgs.length; i++ ){
+    toSend[sameArgs[i]] = videoInfo[sameArgs[i]];
+  }
+
+  $.post('/savevideo',
+           toSend,
+           function(){},
+           'json'
+          );
 };
 
 UVJ.loadSimilar = function(artistName){
