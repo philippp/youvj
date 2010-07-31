@@ -211,9 +211,16 @@ class SaveVideo(JSONController):
         vidmapper.saveVideo(viddb.get_conn(), vidData)
         return True
 
+class LoadVideo(JSONController):
+    def respond( self, req):
+        v_arr = lambda k: [y[1] for y in filter(lambda i: i[0] == '%s[]' % k,
+                                                req.args.items())]
+        ytIds = v_arr('ytid')
+        conn = viddb.get_conn()
+        vids = vidmapper.retrieveVideos(conn, ytIds)
+        return vids
 
 class ListSavedVideos(JSONController):    
-
     @authenticated
     def respond(self, req):
         conn = viddb.get_conn()

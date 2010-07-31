@@ -24,6 +24,7 @@ handlers = {
     'findvideos' : vidserv.FindVideos,
     'findsimilar' : vidserv.FindSimilar,
     'savevideo' : vidserv.SaveVideo,
+    'loadvideo' : vidserv.LoadVideo,
     'unsavevideo' : vidserv.UnSaveVideo,
     'listsavedvideos' : vidserv.ListSavedVideos,
     'log' : vidserv.ClientLogger,

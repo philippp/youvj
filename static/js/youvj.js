@@ -231,14 +231,6 @@ UVJ.renderPlayer = function(videoInfo){
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
 
-  if( UVJ.favorites && UVJ.favorites.indexOf && UVJ.favorites.indexOf(videoInfo['youtube_id']) >= 0 ){
-    $('.player-save').hide();
-    $('.player-unsave').show();
-  }else{
-    $('.player-unsave').hide();
-    $('.player-save').show();
-  }
-
   purl = videoInfo['flash_url'];
   purl += '&autoplay=1&fs=1&enablejsapi=1&version=3';
   swfobject.embedSWF(purl,
@@ -263,15 +255,16 @@ UVJ.renderPlayer = function(videoInfo){
   UVJ.player.updatePlaylist();
 };
 
-UVJ.player.addToPlaylist = function(){
-  var player = $('#player-container')[0];
-  if( player.info ){
-    var thumb = UVJ.makeThumb( player.info, {'draggable':false} );
+UVJ.player.addToPlaylist = function(info){
+  if( !info.length ){
+    info = [info];
+  }
+  for( var i = 0; i < info.length; i++ ){
+    var thumb = UVJ.makeThumb( info[i], {'draggable':false} );
     $('#playlist').append(thumb).sortable('refresh');
     UVJ.playlist.onAddItem( thumb );
-    UVJ.player.updatePlaylist();
   }
-  return false;
+  UVJ.player.updatePlaylist();
 };
 
 UVJ.player.next = function(){
@@ -294,33 +287,39 @@ UVJ.playerStateChange = function(newState) {
 
 UVJ.player.updatePlaylist = function(){
   var curInfo = $('#player-container')[0].info;
-  if( !curInfo )
-    return;
   var pl = $('#playlist .videoInfo');
   var videoIdx = -1;
   var playlistIds = [];
   for( var i = 0; i < pl.length; i++ ){
     playlistIds[playlistIds.length] = pl[i].info['youtube_id'];
-    if( pl[i].info['youtube_id'] == curInfo['youtube_id'] ){
-      if( i + 1 < pl.length ){
-        var nextSong = pl[i+1].info['artist'] + ' - ' + pl[i+1].info['title'];
 
-        // Render the next song indicator in the player
-        $('#player-next-info').empty().append(
-          $("<span>Next video:&nbsp;</span>")
-        ).append(
-          $("(<a href='#'>"+nextSong+"</a>").click(
-            function(){ UVJ.player.next(); return false;}
-          )
-        )[0].info = pl[i+1].info;
-        videoIdx = i;
-      }else{
-        $('#player-next-info').empty().append('Last video: Queue up more!')[0].info = null;
-        videoIdx = i;
+    if( curInfo ){
+      if( pl[i].info['youtube_id'] == curInfo['youtube_id'] ){
+        if( i + 1 < pl.length ){
+          var nextSong = pl[i+1].info['artist'] + ' - ' + pl[i+1].info['title'];
+
+          // Render the next song indicator in the player
+          $('#player-next-info').empty().append(
+            $("<span>Next video:&nbsp;</span>")
+          ).append(
+            $("(<a href='#'>"+nextSong+"</a>").click(
+              function(){ UVJ.player.next(); return false;}
+            )
+          )[0].info = pl[i+1].info;
+          videoIdx = i;
+        }else{
+          $('#player-next-info').empty().append('Last video: Queue up more!')[0].info = null;
+          videoIdx = i;
+        }
       }
     }
   }// for
-  UVJ.playlist.saveCookie(playlistIds);
+  UVJ.playlist.saveCookie( playlistIds );
+
+  if( !curInfo ){
+    return;
+  }
+  
   if( videoIdx != -1 ){
     // Update what is currently playing in the playlist
     $("#playlist .thumb-play-indicator").hide();
@@ -330,8 +329,13 @@ UVJ.player.updatePlaylist = function(){
   }
   $('#player-next-info').empty().append('Not in this playlist:&nbsp;')[0].info = null;
   $('#player-next-info').append($('<a href="#">Add it!</a>').click(
-                                  function(){ return UVJ.player.addToPlaylist(); }
-                                  ));
+                                  (function(i){
+                                     return (function(){
+                                       UVJ.player.addToPlaylist(i);
+                                       UVJ.api.saveVideo(i);
+                                     });
+                                  })(curInfo)
+  ));
 };
 
 UVJ.playlist = {};
@@ -346,7 +350,9 @@ UVJ.playlist.configure = function(){
     },
     'tolerance': 'pointer',
     'receive' : function(e, ui){
-      UVJ.playlist.onAddItem( ui.item );
+      var vidInfo = UVJ.playlist.onAddItem( ui.item );
+      UVJ.player.updatePlaylist();
+      UVJ.api.saveVideo( vidInfo );
     },
     'stop' : UVJ.player.updatePlaylist
   });
@@ -367,7 +373,6 @@ UVJ.playlist.onAddItem = function(elem){
   for( i = 0; i < dst.length; i++ ){
     dst[i].info = orig[0].info;
   }
-  UVJ.api.saveVideo( dst[0].info );
   UVJ.initThumb(dst);
   $('.title',dst).width(90);
   $('.videoInfo-top',dst).append(
@@ -381,24 +386,24 @@ UVJ.playlist.onAddItem = function(elem){
     )
   );
   dst.height(125);
+  return orig[0].info;
 };
 
-UVJ.playlist.saveCookie = function( youtube_ids ){
+UVJ.playlist.saveCookie = function(youtube_ids){
   var saveList = youtube_ids.join(',');
   UVJ.setCookie('pl',saveList,365);
 };
 
 UVJ.playlist.loadCookie = function(){
   var list = UVJ.getCookie('pl');
-
   if(!list){
     return;
   }
 
-  jQuery.post('/loadytid',
+  jQuery.post('/loadvideo',
               {'ytid':list.split(',')},
-              function(){
-
+              function(vidInfos){
+                UVJ.player.addToPlaylist(vidInfos);
               },
               'json');
 };
