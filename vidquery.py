@@ -129,7 +129,8 @@ def _replaceUmlauts(minTitle):
              225:u'a', #Lowercase A-acute
              194:u'a', #Capital A-circumflex
              226:u'a', #Lowercase A-circumflex
-             223:u'e', #Lowercase E-acute
+             232:u'e', #Lowercase E-grave
+             233:u'e', #Lowercase E-acute
              201:u'e', #Capital E-acute
              234:u'e', #Lowercase E-circumflex
              243:u'o', #Lowercase O-acute
