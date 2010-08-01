@@ -218,11 +218,11 @@ UVJ.renderPlayer = function(videoInfo){
   fV[0].info = videoInfo;
 
   fV.append(
+    $('<h2>'+videoInfo['artist']+' - '+videoInfo['title']+'</h2>')
+  ).append(
     $('<div id="player-close" title="close player">[X]</div>').click(
       function(){fV.empty().hide();}
     )
-  ).append(
-    $('<div class="player-title">'+videoInfo['artist']+' - '+videoInfo['title']+'</div>')
   ).append(
     $('<div id="featureVideo-obj"></div>')
   ).append(
@@ -478,13 +478,13 @@ UVJ.onLoadSimilar = function(resp, artistName){
   if( artistName != UVJ.artist ){
     return;
   }
-  var extraCls = "";
-  var similarDiv = $('#browse-similar');
+
+  var similarDiv = $('#similar-artists-list');
   similarDiv.empty();
-  for( i=0; i < Math.min(10,resp.length); i++){
+  for( i=0; i < Math.min(20,resp.length); i++){
     var curArtist = resp[i][0];
     similarDiv.append(
-      $("<a href='#' class='browse-similar-entry "+extraCls+"' title='"+resp[i][0]+"'>"+curArtist+"</a>").click(
+      $("<a href='#' title='"+resp[i][0]+"'>"+curArtist+"</a>").click(
         (function(f){return function(e){
                        UVJ.browse(f);
                        return false;
@@ -492,13 +492,6 @@ UVJ.onLoadSimilar = function(resp, artistName){
       )
     );
   }
-
-  if( resp.length > 0 ){
-    similarDiv.prepend(
-            $("<span class='browse-similar-legend'>Similar artists: </span>")
-    );
-  }
-
 };
 
 UVJ.setCookie = function(c_name,value,expiredays)

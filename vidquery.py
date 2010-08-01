@@ -8,6 +8,7 @@ from pprint import pprint
 from optparse import OptionParser
 
 track_code = None
+RECENT_CACHE_LEN = 30
 
 def log(msg):
     #print msg
@@ -37,7 +38,7 @@ def recentSampleAdd(mc, artist):
     if artist in cachedRes:
         del cachedRes[ cachedRes.index(artist) ]
     cachedRes.insert(0,artist)
-    cachedRes = cachedRes[:10]
+    cachedRes = cachedRes[:RECENT_CACHE_LEN]
     print 'after: %s' % cachedRes
     mc.set(cacheKey, cachedRes)
 
@@ -129,7 +130,8 @@ def _replaceUmlauts(minTitle):
              225:u'a', #Lowercase A-acute
              194:u'a', #Capital A-circumflex
              226:u'a', #Lowercase A-circumflex
-             223:u'e', #Lowercase E-acute
+             232:u'e', #Lowercase E-grave
+             233:u'e', #Lowercase E-acute
              201:u'e', #Capital E-acute
              234:u'e', #Lowercase E-circumflex
              243:u'o', #Lowercase O-acute

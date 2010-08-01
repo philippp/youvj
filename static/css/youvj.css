@@ -1,7 +1,12 @@
 html, body{
+   margin: 0;
    height: 100%;
    font-family: helvetica, verdana, sans-serif;
-   background-color: #94C8E9;
+   background-color: #F5F5F5
+}
+
+h2{
+   margin-bottom: 10px;
 }
 
 #footer-spacer{
@@ -9,8 +14,13 @@ height: 150px;
 }
 
 #top{
-   background-color: #62A8D4;
-   border-bottom: 2px solid #2992D4;
+   background-color: #94C8E9;
+   border-bottom: 2px solid #62A8D4;
+   padding: 15px 50px;
+}
+
+#middle{
+   margin: 0 50px;
 }
 
 #login{
@@ -56,18 +66,19 @@ font-style: italic;
    bottom: 0;
    left: 0;
    width: 100%;
-   background-color: #62A8D4;
-   border-top: 2px solid #2992D4;
+   background-color: #AAAAAA;
+   border-top: 2px solid #777777;
 }
 
 #footer-tip{
-   color:#1c6593;
+   color:#777777;
    font-size:30px;
    position:absolute;
    text-align:center;
    top:25px;
    width:100%;
    z-index:2;
+   text-shadow: 1px 1px 0 #555555;
 }
 
 #footer-down{
@@ -95,13 +106,6 @@ font-style: italic;
 
 }
 
-#recent .title {
-   float: left;
-   margin-top: 10px;
-   overflow-x: hidden;
-   width: 150px;
-}
-
 .recent-artists { 
    float: left;
 }
@@ -110,6 +114,13 @@ font-style: italic;
    clear:both;
 }
 
+.left {
+   float: left;
+}
+
+.right {
+   float: right;
+}
 .default-value {
    color: #777777;
 }
@@ -119,9 +130,8 @@ font-style: italic;
 }
 
 
-#browse-similar{
-   padding-top: 5px;
-   font-size: 12px;
+#similar-artists{
+   font-size: 15px;
 }
 
 form.browse input{
@@ -132,29 +142,25 @@ form.browse input{
    margin-left: 10px;
 }
 
-.browse-similar-entry{
-   margin-right: 5px;
+#similar-artists-list a{
+   margin-right: 10px;
+   line-height: 25px;
 }
 
 
 #player-container{
--moz-border-radius-bottomleft:2px;
--moz-border-radius-bottomright:1px;
--moz-border-radius-topleft:1px;
--moz-border-radius-topright:2px;
--webkit-border-radius-bottomleft:2px;
--webkit-border-radius-bottomright:1px;
--webkit-border-radius-topleft:1px;
--webkit-border-radius-topright:2px;
-
-background-color:#EFEFEF;
 display:none;
 float:right;
-height:522px;
+height:564px;
 margin-bottom:20px;
-margin-top: 10px;
-padding: 10px 20px;
+padding: 0 20px;
 width:480px;
+}
+
+
+#player-container h2{
+   float: left;
+   margin-top: 0;
 }
 
 #player-title, #player-close{
@@ -194,7 +200,7 @@ width:480px;
    display:inline-block;
    font-size:11px;
    width: 110px;
-   line-height: 13px;
+   line-height: 16px;
    height: 13px;
    overflow:hidden;
    text-show: white 1px 1px 0;
@@ -221,9 +227,7 @@ width:480px;
 
 
 .videoInfo {
-   background-color:#EFEFEF;
-   border-bottom:2px solid #FFFFFF;
-   border-right:2px solid #FFFFFF;
+   background-color:#F5F5F5;
    float:left;
    height:110px;
    margin:10px 25px 10px 0;

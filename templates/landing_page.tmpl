@@ -3,14 +3,7 @@
 #import json
 
 #def head()
-<style type='text/css'>
-  .front-banner {
-  font-size: 20px;
-  }
-  input {
-  font-size: 30px;
-  }
-</style>
+    <link href="/css/landing_page.css" type="text/css" rel="stylesheet">
 #end def
 
 #def title()
@@ -18,19 +11,27 @@ You are the VJ with youvj! Music Videos, VJ, ...
 #end def
 
 #def body()
-<dev id="top"></dev>
-<dev id="middle">
-  <div class="front-banner">Enter an artist or a band, watch and share music videos!</div>
-  <form id="browse-form" method="post" action="/browse">
-    <input name="artist" type="text" />
-    <input type="submit" value="Show Videos!" />
-  </form>
-  <div id="recent">
-     <div class="video-thumbs"></div>
-  </div>
-
-</dev>
-<dev id="bottom"></dev>
+    <div id="top">
+      <div class="front-banner">Enter an artist or a band, watch and share music videos!</div>
+      <form id="browse-form" method="post" action="/browse">
+	<input name="artist" type="text" />
+	<input type="submit" value="Show Videos!" />
+      </form>
+      <div class="clear"></div>
+    </div>
+    <div id="middle">
+      <div id="recent" class="right">
+	<h2>Recent Discoveries</h2>
+	<div class="video-thumbs"></div>
+      </div>
+      <div id="about" class="left">
+	<h2>How YouVJ</h2>
+	<h3>1. Check out a Band's Videos</h3>
+	<h3>2. Discover similar Bands' Videos</h3>
+	<h3>3. Broadcast your VJ skills!</h3>
+      </div>
+    </div>
+    <div id="bottom"></div>
 <script>
 var recent_videos = $recent_videos;
 
@@ -65,7 +66,7 @@ LP.onScrollTime = function(){
 	}
 };
 
-LP.timeDriver = setInterval(LP.onScrollTime,3000);
+LP.timeDriver = setInterval(LP.onScrollTime,4000);
 LP.onScrollTime();
 </script>
 
