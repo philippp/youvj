@@ -8,6 +8,7 @@ from pprint import pprint
 from optparse import OptionParser
 
 track_code = None
+RECENT_CACHE_LEN = 30
 
 def log(msg):
     #print msg
@@ -37,7 +38,7 @@ def recentSampleAdd(mc, artist):
     if artist in cachedRes:
         del cachedRes[ cachedRes.index(artist) ]
     cachedRes.insert(0,artist)
-    cachedRes = cachedRes[:10]
+    cachedRes = cachedRes[:RECENT_CACHE_LEN]
     print 'after: %s' % cachedRes
     mc.set(cacheKey, cachedRes)
 
