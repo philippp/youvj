@@ -131,7 +131,6 @@ font-style: italic;
 
 
 #similar-artists{
-   padding-top: 5px;
    font-size: 15px;
 }
 
@@ -150,23 +149,18 @@ form.browse input{
 
 
 #player-container{
--moz-border-radius-bottomleft:2px;
--moz-border-radius-bottomright:1px;
--moz-border-radius-topleft:1px;
--moz-border-radius-topright:2px;
--webkit-border-radius-bottomleft:2px;
--webkit-border-radius-bottomright:1px;
--webkit-border-radius-topleft:1px;
--webkit-border-radius-topright:2px;
-
-background-color:#EFEFEF;
 display:none;
 float:right;
-height:522px;
+height:564px;
 margin-bottom:20px;
-margin-top: 10px;
-padding: 10px 20px;
+padding: 0 20px;
 width:480px;
+}
+
+
+#player-container h2{
+   float: left;
+   margin-top: 0;
 }
 
 #player-title, #player-close{
@@ -233,7 +227,7 @@ width:480px;
 
 
 .videoInfo {
-   background-color:#EFEFEF;
+   background-color:#F5F5F5;
    float:left;
    height:110px;
    margin:10px 25px 10px 0;

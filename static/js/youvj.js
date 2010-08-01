@@ -218,11 +218,11 @@ UVJ.renderPlayer = function(videoInfo){
   fV[0].info = videoInfo;
 
   fV.append(
+    $('<h2>'+videoInfo['artist']+' - '+videoInfo['title']+'</h2>')
+  ).append(
     $('<div id="player-close" title="close player">[X]</div>').click(
       function(){fV.empty().hide();}
     )
-  ).append(
-    $('<div class="player-title">'+videoInfo['artist']+' - '+videoInfo['title']+'</div>')
   ).append(
     $('<div id="featureVideo-obj"></div>')
   ).append(
