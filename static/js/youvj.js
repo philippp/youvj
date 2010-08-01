@@ -481,7 +481,7 @@ UVJ.onLoadSimilar = function(resp, artistName){
 
   var similarDiv = $('#similar-artists-list');
   similarDiv.empty();
-  for( i=0; i < Math.min(10,resp.length); i++){
+  for( i=0; i < Math.min(20,resp.length); i++){
     var curArtist = resp[i][0];
     similarDiv.append(
       $("<a href='#' title='"+resp[i][0]+"'>"+curArtist+"</a>").click(
@@ -492,13 +492,6 @@ UVJ.onLoadSimilar = function(resp, artistName){
       )
     );
   }
-
-  if( resp.length > 0 ){
-    similarDiv.prepend(
-            $("<span>Similar artists: </span>")
-    );
-  }
-
 };
 
 UVJ.setCookie = function(c_name,value,expiredays)

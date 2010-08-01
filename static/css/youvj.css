@@ -5,6 +5,10 @@ html, body{
    background-color: #F5F5F5
 }
 
+h2{
+   margin-bottom: 10px;
+}
+
 #footer-spacer{
 height: 150px;
 }
@@ -139,8 +143,9 @@ form.browse input{
    margin-left: 10px;
 }
 
-.browse-similar-entry{
-   margin-right: 5px;
+#similar-artists-list a{
+   margin-right: 10px;
+   line-height: 25px;
 }
 
 
@@ -201,7 +206,7 @@ width:480px;
    display:inline-block;
    font-size:11px;
    width: 110px;
-   line-height: 13px;
+   line-height: 16px;
    height: 13px;
    overflow:hidden;
    text-show: white 1px 1px 0;
@@ -229,8 +234,6 @@ width:480px;
 
 .videoInfo {
    background-color:#EFEFEF;
-   border-bottom:2px solid #FFFFFF;
-   border-right:2px solid #FFFFFF;
    float:left;
    height:110px;
    margin:10px 25px 10px 0;
