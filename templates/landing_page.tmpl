@@ -43,7 +43,7 @@ LP.rotateRow = function(i){
      	 return;
      }
      var row = jQuery("<div class='scrollrow'></div>");
-     row.append("<div class='title'>"+recent_videos[i][0]+"</div>");
+     row.append(jQuery("<a class='title' href='/"+recent_videos[i][0]+"'>"+recent_videos[i][0]+"</a>"));
      for( var j = 0; j < Math.min(recent_videos[i][1].length, 4); j++ ){
      	  row.append(jQuery(UVJ.makeVidTile(recent_videos[i][1][j])));
      }

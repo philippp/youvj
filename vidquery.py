@@ -123,6 +123,7 @@ def _replaceUmlauts(minTitle):
              246:u'o', #Lowercase O-umlaut
              214:u'o', #Uppercase O-umlaut
              228:u'a', #Lowercase A-umlaut
+             132:u'a', #Lowercase A-umlaut
              196:u'a', #Capital A-umlaut
              224:u'a', #Lowercase A-grave
              192:u'a', #Capital A-grave
