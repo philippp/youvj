@@ -1,4 +1,5 @@
 html, body{
+   margin: 0;
    height: 100%;
    font-family: helvetica, verdana, sans-serif;
    background-color: #94C8E9;
@@ -95,13 +96,6 @@ font-style: italic;
 
 }
 
-#recent .title {
-   float: left;
-   margin-top: 10px;
-   overflow-x: hidden;
-   width: 150px;
-}
-
 .recent-artists { 
    float: left;
 }
@@ -110,6 +104,13 @@ font-style: italic;
    clear:both;
 }
 
+.left {
+   float: left;
+}
+
+.right {
+   float: right;
+}
 .default-value {
    color: #777777;
 }

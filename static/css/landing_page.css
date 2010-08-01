@@ -1,0 +1,27 @@
+.front-banner {
+   font-size: 20px;
+}
+#top{
+   padding: 10px 0 15px 0;
+   text-align: center;
+}
+#top form input{
+   font-size: 30px;
+}
+
+#middle{
+   margin: 0 50px;
+}
+
+#recent .title {
+   float: left;
+   margin-top: 45px;
+   overflow-x: hidden;
+   width: 150px;
+   text-transform: capitalize;
+}
+
+#recent{
+   height: 500px;
+   overflow: hidden;
+}

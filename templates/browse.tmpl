@@ -10,21 +10,22 @@ You are the VJ with youvj!
 #end def
 
 #def body()
-<dev id="container">
-  <dev id="top">
+<div id="container">
+  <div id="top">
     <div id="login">
     </div>
     <form class="browse">
       <input type="text" id="browseInput"/><input type="submit" id="browse-button" value="Search"/>
     </form>
     <div id="browse-similar"></div>
-  </dev>
+    <div class="clear"></div>
+  </div>
   <div class="clear"></div>
-  <dev id="middle">
+  <div id="middle">
     <div id="player-container"></div>
-  </dev>
+  </div>
   <div id="footer-spacer">&nbsp;</div>
-  <dev id="footer">
+  <div id="footer">
     <div id="footer-up">
       <a href='#'>UP</a>
     </div>
@@ -36,8 +37,8 @@ You are the VJ with youvj!
     </div>
     
     <ul id="playlist"></ul>
-  </dev>
-</dev><!-- #container -->
+  </div>
+</div><!-- #container -->
 <script>
   UVJ.artistVids = $json.dumps($artistVids);
   UVJ.artist = "$artist";
