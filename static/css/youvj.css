@@ -74,7 +74,7 @@ font-style: italic;
    top:25px;
    width:100%;
    z-index:2;
-   text-shadow: 1px 1px 0 #555555;
+   text-shadow: -1px -1px 0 #DDDDDD;
 }
 
 #footer-down{

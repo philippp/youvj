@@ -37,7 +37,7 @@ You are the VJ with youvj!
       <a href='#'>DOWN</a>
     </div>
     <div id="footer-tip">
-      Drag, drop, and arrange videos here! 
+      Drag videos here to make a playlist!
     </div>
     
     <ul id="playlist"></ul>
@@ -90,6 +90,9 @@ jQuery(document).ready(function(){
     UVJ.playlist.configure();
     UVJ.user.updateLoginStatus();
     jQuery('#browseInput').defaultValue('Artist Name');
+    if( UVJ.artist && UVJ.artist.length ){
+    	jQuery('#browseInput').removeClass('default-value').val(UVJ.artist);
+    }
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );
