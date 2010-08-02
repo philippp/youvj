@@ -30,6 +30,8 @@ You are the VJ with youvj!
   </div>
   <div id="footer-spacer">&nbsp;</div>
   <div id="footer">
+    <div id="playlist-right" class="right">&rarr;</div>
+    <div id="playlist-left" class="left">&larr;</div>
     <div id="footer-up">
       <a href='#'>UP</a>
     </div>
@@ -46,6 +48,16 @@ You are the VJ with youvj!
 <script>
   UVJ.artistVids = $json.dumps($artistVids);
   UVJ.artist = "$artist";
+
+  jQuery("#playlist-right").click(
+    function(e){
+      jQuery("#playlist").animate({left: '-=600px'}, "slow");
+    });
+
+  jQuery("#playlist-left").click(
+    function(e){
+      jQuery("#playlist").animate({left: '+=600px'}, "slow");
+    });
 
   var easeFooter = function(){
     if( easeFooter.dir == 'up' ){
@@ -69,6 +81,7 @@ You are the VJ with youvj!
   easeFooter.t = null;
 
 jQuery(document).ready(function(){
+
     if( UVJ.artistVids ){
       for( var i = 0; i < UVJ.artistVids.length; i++ ){
           jQuery('#middle').append( UVJ.makeThumb(UVJ.artistVids[i]) );
