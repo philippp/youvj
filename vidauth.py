@@ -1,4 +1,4 @@
-import base64, hmac, sha
+import base64, hmac
 import hashlib
 import random
 import time
