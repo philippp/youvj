@@ -30,6 +30,8 @@ You are the VJ with youvj!
   </div>
   <div id="footer-spacer">&nbsp;</div>
   <div id="footer">
+    <div id="playlist-right" class="right">&rarr;</div>
+    <div id="playlist-left" class="left">&larr;</div>
     <div id="footer-up">
       <a href='#'>UP</a>
     </div>
@@ -37,7 +39,7 @@ You are the VJ with youvj!
       <a href='#'>DOWN</a>
     </div>
     <div id="footer-tip">
-      Drag, drop, and arrange videos here! 
+      Drag videos here to make a playlist!
     </div>
     
     <ul id="playlist"></ul>
@@ -46,6 +48,18 @@ You are the VJ with youvj!
 <script>
   UVJ.artistVids = $json.dumps($artistVids);
   UVJ.artist = "$artist";
+
+  UVJ.playlist.stepSize = 165 * 4;
+
+  jQuery("#playlist-right").click(
+    function(e){
+      jQuery("#playlist").animate({left: '-='+UVJ.playlist.stepSize+'px'}, "slow");
+    });
+
+  jQuery("#playlist-left").click(
+    function(e){
+      jQuery("#playlist").animate({left: '+='+UVJ.playlist.stepSize+'px'}, "slow");
+    });
 
   var easeFooter = function(){
     if( easeFooter.dir == 'up' ){
@@ -69,6 +83,7 @@ You are the VJ with youvj!
   easeFooter.t = null;
 
 jQuery(document).ready(function(){
+
     if( UVJ.artistVids ){
       for( var i = 0; i < UVJ.artistVids.length; i++ ){
           jQuery('#middle').append( UVJ.makeThumb(UVJ.artistVids[i]) );
@@ -90,6 +105,9 @@ jQuery(document).ready(function(){
     UVJ.playlist.configure();
     UVJ.user.updateLoginStatus();
     jQuery('#browseInput').defaultValue('Artist Name');
+    if( UVJ.artist && UVJ.artist.length ){
+    	jQuery('#browseInput').removeClass('default-value').val(UVJ.artist);
+    }
     jQuery('#footer-up').click(function(){
                                  easeFooter.dir = 'up';
                                  easeFooter.t = setInterval( easeFooter, 20 );
