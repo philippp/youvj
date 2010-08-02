@@ -49,14 +49,16 @@ You are the VJ with youvj!
   UVJ.artistVids = $json.dumps($artistVids);
   UVJ.artist = "$artist";
 
+  UVJ.playlist.stepSize = 165 * 4;
+
   jQuery("#playlist-right").click(
     function(e){
-      jQuery("#playlist").animate({left: '-=600px'}, "slow");
+      jQuery("#playlist").animate({left: '-='+UVJ.playlist.stepSize+'px'}, "slow");
     });
 
   jQuery("#playlist-left").click(
     function(e){
-      jQuery("#playlist").animate({left: '+=600px'}, "slow");
+      jQuery("#playlist").animate({left: '+='+UVJ.playlist.stepSize+'px'}, "slow");
     });
 
   var easeFooter = function(){
