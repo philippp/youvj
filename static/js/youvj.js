@@ -255,10 +255,20 @@ UVJ.renderPlayer = function(videoInfo){
   UVJ.player.updatePlaylist();
 };
 
+UVJ.updatePlayer = function(videoInfo){
+  var fV = $("#player-container");
+  fV[0].info = videoInfo;
+  $('h2',fV).text(videoInfo['artist']+' - '+videoInfo['title']);
+  $('.player-description',fV).text(videoInfo['description']);
+  UVJ.player.updatePlaylist();
+};
+
 UVJ.player.next = function(){
   var nextInfo = $('#player-next-info')[0].info;
   if( nextInfo ){
-    UVJ.renderPlayer( nextInfo );
+    var ytplayer = $("#myytplayer")[0];
+    ytplayer.loadVideoById(nextInfo['youtube_id']);
+    UVJ.updatePlayer( nextInfo );
   }
 };
 
@@ -266,10 +276,19 @@ UVJ.playerStateChange = function(newState) {
   if( newState == 0 ){ // If the video stopped, play the next one in the queue
     UVJ.player.next();
   }else if( newState == 3){ // Video is buffering
-    ytplayer = document.getElementById("myytplayer");
+    var ytplayer = $("#myytplayer")[0];
     var levels = ytplayer.getAvailableQualityLevels();
     ytplayer.setPlaybackQuality(levels[0]);
   }
+};
+
+UVJ.player.queue = function(yt_id){
+  var ytplayer = $("#myytplayer")[0];
+  ytplayer.cueVideoById(yt_id, 0);
+};
+
+
+UVJ.player.embedCode = function(){
 
 };
 
