@@ -152,6 +152,9 @@ UVJ.makeThumb = function(videoInfo, options){
   $('.screencaps .t0',vid).show();
   if( options.draggable ){
     vid.draggable({
+      'start': function(e, ui){
+        $("#playlist").sortable('refresh');
+      },
       'handle':'.drag-handle',
       'zIndex':9999,
       'revert':'invalid',
