@@ -8,6 +8,7 @@ FB_APP_SECRET = "fe7a9bb66b092c645fe1b8a9256612a4"
 
 title = 'YouVJ'
 
+google_analytics_id = "UA-15790891-1"
 session_secret = 'UI<73OuII:Y?<fFUCR0>6>A`<<Iqs88vm=s\\C98Q6=Ht[sn<95SEs3=4>t58fucI'
 
 hostname = 'ppp.com'

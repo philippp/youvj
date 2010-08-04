@@ -7,7 +7,7 @@ FB_APP_KEY = "4d67a1e64c2919cf67b71798d23060a1"
 FB_APP_SECRET = "99ead8444dbbd10beea77df966e8836f"
 
 title = 'YouVJ'
-
+google_analytics_id = "UA-17798049-1"
 session_secret = 'DmtW>:V2FQIp3\\ICEeh4G0@CAZBp4G<EFVxQ:6GRr\\WJ];49\\:;qL=oepxDk`]d<'
 
 hostname = 'youvj.com'

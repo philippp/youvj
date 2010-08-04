@@ -63,6 +63,7 @@ UVJ.user.logout = function(){
 };
 
 UVJ.user.login = function( email, password ){
+  UVJ.ga._trackPageview('/user/login');
   jQuery.post('/user/login',
               {'email':email,
                'password':password},
@@ -79,6 +80,7 @@ UVJ.user.login = function( email, password ){
 };
 
 UVJ.user.create = function( email, password ){
+  UVJ.ga._trackPageview('/user/create');
   jQuery.post('/user/create',
               {'email':email,
                'password':password},
@@ -184,7 +186,10 @@ UVJ.initThumb = function(thumbElem){
       };
     }(thumbElem)
   );
-  $('a',thumbElem).click(function(){UVJ.renderPlayer(thumbElem[0].info);});
+  $('a',thumbElem).click(function(){
+                           UVJ.ga._trackPageview('/_click_thumb');
+                           UVJ.renderPlayer(thumbElem[0].info);
+                         });
   $('.screencaps',thumbElem).click(function(){UVJ.renderPlayer(thumbElem[0].info);});
   $('a',thumbElem).button();
 };
@@ -431,6 +436,7 @@ UVJ.playlist.loadCookie = function(){
 };
 
 UVJ.browse = function( artist ){
+  UVJ.ga._trackPageview('/findvideos');
   jQuery.post('/findvideos',
               {'artist':artist},
               function(resp){
@@ -438,6 +444,7 @@ UVJ.browse = function( artist ){
               },
               'json'
   );
+  UVJ.ga._trackPageview('/findsimilar');
   jQuery.post('/findsimilar',
               {'artist':artist},
               function(resp){
@@ -478,7 +485,7 @@ UVJ.api.saveVideo = function( videoInfo ){
   for( i=0; i < sameArgs.length; i++ ){
     toSend[sameArgs[i]] = videoInfo[sameArgs[i]];
   }
-
+  UVJ.ga._trackPageview('/savevideo');
   $.post('/savevideo',
            toSend,
            function(){},
@@ -489,6 +496,7 @@ UVJ.api.saveVideo = function( videoInfo ){
 UVJ.loadSimilar = function(artistName){
   UVJ.artist = artistName;
   $('.similar-artist').remove();
+  UVJ.ga._trackPageview('/findsimilar');
   jQuery.post('/findsimilar',
            {'artist':artistName},
            function(resp){UVJ.onLoadSimilar(resp, artistName);},
@@ -508,6 +516,7 @@ UVJ.onLoadSimilar = function(resp, artistName){
     similarDiv.append(
       $("<a href='#' title='"+resp[i][0]+"'>"+curArtist+"</a>").click(
         (function(f){return function(e){
+                       UVJ.ga._trackPageview('/_click_similar');
                        UVJ.browse(f);
                        return false;
                      };})(curArtist)
@@ -541,6 +550,17 @@ UVJ.getCookie = function(c_name){
   }
   return "";
 };
+
+UVJ.ga = {};
+UVJ.ga._trackPageview = function(p){};
+
+UVJ.ga_check = function(){
+  if( typeof(_gaq._createAsyncTracker) == 'function' ){
+    clearInterval(UVJ.ga_check_id);
+    UVJ.ga = _gaq._createAsyncTracker();
+  }
+};
+UVJ.ga_check_id = setInterval(UVJ.ga_check, 200);
 
 var renderSimilar = function(pairing){
   var similarArtist = $("<div class='similar-artist'></div>").append(
