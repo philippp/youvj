@@ -29,6 +29,12 @@ COLS = {
         'origin_network',
         'salt',
         'passwd_hash'
+        ],
+    'tags':
+        [
+        'youtube_id',
+        'tag_name',
+        'user_id'
         ]
 }
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import random
 import unittest
 import viddb
@@ -11,78 +12,144 @@ class TestTagging(unittest.TestCase):
     def setUp(self):
         self.seq = range(10)
         self.conn = viddb.get_conn()
+        vidmapper.clearUserTags( self.conn, TEST_USER )
 
-    def multiVidSameTag(self):
-        vidmapper.tagVideo(conn, VINFO[0], u1, 't1')
-        vidmapper.tagVideo(conn, VINFO[1], u1, 't1')
+    def test_multiVidSameTag(self):
+        u1 = TEST_USER
+        vidmapper.tagVideo(self.conn, VINFO[0], u1, 't1')
+        vidmapper.tagVideo(self.conn, VINFO[1], u1, 't1')
+        
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
+        
+        self.assertEqual( tags.keys(),
+                          ['t1'] )
+        self.assertEqual( set(tags.values()[0]),
+                          set([VINFO[0]['youtube_id'],
+                           VINFO[1]['youtube_id']]) )
 
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't1'),
-                          [VINFO[0], VINFO[1]] )
-
-        vidmapper.untagVideo(conn,
+        vidmapper.untagVideo(self.conn,
                              u1,
                              VINFO[0]['youtube_id'],
                              't1')
 
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't1'),
-                          [VINFO[1]] )
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
 
-        vidmapper.untagVideo(conn,
+        self.assertEqual( tags.keys(),
+                          ['t1'] )
+        self.assertEqual( tags.values(),
+                          [[VINFO[1]['youtube_id']]] )
+
+        vidmapper.untagVideo(self.conn,
                              u1,
                              VINFO[1]['youtube_id'],
                              't1')
 
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't1'),
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
+
+        self.assertEqual( tags.keys(),
+                          [] )
+        self.assertEqual( tags.values(),
                           [] )
 
+    def test_sameVidMultiTag(self):
+        u1 = TEST_USER
+        vidmapper.tagVideo(self.conn, VINFO[0], u1, 't1')
+        vidmapper.tagVideo(self.conn, VINFO[0], u1, 't2')
+        
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
+        
+        self.assertEqual( set(tags.keys()),
+                          set(['t1', 't2']) )
+        self.assertEqual( tags.values(),
+                          [[VINFO[0]['youtube_id']],
+                           [VINFO[0]['youtube_id']]] )
 
-    def sameVidMultiTag(self):
-        vidmapper.tagVideo(conn, VINFO[0], u1, 't1')
-        vidmapper.tagVideo(conn, VINFO[0], u1, 't2')
-
-        self.assertEqual( vidmapper.listUserTags(conn, u1),
-                          ['t1','t2'] )
-
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't1'),
-                          [VINFO[0]] )
-
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't2'),
-                          [VINFO[0]] )
-
-        self.assertEqual( vidmapper.listVideoTags( conn,
-                                                   VINFO[0]['youtube_id']
-                                                   ),
-                          ['t1', 't2'])
-
-        vidmapper.untagVideo(conn,
+        vidmapper.untagVideo(self.conn,
                              u1,
                              VINFO[0]['youtube_id'],
                              't1')
 
-        self.assertEqual( vidmapper.listUserTags(conn, u1),
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
+
+        self.assertEqual( tags.keys(),
                           ['t2'] )
+        self.assertEqual( tags.values(),
+                          [[VINFO[0]['youtube_id']]] )
 
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't1'),
-                          [] )
-
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't2'),
-                          [VINFO[0]] )
-
-        vidmapper.untagVideo(conn,
+        vidmapper.untagVideo(self.conn,
                              u1,
                              VINFO[0]['youtube_id'],
                              't2')
 
-        self.assertEqual( vidmapper.listUserTags(conn, u1),
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
+
+        self.assertEqual( tags.keys(),
+                          [] )
+        self.assertEqual( tags.values(),
                           [] )
 
+    def test_orderVideoCount(self):
+        u1 = TEST_USER
+        vidmapper.tagVideo(self.conn, VINFO[0], u1, 't1')
+        vidmapper.tagVideo(self.conn, VINFO[1], u1, 't2')
+        vidmapper.tagVideo(self.conn, VINFO[2], u1, 't2')
+        vidmapper.tagVideo(self.conn, VINFO[3], u1, 't3')
+        vidmapper.tagVideo(self.conn, VINFO[4], u1, 't3')
+        vidmapper.tagVideo(self.conn, VINFO[5], u1, 't3')
+        
+        tags = vidmapper.listUserTags(self.conn, u1)
+        self.assertEqual( map( lambda t: t[0], tags ),
+                          ['t3', 't2', 't1'] )
 
-        self.assertEqual( vidmapper.listTagged(conn, u1, 't2'),
+        vidmapper.untagVideo(self.conn,
+                             u1,
+                             VINFO[4]['youtube_id'],
+                             't3')
+
+        vidmapper.untagVideo(self.conn,
+                             u1,
+                             VINFO[3]['youtube_id'],
+                             't3')
+
+        tags = vidmapper.listUserTags(self.conn, u1)
+        self.assertEqual( map( lambda t: t[0], tags )[0],
+                          't2')
+
+        vidmapper.untagVideo(self.conn,
+                             u1,
+                             VINFO[5]['youtube_id'],
+                             't3')
+
+        tags = vidmapper.listUserTags(self.conn, u1)
+        self.assertEqual( map( lambda t: t[0], tags ),
+                          ['t2','t1'] )
+
+        vidmapper.untagVideo(self.conn,
+                             u1,
+                             VINFO[0]['youtube_id'],
+                             't1')
+
+        vidmapper.untagVideo(self.conn,
+                             u1,
+                             VINFO[1]['youtube_id'],
+                             't2')
+
+        vidmapper.untagVideo(self.conn,
+                             u1,
+                             VINFO[2]['youtube_id'],
+                             't2')
+
+        tags = dict(vidmapper.listUserTags(self.conn, u1))
+
+        self.assertEqual( tags.keys(),
                           [] )
+        self.assertEqual( tags.values(),
+                          [] )
+
+ 
 
 
 VINFO = [
-
         {'artist': 'Percee P',
          'description': 'Percee P\'s "Put it on the Line" from the album Perseverance. Produced by Madlib. BX Version. Directed/Edited by Duey FM. www.stonesthrow.com',
          'duration': 202L,
@@ -162,12 +229,7 @@ VINFO = [
          'thumbnail_3': 'http://i.ytimg.com/vi/xhIJGF85Pro/3.jpg',
          'title': 'surfin/body in the water',
          'view_count': 5359L,
-         'youtube_id': 'xhIJGF85Pro'},
-        {'artist': 'Hexstatic',
-         'description': "A video game themed music video from Hexstatic's Masterview album.",
-         'duration': 233L,
-         'flash_url': 'http://www.youtube.com/v/0CLu3_3ftfg?f=videos&app=youtube_gdata',
-         
+         'youtube_id': 'xhIJGF85Pro'},         
          ]
 
 if __name__ == '__main__':

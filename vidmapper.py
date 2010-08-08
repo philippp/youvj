@@ -58,16 +58,42 @@ def addUser(conn, email, password=None):
         raise vidfail.UserExists()
 
 def tagVideo(conn, vidInfo, userID, tagName):
-    pass
+    viddb.insert(conn, 'youtube_videos', _ignore = True, **vidInfo)
+    viddb.insert(conn,
+                 'tags',
+                 _ignore = True,
+                 youtube_id = vidInfo['youtube_id'],
+                 tag_name = tagName,
+                 user_id = userID)
+
 
 def untagVideo(conn, userID, ytID, tagName):
-    pass
+    viddb.delete(conn,
+                 'tags',
+                 'user_id = %s AND youtube_id = "%s" AND tag_name = "%s"' %\
+                     (userID, ytID, tagName))
+
+def clearUserTags(conn, userID):
+    viddb.delete(conn,
+                 'tags',
+                 'user_id = %s' %\
+                     (userID))
 
 def listUserTags(conn, userID):
-    pass
-
-def listTagged(conn, userID, tagName):
-    pass
+    tagEntries = viddb.load( 
+        conn,
+        'tags',
+        viddb.COLS['tags'],
+        'user_id = %s' % userID )
+    
+    tagMap = {}
+    for e in tagEntries:
+        tagName = e['tag_name']
+        tagMap[tagName] = tagMap.get(tagName,[])
+        tagMap[tagName].append( e['youtube_id'] )
+    tagList = tagMap.items()
+    tagList = sorted( tagList, key = lambda i: len(i[1]), reverse = True )
+    return tagList
 
 def saveVideo(conn, vidInfo):
     viddb.insert(conn, 'youtube_videos', _ignore = True, **vidInfo)
