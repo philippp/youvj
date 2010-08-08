@@ -1,4 +1,5 @@
 import pdb
+import pprint
 import viddb
 import vidauth
 import vidfail
@@ -26,7 +27,7 @@ def deletePlaylist(conn, playlist_id):
 def renamePlaylist(conn, playlist_id, title):
     cursor = conn.cursor()
     cursor.execute("UPDATE playlists SET title = \"%s\" WHERE id = %s" % \
-                           (title, playlist_id))
+                           (conn.escape_string(title), playlist_id))
 
 
 def getUser(conn, email):
@@ -55,6 +56,18 @@ def addUser(conn, email, password=None):
                      **user_data)
     except _mysql_exceptions.IntegrityError:
         raise vidfail.UserExists()
+
+def tagVideo(conn, vidInfo, userID, tagName):
+    pass
+
+def untagVideo(conn, userID, ytID, tagName):
+    pass
+
+def listUserTags(conn, userID):
+    pass
+
+def listTagged(conn, userID, tagName):
+    pass
 
 def saveVideo(conn, vidInfo):
     viddb.insert(conn, 'youtube_videos', _ignore = True, **vidInfo)
@@ -117,6 +130,7 @@ def retrieveVideos(conn, youtube_ids):
                       'youtube_videos',
                       viddb.COLS['youtube_videos'],
                       where = where_str)
+    pprint.pprint( resp )
     return resp
 
 def tset_fbid(conn, fbid, uid=None):
