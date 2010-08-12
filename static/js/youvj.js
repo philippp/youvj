@@ -228,7 +228,15 @@ UVJ.renderPlayer = function(videoInfo){
   var tags = UVJ.tagged[videoInfo['youtube_id']];
   if(tags){
     for( var i = 0; i < tags.length; i++ ){
-        listDiv.append($('<span> '+tags[i]+'</span>'));
+        listDiv.append(
+          $('<span> '+tags[i]+'</span>').click(
+            (function(t){
+               return function(){
+                 UVJ.thumbs.loadTag(UVJ.get_tag(t));
+               };
+            })(tags[i])
+          )
+        );
     }
   }
   fV.append(
@@ -380,6 +388,21 @@ UVJ.player.updatePlaylist = function(){
   ));
 };
 
+UVJ.thumbs = {};
+
+UVJ.thumbs.loadTag = function(tag){
+  jQuery('#middle .videoInfo').remove();
+  jQuery('#middle br').remove();
+  UVJ.api.loadVideos(tag,
+                     function(resp){
+                       for( var i = 0; i < resp.length; i++ ){
+                         jQuery('#middle').append( UVJ.makeThumb(resp[i]) );
+                       }
+                       $('#middle').append($("<br style='clear: both'/>"));
+                     }
+  );
+};
+
 UVJ.playlist = {};
 
 UVJ.playlist.configure = function(){
@@ -463,6 +486,9 @@ UVJ.playlist.loadCookie = function(){
 };
 
 UVJ.browse = function( artist ){
+  jQuery('#middle .videoInfo').remove();
+  jQuery('#middle br').remove();
+
   UVJ.ga._trackPageview('/findvideos');
   jQuery.post('/findvideos',
               {'artist':artist},
@@ -495,6 +521,17 @@ UVJ.onBrowseCallback = function( resp, artist ){
 };
 
 UVJ.api = {};
+
+UVJ.api.loadVideos = function( youtubeIDs, onLoadVideos ){
+  if(!onLoadVideos) onLoadVideos = function(){};
+
+  $.post('/loadvideo',
+           {'ytid':youtubeIDs},
+           onLoadVideos,
+           'json'
+          );
+
+};
 
 UVJ.api.saveVideo = function( videoInfo ){
   var toSend = {}, i = 0;

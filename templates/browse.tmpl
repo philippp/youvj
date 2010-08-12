@@ -48,6 +48,14 @@ You are the VJ with youvj!
 <script>
   UVJ.artistVids = $json.dumps($artistVids);
   UVJ.tags = $json.dumps($tags);
+  UVJ.get_tag = function(tagName){
+    for( var i = 0; i < UVJ.tags.length; i++ ){
+      if( UVJ.tags[i][0] == tagName ){
+        return UVJ.tags[i][1];
+      }
+      return [];
+    }
+  } 
   UVJ.tagged = $json.dumps($tagged);
   UVJ.artist = "$artist";
 
