@@ -224,7 +224,7 @@ UVJ.renderPlayer = function(videoInfo){
   var fV = $("#player-container");
   fV.empty();
   fV[0].info = videoInfo;
-
+  var listDiv = $('<div class="list"></div>');
   fV.append(
     $('<h2>'+videoInfo['artist']+' - '+videoInfo['title']+'</h2>')
   ).append(
@@ -238,14 +238,18 @@ UVJ.renderPlayer = function(videoInfo){
       $('<input name="tag" id="tag-input"/>')
     ).append(
       $('<input type="submit" value="Tag" action="POST"/>')
+    ).append(
+      listDiv
     ).submit(
       function(e){
         UVJ.api.saveVideo(videoInfo);
         var input = $('#tag-input');
+        var newTag = input.val();
         UVJ.api.tagVideo(videoInfo['youtube_id'],
-                         input.val()
+                         newTag
         );
         input.val('');
+        listDiv.append($('<span> '+newTag+'</span>'));
         return false;
       }
     )
