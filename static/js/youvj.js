@@ -225,6 +225,12 @@ UVJ.renderPlayer = function(videoInfo){
   fV.empty();
   fV[0].info = videoInfo;
   var listDiv = $('<div class="list"></div>');
+  var tags = UVJ.tagged[videoInfo['youtube_id']];
+  if(tags){
+    for( var i = 0; i < tags.length; i++ ){
+        listDiv.append($('<span> '+tags[i]+'</span>'));
+    }
+  }
   fV.append(
     $('<h2>'+videoInfo['artist']+' - '+videoInfo['title']+'</h2>')
   ).append(
@@ -256,7 +262,7 @@ UVJ.renderPlayer = function(videoInfo){
   ).append(
     $('<div id="player-next-info"></div>')
   )
-    .append(
+  .append(
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
 

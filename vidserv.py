@@ -22,6 +22,18 @@ import webob
 
 from lib import memcache
 
+def authenticated(required=False):
+    def _authenticated(fn):
+        def __authenticated(s, req):
+            if not req.cookies.get('session') and required:
+                raise vidfail.NotAuthenticated()
+            session_info = vidauth.decode_session_str(
+                req.cookies.get('session',{}))
+            req.userID = session_info.get('id',0)
+            return fn(s, req)
+        return __authenticated
+    return _authenticated
+
 class Controller(object):
 
     def __init__(self, *args, **kwargs):
@@ -85,10 +97,15 @@ class FrontPage(HTMLController):
                              recent_videos = recent_videos)
 
 class Browse(HTMLController):
+
+    @authenticated()
     def respond(self, req):
         artist = req.args.get('artist','')
         artistVids = []
 
+        conn = viddb.get_conn()
+        
+        #Note -- start using ip for query again
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
 
         artistVids = artist and vidquery.fetchCached(self.mem, artist) or []
@@ -98,14 +115,25 @@ class Browse(HTMLController):
         playlist = req.cookies.get('pl', [])
         if playlist:
             playlist = urllib2.unquote(playlist).split(',')
-            conn = viddb.get_conn()
             playlist = vidmapper.retrieveVideos(conn,
                                                 playlist)
+
+        tags = {}
+        tagged = {}
+        if req.userID:
+            tags = vidmapper.listUserTags(
+                conn,
+                req.userID)
+            for k, v in dict(tags).iteritems():
+                for yid in v:
+                    tagged[yid] = tagged.get(yid,[]) + [k];
 
         return self.template("browse",
                              artistVids = artistVids,
                              artist = artist,
-                             playlist = playlist
+                             playlist = playlist,
+                             tags = tags,
+                             tagged = tagged
                              )
         
 class UserLogin(JSONController):
@@ -198,19 +226,9 @@ class FindSimilar(JSONController):
             self.mem.set(cacheKey, cachedRes)
         return cachedRes
 
-def authenticated(fn):
-    def _authenticated(s, req):
-        if not req.cookies.get('session'):
-            raise vidfail.NotAuthenticated()
-        session_info = vidauth.decode_session_str(
-            req.cookies.get('session'))
-        req.userID = session_info['id']
-        return fn(s, req)
-    return _authenticated
-
 class TagVideo(JSONController):
     ''' Associate a video with a tagname'''
-    @authenticated
+    @authenticated(required=True)
     def respond(self, req):
         tagNames = req.args.get('tagNames').split(",")
         for tagName in tagNames:
@@ -223,7 +241,7 @@ class TagVideo(JSONController):
 
 class UnTagVideo(JSONController):
     ''' Associate a video with a tagname'''
-    @authenticated
+    @authenticated(required=True)
     def respond(self, req):
         vidmapper.untagVideo(
             viddb.get_conn(),
@@ -234,7 +252,7 @@ class UnTagVideo(JSONController):
 
 class LoadTags(JSONController):
     ''' Associate a video with a tagname'''
-    @authenticated
+    @authenticated(required=True)
     def respond(self, req):
         return vidmapper.listUserTags(
             viddb.get_conn(),
