@@ -1,5 +1,5 @@
 import config
-import MySQLdb
+from libs import MySQLdb
 
 COLS = {
     'youtube_videos':[
@@ -52,11 +52,14 @@ def insert(conn, table, **kwargs):
     if '_ignore' in kwargs:
         ignore = "IGNORE"
         del kwargs['_ignore']
+
+    vals = [ "'"+conn.escape_string(str(v))+"'" for v in kwargs.values() ]
+    vals = ",".join( vals )
     query_str = "INSERT %s INTO %s (%s) VALUES (%s)" % \
         (ignore,
-         table, 
+         table,
          ",".join(kwargs.keys()),
-         ",".join( [ "'%s'" % conn.escape_string(str(v)) for v in kwargs.values() ] )
+         vals
          )
     cursor.execute(query_str)
     last_id = cursor.lastrowid

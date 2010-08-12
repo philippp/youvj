@@ -20,6 +20,7 @@ db = {
     'user':'db',
     'passwd':'passwd_db',
     'db':'youvj',
+    'charset':'utf8',
     }
 
 memcache_host = '127.0.0.1:11211'

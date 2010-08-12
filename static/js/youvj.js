@@ -234,8 +234,25 @@ UVJ.renderPlayer = function(videoInfo){
   ).append(
     $('<div id="featureVideo-obj"></div>')
   ).append(
-    $('<div id="player-next-info"></div>')
+    $('<form name="tagging"></form>').append(
+      $('<input name="tag" id="tag-input"/>')
+    ).append(
+      $('<input type="submit" value="Tag" action="POST"/>')
+    ).submit(
+      function(e){
+        UVJ.api.saveVideo(videoInfo);
+        var input = $('#tag-input');
+        UVJ.api.tagVideo(videoInfo['youtube_id'],
+                         input.val()
+        );
+        input.val('');
+        return false;
+      }
+    )
   ).append(
+    $('<div id="player-next-info"></div>')
+  )
+    .append(
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
 
@@ -470,7 +487,6 @@ UVJ.onBrowseCallback = function( resp, artist ){
 UVJ.api = {};
 
 UVJ.api.saveVideo = function( videoInfo ){
-
   var toSend = {}, i = 0;
   var sameArgs = ['title',
                   'artist',
@@ -491,6 +507,26 @@ UVJ.api.saveVideo = function( videoInfo ){
            function(){},
            'json'
           );
+};
+
+UVJ.api.tagVideo = function( youtubeID, tagNames ){
+  UVJ.ga._trackPageview('/tags/save');
+  $.post('/tags/save',
+    {'youtubeID':youtubeID,
+     'tagNames':tagNames},
+     function(){},
+     'json'
+     );
+};
+
+UVJ.api.loadTags = function( callback ){
+  if(!callback) callback = function(){};
+  UVJ.ga._trackPageview('/tags/load');
+  $.post('/tags/load',
+    {},
+    callback,
+    'json'
+  );
 };
 
 UVJ.loadSimilar = function(artistName){

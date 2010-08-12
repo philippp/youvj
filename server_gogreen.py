@@ -31,6 +31,9 @@ handlers = {
     'user/login' : vidserv.UserLogin,
     'user/logout' : vidserv.UserLogout,
     'user/create' : vidserv.UserCreate,
+    'tags/load' : vidserv.LoadTags,
+    'tags/save' : vidserv.TagVideo,
+    'tags/delete' : vidserv.UnTagVideo,
 }
 
 def wsgiapp(env, start_response):

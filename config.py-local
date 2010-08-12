@@ -21,6 +21,7 @@ db = {
     'user':'philippp',
     'passwd':'philippp',
     'db':'youvj',
+    'charset':'utf8',
     }
 
 memcache_host = '127.0.0.1:11211'

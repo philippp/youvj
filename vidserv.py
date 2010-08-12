@@ -147,7 +147,7 @@ class UserCreate(JSONController):
                                        email )
         if user_data:
             raise vidfail.UserExists()
-        
+
         vidmapper.addUser( viddb.get_conn(),
                            email,
                            raw_password )
@@ -204,9 +204,41 @@ def authenticated(fn):
             raise vidfail.NotAuthenticated()
         session_info = vidauth.decode_session_str(
             req.cookies.get('session'))
-        req.user_id = session_info['id']
+        req.userID = session_info['id']
         return fn(s, req)
     return _authenticated
+
+class TagVideo(JSONController):
+    ''' Associate a video with a tagname'''
+    @authenticated
+    def respond(self, req):
+        tagNames = req.args.get('tagNames').split(",")
+        for tagName in tagNames:
+            vidmapper.tagVideo(
+                viddb.get_conn(),
+                req.args.get('youtubeID'),
+                req.userID,
+                tagName.strip())
+        return True
+
+class UnTagVideo(JSONController):
+    ''' Associate a video with a tagname'''
+    @authenticated
+    def respond(self, req):
+        vidmapper.untagVideo(
+            viddb.get_conn(),
+            req.args.get('youtubeID'),
+            req.userID,
+            req.args.get('tagName'))
+        return True
+
+class LoadTags(JSONController):
+    ''' Associate a video with a tagname'''
+    @authenticated
+    def respond(self, req):
+        return vidmapper.listUserTags(
+            viddb.get_conn(),
+            req.userID)
 
 class SaveVideo(JSONController):
     ''' Save a video's metadata to our DB, for cookie-based retrival '''
@@ -232,7 +264,7 @@ class ListSavedVideos(JSONController):
     @authenticated
     def respond(self, req):
         conn = viddb.get_conn()
-        yids = vidmapper.listSavedVideos(conn, req.user_id)
+        yids = vidmapper.listSavedVideos(conn, req.userID)
         vids = vidmapper.retrieveVideos(conn, yids)
         return vids
 

@@ -57,12 +57,11 @@ def addUser(conn, email, password=None):
     except _mysql_exceptions.IntegrityError:
         raise vidfail.UserExists()
 
-def tagVideo(conn, vidInfo, userID, tagName):
-    viddb.insert(conn, 'youtube_videos', _ignore = True, **vidInfo)
+def tagVideo(conn, youtubeID, userID, tagName):
     viddb.insert(conn,
                  'tags',
                  _ignore = True,
-                 youtube_id = vidInfo['youtube_id'],
+                 youtube_id = youtubeID,
                  tag_name = tagName,
                  user_id = userID)
 
