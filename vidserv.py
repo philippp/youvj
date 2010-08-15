@@ -245,8 +245,8 @@ class UnTagVideo(JSONController):
     def respond(self, req):
         vidmapper.untagVideo(
             viddb.get_conn(),
-            req.args.get('youtubeID'),
             req.userID,
+            req.args.get('youtubeID'),
             req.args.get('tagName'))
         return True
 
