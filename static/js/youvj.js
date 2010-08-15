@@ -229,7 +229,7 @@ UVJ.renderPlayer = function(videoInfo){
   if(tags){
     for( var i = 0; i < tags.length; i++ ){
       (function(t){
-         UVJ.player.addTag(listDiv, t);
+         UVJ.player.addTag(listDiv, t, videoInfo['youtube_id']);
       })(tags[i]);
     }
   }
@@ -257,7 +257,7 @@ UVJ.renderPlayer = function(videoInfo){
                          newTag
         );
         input.val('');
-        UVJ.player.addTag(listDiv, newTag);
+        UVJ.player.addTag(listDiv, newTag, videoInfo['youtube_id']);
         return false;
       }
     )
@@ -329,20 +329,28 @@ UVJ.player.embedCode = function(){
 
 };
 
-UVJ.player.addTag = function(tagList, tagName){
-  tagList.append(
-    $('<span class="tag">[</span>').append(
-      $('<span class="tag-delete">&nbsp;X&nbsp;</span>')
-    ).append(
-      $('<span class="tag-name">|&nbsp;'+tagName+'&nbsp;</span>').click(
-        function(){
-          UVJ.thumbs.loadTag(UVJ.get_tag(tagName));
-        }
-      )
-    ).append(
-      $('<span>]</span>')
+UVJ.player.addTag = function(tagList, tagName, youtubeID){
+
+  var newTag = $('<span class="tag"></span>').append(
+    $('<span class="tag-name">|&nbsp;'+tagName+'&nbsp;</span>').click(
+      function(){
+        UVJ.thumbs.loadTag(UVJ.get_tag(tagName));
+      }
     )
+  ).append(
+    $('<span>]</span>')
   );
+
+  var clickRemoveTag = function(){
+    UVJ.api.unTagVideo( youtubeID, tagName, function(){
+                          newTag.remove();
+    });
+  };
+
+  $(newTag).prepend(
+    $('<span class="tag-delete">&nbsp;X&nbsp;</span>').click(clickRemoveTag)
+  ).prepend("[");
+  tagList.append(newTag);
 };
 
 UVJ.player.updatePlaylist = function(){
@@ -566,12 +574,24 @@ UVJ.api.saveVideo = function( videoInfo ){
           );
 };
 
-UVJ.api.tagVideo = function( youtubeID, tagNames ){
+UVJ.api.tagVideo = function( youtubeID, tagNames, callback ){
+  if( !callback ) callback = function(){};
   UVJ.ga._trackPageview('/tags/save');
   $.post('/tags/save',
     {'youtubeID':youtubeID,
      'tagNames':tagNames},
-     function(){},
+     callback,
+     'json'
+     );
+};
+
+UVJ.api.unTagVideo = function( youtubeID, tagName, callback){
+  if( !callback ) callback = function(){};
+  UVJ.ga._trackPageview('/tags/delete');
+  $.post('/tags/delete',
+    {'youtubeID':youtubeID,
+     'tagName':tagName},
+     callback,
      'json'
      );
 };
