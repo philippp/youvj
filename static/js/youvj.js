@@ -228,15 +228,9 @@ UVJ.renderPlayer = function(videoInfo){
   var tags = UVJ.tagged[videoInfo['youtube_id']];
   if(tags){
     for( var i = 0; i < tags.length; i++ ){
-        listDiv.append(
-          $('<span> '+tags[i]+'</span>').click(
-            (function(t){
-               return function(){
-                 UVJ.thumbs.loadTag(UVJ.get_tag(t));
-               };
-            })(tags[i])
-          )
-        );
+      (function(t){
+         UVJ.player.addTag(listDiv, t);
+      })(tags[i]);
     }
   }
   fV.append(
@@ -263,7 +257,7 @@ UVJ.renderPlayer = function(videoInfo){
                          newTag
         );
         input.val('');
-        listDiv.append($('<span> '+newTag+'</span>'));
+        UVJ.player.addTag(listDiv, newTag);
         return false;
       }
     )
@@ -333,6 +327,22 @@ UVJ.player.queue = function(yt_id){
 
 UVJ.player.embedCode = function(){
 
+};
+
+UVJ.player.addTag = function(tagList, tagName){
+  tagList.append(
+    $('<span class="tag">[</span>').append(
+      $('<span class="tag-delete">&nbsp;X&nbsp;</span>')
+    ).append(
+      $('<span class="tag-name">|&nbsp;'+tagName+'&nbsp;</span>').click(
+        function(){
+          UVJ.thumbs.loadTag(UVJ.get_tag(tagName));
+        }
+      )
+    ).append(
+      $('<span>]</span>')
+    )
+  );
 };
 
 UVJ.player.updatePlaylist = function(){

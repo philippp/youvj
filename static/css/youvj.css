@@ -186,6 +186,11 @@ width:480px;
    cursor: pointer;
 }
 
+.tag {
+   font-size: 11px;
+   margin-right: 2px;
+}
+
 .screencaps {
    background-color:black;
    border:2px solid black;
