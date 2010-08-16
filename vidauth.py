@@ -45,7 +45,7 @@ def auth_user( user_data, raw_password ):
     my_hash = hash_pass( raw_password, user_data['salt'] )
     return db_hash == my_hash
 
-def encode_session_str( user_data ):
+def encode_session( user_data ):
     session_dict = {
         'id':user_data['id'],
         'timestamp':time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -55,7 +55,7 @@ def encode_session_str( user_data ):
     session_str = "&".join(map(lambda p : "%s=%s" % (p[0], p[1]), pairs))
     return trimBase64(base64.b64encode( session_str ))
 
-def decode_session_str( session_str ):
+def decode_session( session_str ):
     session_str = base64.b64decode( fattenBase64(session_str) )
     session_dict = dict( [p.split("=") for p in session_str.split("&")] )
     signature = session_dict['signature']

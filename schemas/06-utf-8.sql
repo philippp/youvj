@@ -1,0 +1,1 @@
+alter table youtube_videos charset=utf8;

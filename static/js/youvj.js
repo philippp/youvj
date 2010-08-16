@@ -1,12 +1,21 @@
 UVJ = {};
 
 UVJ.user = {};
-
+UVJ.user.auth = false;
 UVJ.user.updateLoginStatus = function(){
     if( UVJ.getCookie('session') && UVJ.getCookie('session') != '0' ){
-        jQuery('#login').empty().append(UVJ.user.makeLogout());
+      jQuery('#login').empty().append(UVJ.user.makeLogout());
+      UVJ.user.auth = true;
+      UVJ.tag.load(function(resp){
+        if( UVJ.tag.cache.tags.length ){
+          $('#tabs').show();
+        }
+      });
     }else{
-        jQuery('#login').empty().append(UVJ.user.makeLogin());
+      UVJ.navbar.setActive('search');
+      jQuery('#login').empty().append(UVJ.user.makeLogin());
+      UVJ.user.auth = false;
+      $('#tabs').hide();
     }
 };
 
@@ -80,6 +89,7 @@ UVJ.user.login = function( email, password ){
 };
 
 UVJ.user.create = function( email, password ){
+  $('#login-error-msg').empty();
   UVJ.ga._trackPageview('/user/create');
   jQuery.post('/user/create',
               {'email':email,
@@ -313,6 +323,7 @@ UVJ.player.render = function(videoInfo){
         var input = $('#tag-input');
         var newTag = input.val();
         UVJ.tag.add( videoInfo, newTag, function(){
+                       $('#tabs').show();
                        UVJ.player.addTag(listDiv, newTag, videoInfo['youtube_id']);
                      });
         input.val('');
@@ -321,11 +332,12 @@ UVJ.player.render = function(videoInfo){
     )
   ).append(
     $('<div id="player-next-info"></div>')
-  )
-  .append(
+  ).append(
     $('<div class="player-description">'+videoInfo['description']+'</div>')
   ).append($(''));
-
+  if( !UVJ.user.auth ){
+    $('form',fV).hide();
+  }
   purl = videoInfo['flash_url'];
   purl += '&autoplay=1&fs=1&enablejsapi=1&version=3';
   swfobject.embedSWF(purl,
@@ -548,6 +560,14 @@ UVJ.tag.get = function( tagName ){
       return cacheTags[i][1];
   }
   return [];
+};
+
+UVJ.tag.load = function( onSuccess ){
+  UVJ.api.loadTags( function(resp){
+                      UVJ.tag.cache.tags = resp['tags'];
+                      UVJ.tag.cache.tagged = resp['tagged'];
+                      onSuccess(resp);
+                    } );
 };
 
 

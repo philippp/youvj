@@ -25,11 +25,15 @@ from lib import memcache
 def authenticated(required=False):
     def _authenticated(fn):
         def __authenticated(s, req):
+            session_info = {}
             if not req.cookies.get('session') and required:
                 raise vidfail.NotAuthenticated()
-            session_info = vidauth.decode_session_str(
-                req.cookies.get('session',{}))
-            req.userID = session_info.get('id',0)
+
+            session_str = req.cookies.get('session',{})
+            if session_str != '0':
+                req.userID = vidauth.decode_session(session_str).get('id',0)
+            else:
+                req.userID = 0
             return fn(s, req)
         return __authenticated
     return _authenticated
@@ -148,7 +152,7 @@ class UserLogin(JSONController):
         if not vidauth.auth_user( user_data, raw_password ):
             raise vidfail.InvalidPassword()
 
-        session_str = vidauth.encode_session_str( user_data )
+        session_str = vidauth.encode_session( user_data )
         self.res.set_cookie('session',session_str,
                              max_age = 60*60*24*10,
                              path = '/',
@@ -183,12 +187,12 @@ class UserCreate(JSONController):
         user_data = vidmapper.getUser( viddb.get_conn(),
                                        email )
 
-        session_str = vidauth.encode_session_str( user_data )
+        session_str = vidauth.encode_session( user_data )
         self.res.set_cookie('session',session_str,
                              max_age = 60*60*24*10,
                              path = '/',
                              domain = config.hostname)
-        return 
+        return {'rc':0}
 
 class FindVideos(JSONController):    
     def respond(self, req):
@@ -251,12 +255,18 @@ class UnTagVideo(JSONController):
         return True
 
 class LoadTags(JSONController):
-    ''' Associate a video with a tagname'''
+    ''' List of created tags and tagged videos '''
     @authenticated(required=True)
     def respond(self, req):
-        return vidmapper.listUserTags(
+        tagged = {}
+        tags = vidmapper.listUserTags(
             viddb.get_conn(),
             req.userID)
+        for k, v in dict(tags).iteritems():
+            for yid in v:
+                tagged[yid] = tagged.get(yid,[]) + [k];
+        return {'tags':tags,'tagged':tagged}
+
 
 class SaveVideo(JSONController):
     ''' Save a video's metadata to our DB, for cookie-based retrival '''
