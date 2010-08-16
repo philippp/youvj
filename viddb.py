@@ -1,5 +1,5 @@
 import config
-from libs import MySQLdb
+import MySQLdb
 
 COLS = {
     'youtube_videos':[
