@@ -53,7 +53,8 @@ def insert(conn, table, **kwargs):
         ignore = "IGNORE"
         del kwargs['_ignore']
 
-    vals = [ "'"+conn.escape_string(str(v))+"'" for v in kwargs.values() ]
+    force_ascii = lambda s: s.encode('ascii','ignore')
+    vals = [ "'"+conn.escape_string(force_ascii(v))+"'" for v in kwargs.values() ]
     vals = ",".join( vals )
     query_str = "INSERT %s INTO %s (%s) VALUES (%s)" % \
         (ignore,
