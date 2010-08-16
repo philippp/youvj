@@ -188,9 +188,9 @@ UVJ.initThumb = function(thumbElem){
   );
   $('a',thumbElem).click(function(){
                            UVJ.ga._trackPageview('/_click_thumb');
-                           UVJ.renderPlayer(thumbElem[0].info);
+                           UVJ.player.render(thumbElem[0].info);
                          });
-  $('.screencaps',thumbElem).click(function(){UVJ.renderPlayer(thumbElem[0].info);});
+  $('.screencaps',thumbElem).click(function(){UVJ.player.render(thumbElem[0].info);});
   $('a',thumbElem).button();
 };
 
@@ -220,12 +220,12 @@ UVJ.makeThumb.flipImages.stop = function(){
 
 
 UVJ.player = {};
-UVJ.renderPlayer = function(videoInfo){
+UVJ.player.render = function(videoInfo){
   var fV = $("#player-container");
   fV.empty();
   fV[0].info = videoInfo;
   var listDiv = $('<div class="list"></div>');
-  var tags = UVJ.tagged[videoInfo['youtube_id']];
+  var tags = UVJ.tag.cache.tagged[videoInfo['youtube_id']];
   if(tags){
     for( var i = 0; i < tags.length; i++ ){
       (function(t){
@@ -250,14 +250,12 @@ UVJ.renderPlayer = function(videoInfo){
       listDiv
     ).submit(
       function(e){
-        UVJ.api.saveVideo(videoInfo);
         var input = $('#tag-input');
         var newTag = input.val();
-        UVJ.api.tagVideo(videoInfo['youtube_id'],
-                         newTag
-        );
+        UVJ.tag.add( videoInfo, newTag, function(){
+                       UVJ.player.addTag(listDiv, newTag, videoInfo['youtube_id']);
+                     });
         input.val('');
-        UVJ.player.addTag(listDiv, newTag, videoInfo['youtube_id']);
         return false;
       }
     )
@@ -330,11 +328,10 @@ UVJ.player.embedCode = function(){
 };
 
 UVJ.player.addTag = function(tagList, tagName, youtubeID){
-
   var newTag = $('<span class="tag"></span>').append(
     $('<span class="tag-name">|&nbsp;'+tagName+'&nbsp;</span>').click(
       function(){
-        UVJ.thumbs.loadTag(UVJ.get_tag(tagName));
+        UVJ.thumbs.load_ytids(UVJ.tag.get(tagName));
       }
     )
   ).append(
@@ -342,9 +339,9 @@ UVJ.player.addTag = function(tagList, tagName, youtubeID){
   );
 
   var clickRemoveTag = function(){
-    UVJ.api.unTagVideo( youtubeID, tagName, function(){
-                          newTag.remove();
-    });
+    UVJ.tag.remove( youtubeID, tagName, function(){
+                      newTag.remove();
+                    });
   };
 
   $(newTag).prepend(
@@ -406,12 +403,100 @@ UVJ.player.updatePlaylist = function(){
   ));
 };
 
+/**
+ * Responsible for adding, removing, and loading tags.
+ * Updates the JS cached list of tags
+ */
+UVJ.tag = {};
+UVJ.tag.cache = {};
+
+UVJ.tag.cache._add = function( youtubeID, tagName ){
+
+  // nested array with tag names and yt ID lists
+  var cacheTags = UVJ.tag.cache.tags;
+  var tagIdx = -1;
+  for( var i = 0; i < cacheTags.length; i++ ){
+    if( tagName == cacheTags[i][0] )
+      tagIdx = i;
+  }
+  if( tagIdx == -1 ){
+    var newEntry = [tagName, [youtubeID]];
+    cacheTags[cacheTags.length] = newEntry;
+  }else{
+    var idList = cacheTags[tagIdx][1];
+    idList[idList.length] = youtubeID;
+  }
+
+  // Object with yt ID attributes pointing to tag lists
+  var cacheTagged = UVJ.tag.cache.tagged;
+  if( cacheTagged[youtubeID] ){
+    var tagList = cacheTagged[youtubeID];
+    tagList[tagList.length] = tagName;
+  }else{
+    cacheTagged[youtubeID] = [tagName];
+  }
+};
+
+UVJ.tag.cache._remove = function( youtubeID, tagName ){
+  // nested array with tag names
+  var cacheTags = UVJ.tag.cache.tags;
+  var tagIdx = -1;
+  for( var i = 0; i < cacheTags.length; i++ ){
+    if( tagName == cacheTags[i][0] )
+      tagIdx = i;
+  }
+  if( cacheTags[tagIdx].length < 2 ){
+    cacheTags.splice(tagIdx, 1);
+  }else{
+    ytIndex = cacheTags[tagIdx][1].indexOf( youtubeID );
+    cacheTags[tagIdx][1].splice( ytIndex, 1 );
+  }
+
+  // Object with yt attributes pointing to tag lists
+  var cacheTagged = UVJ.tag.cache.tagged;
+  if( cacheTagged[youtubeID].length < 2 ){
+    delete cacheTagged[youtubeID];
+  }else{
+    tagIdx = cacheTagged[youtubeID].indexOf( tagName );
+    cacheTagged[youtubeID].splice(tagIdx, 1);
+  }
+};
+
+UVJ.tag.add = function( videoInfo, tagName, onSuccess ){
+  UVJ.api.saveVideo(videoInfo);
+  var onAdd = function(resp){
+    UVJ.tag.cache._add( videoInfo['youtube_id'], tagName );
+    onSuccess();
+  };
+  UVJ.api.tagVideo( videoInfo['youtube_id'], tagName, onAdd );
+};
+
+UVJ.tag.remove = function( youtubeID, tagName, onSuccess ){
+  var onRemove = function(resp){
+    UVJ.tag.cache._remove( youtubeID, tagName );
+    onSuccess();
+  };
+  UVJ.api.unTagVideo( youtubeID, tagName, onRemove );
+
+};
+
+UVJ.tag.get = function( tagName ){
+  var cacheTags = UVJ.tag.cache.tags;
+  var tagIdx = -1;
+  for( var i = 0; i < cacheTags.length; i++ ){
+    if( tagName == cacheTags[i][0] )
+      return cacheTags[i][1];
+  }
+  return [];
+};
+
+
 UVJ.thumbs = {};
 
-UVJ.thumbs.loadTag = function(tag){
+UVJ.thumbs.load_ytids = function(youtube_ids){
   jQuery('#middle .videoInfo').remove();
   jQuery('#middle br').remove();
-  UVJ.api.loadVideos(tag,
+  UVJ.api.loadVideos(youtube_ids,
                      function(resp){
                        for( var i = 0; i < resp.length; i++ ){
                          jQuery('#middle').append( UVJ.makeThumb(resp[i]) );

@@ -15,9 +15,16 @@ You are the VJ with youvj!
     <div id="login">
     </div>
     <form class="browse">
-      <input type="text" id="browseInput"/><input type="submit" id="browse-button" value="Search"/>
+      <input type="text" id="browseInput"/>
+      <input type="submit" id="browse-button" value="Search"/>
     </form>
     <div class="clear"></div>
+  </div>
+  <div id="tabs">
+    <ul>
+      <li class="search-tab">Search</li>
+      <li class="tag-tab inactive">Tags</li>
+    </ul>
   </div>
   <div class="clear"></div>
   <div id="middle">
@@ -47,16 +54,8 @@ You are the VJ with youvj!
 </div><!-- #container -->
 <script>
   UVJ.artistVids = $json.dumps($artistVids);
-  UVJ.tags = $json.dumps($tags);
-  UVJ.get_tag = function(tagName){
-    for( var i = 0; i < UVJ.tags.length; i++ ){
-      if( UVJ.tags[i][0] == tagName ){
-        return UVJ.tags[i][1];
-      }
-      return [];
-    }
-  } 
-  UVJ.tagged = $json.dumps($tagged);
+  UVJ.tag.cache.tags = $json.dumps($tags);
+  UVJ.tag.cache.tagged = $json.dumps($tagged);
   UVJ.artist = "$artist";
 
   UVJ.playlist.stepSize = 165 * 4;
