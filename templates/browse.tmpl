@@ -11,19 +11,30 @@ You are the VJ with youvj!
 
 #def body()
 <div id="container">
-  <div id="top">
+  <div id="top-nav">
     <div id="login">
     </div>
-    <form class="browse">
-      <input type="text" id="browseInput"/>
-      <input type="submit" id="browse-button" value="Search"/>
-    </form>
+    <div id="top-nav-search">
+      <form class="browse">
+	<input type="text" id="browseInput"/>
+	<input type="submit" id="browse-button" value="Search"/>
+      </form>
+    </div>
+    <div id="top-nav-tags">
+    </div>
+
     <div class="clear"></div>
   </div>
   <div id="tabs">
     <ul>
-      <li class="search-tab">Search</li>
-      <li class="tag-tab inactive">Tags</li>
+      <li class="search-tab"
+	  onclick="UVJ.navbar.setActive('search')">
+	Search
+      </li>
+      <li class="tag-tab inactive"
+	  onclick="UVJ.navbar.setActive('tags')">
+	Tags
+      </li>
     </ul>
   </div>
   <div class="clear"></div>

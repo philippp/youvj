@@ -95,6 +95,66 @@ UVJ.user.create = function( email, password ){
   return false;
 };
 
+UVJ.navbar = {};
+UVJ.navbar.setActive = function(activate){
+  if( activate == 'tags' ){
+    UVJ.navbar.refreshTags();
+    $('#top-nav-tags').show();
+    $('#top-nav-search').hide();
+    $('li.search-tab').addClass('inactive');
+    $('li.tag-tab').removeClass('inactive');
+  }
+  else if( activate == 'search' ){
+    UVJ.navbar.refreshTags();
+    $('#top-nav-tags').hide();
+    $('#top-nav-search').show();
+    $('li.search-tab').removeClass('inactive');
+    $('li.tag-tab').addClass('inactive');
+  }
+
+};
+
+UVJ.navbar.addTag = function(tagList, tagName, youtubeID){
+  var safeTag = tagName.replace(/[^a-zA-Z0-9]/i, '');
+  var newTag = $('<span class="tag"></span>').append(
+    $('<span class="tag-name tag-'+safeTag+'">'+tagName+'</span>').click(
+      function(){
+        UVJ.thumbs.load_ytids(UVJ.tag.get(tagName));
+      }
+    )
+  );
+  tagList.append(newTag);
+};
+
+
+UVJ.navbar.refreshTags = function(){
+  var tagElem = $('#top-nav-tags').empty();
+  var tagList = UVJ.tag.cache.tags;
+  for( var i = 0; i < tagList.length; i++ ){
+    var tagName = tagList[i][0];
+    var safeTag = tagName.replace(/[^a-zA-Z0-9]/, '');
+    tagElem.append(
+      $('<span class="tag"></span>').append(
+        $('<span class="tag-name" id="tag-'+safeTag+'">'+tagName+'</span>').click(
+          (function(t){
+            return function(){
+              var sT = t.replace(/[^a-zA-Z0-9]/, '');
+              $(".tag-name", tagElem).removeClass('selected');
+              $("#tag-"+sT, tagElem).addClass('selected');
+              UVJ.thumbs.load_ytids(UVJ.tag.get(t));
+            };
+          })(tagName)
+        )
+      )
+    );
+    if( i < tagList.length - 1 ){
+      tagElem.append(
+        $('<span>, </span>')
+      );
+    }
+  }
+};
+
 /**
  * Render an artist-associated title for a video. For use on the front page.
  * @return div.videoInfo
