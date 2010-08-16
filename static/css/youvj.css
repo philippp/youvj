@@ -57,6 +57,7 @@ height: 150px;
    margin-right: 2px;
    padding: 2px 10px;
    background-color: #94C8E9;
+   cursor: pointer;
 }
 
 #tabs .inactive{
