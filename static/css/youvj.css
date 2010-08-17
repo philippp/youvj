@@ -26,6 +26,7 @@ height: 150px;
 
 #top-nav-tags .tag{
    font-size: 16px;
+   cursor: pointer;
 }
 
 #top-nav-tags .selected{

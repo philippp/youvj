@@ -130,9 +130,10 @@ UVJ.navbar.setActive = function(activate){
 UVJ.navbar.addTag = function(tagList, tagName, youtubeID){
   var safeTag = tagName.replace(/[^a-zA-Z0-9]/i, '');
   var newTag = $('<span class="tag"></span>').append(
-    $('<span class="tag-name tag-'+safeTag+'">'+tagName+'</span>').click(
+    $('<a class="tag-name tag-'+safeTag+'" href="#">'+tagName+'</a>').click(
       function(){
         UVJ.navbar.addTag.clicked( tagName );
+        return false;
       }
     )
   );
@@ -151,13 +152,14 @@ UVJ.navbar.refreshTags = function(){
     var safeTag = tagName.replace(/[^a-zA-Z0-9]/, '');
     tagElem.append(
       $('<span class="tag"></span>').append(
-        $('<span class="tag-name" id="tag-'+safeTag+'">'+tagName+'</span>').click(
+        $('<a class="tag-name" id="tag-'+safeTag+'">'+tagName+'</a>').click(
           (function(t){
             return function(){
               var sT = t.replace(/[^a-zA-Z0-9]/, '');
               $(".tag-name", tagElem).removeClass('selected');
               $("#tag-"+sT, tagElem).addClass('selected');
               UVJ.navbar.addTag.clicked(t);
+              return false;
             };
           })(tagName)
         )
