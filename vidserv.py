@@ -29,7 +29,7 @@ def authenticated(required=False):
             if not req.cookies.get('session') and required:
                 raise vidfail.NotAuthenticated()
 
-            session_str = req.cookies.get('session',{})
+            session_str = req.cookies.get('session','')
             if session_str != '0':
                 req.userID = vidauth.decode_session(session_str).get('id',0)
             else:

@@ -56,6 +56,8 @@ def encode_session( user_data ):
     return trimBase64(base64.b64encode( session_str ))
 
 def decode_session( session_str ):
+    if not session_str:
+        return {}
     session_str = base64.b64decode( fattenBase64(session_str) )
     session_dict = dict( [p.split("=") for p in session_str.split("&")] )
     signature = session_dict['signature']
