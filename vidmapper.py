@@ -94,6 +94,14 @@ def listUserTags(conn, userID):
     tagList = sorted( tagList, key = lambda i: len(i[1]), reverse = True )
     return tagList
 
+def listUserTagsTagged(conn, userID):
+    ret = {'tags':listUserTags(conn, userID),
+           'tagged':{}}
+    for k, v in dict(ret['tags']).iteritems():
+        for yid in v:
+            ret['tagged'][yid] = ret['tagged'].get(yid,[]) + [k];
+    return ret
+
 def saveVideo(conn, vidInfo):
     viddb.insert(conn, 'youtube_videos', _ignore = True, **vidInfo)
 

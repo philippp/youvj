@@ -1,3 +1,4 @@
+#import json
 #import config
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -31,3 +32,42 @@
     </script>
   </body>
 </html>
+
+#def topnav
+<div id="top-nav">
+  <div id="login">
+  </div>
+  <div id="top-nav-search">
+    <form class="browse" action="/browse" method="POST">
+      <input type="text" id="browseInput" name="artist"/>
+      <input type="submit" id="browse-button" value="Search"/>
+    </form>
+  </div>
+  <div id="top-nav-tags">
+  </div>
+  
+  <div class="clear"></div>
+</div>
+<div id="tabs">
+  <ul>
+    <li class="search-tab"
+	onclick="UVJ.navbar.setActive('search')">
+      Search
+    </li>
+    <li class="tag-tab inactive"
+	onclick="UVJ.navbar.setActive('tags')">
+      Tags
+    </li>
+  </ul>
+</div>
+#end def
+
+#def topnav_js
+  UVJ.tag.cache.tags = $json.dumps($tags);
+  UVJ.tag.cache.tagged = $json.dumps($tagged);
+
+jQuery(document).ready(function(){
+  jQuery('#browseInput').defaultValue('Artist Name');
+  UVJ.user.updateLoginStatus();
+});
+#end def

@@ -12,11 +12,7 @@ You are the VJ with youvj! Music Videos, VJ, ...
 
 #def body()
     <div id="top">
-      <form id="browse-form" method="post" action="/browse">
-	<input name="artist" type="text" id="browse-artist"/>
-	<input type="submit" value="Show Videos!" />
-      </form>
-      <div class="clear"></div>
+      $topnav()
     </div>
     <div id="middle">
       <div id="recent" class="right">
@@ -34,7 +30,7 @@ You are the VJ with youvj! Music Videos, VJ, ...
 <script>
 var recent_videos = $recent_videos;
 
-jQuery('#browse-artist').defaultValue('Artist Name');
+$topnav_js()
 
 var LP = {};
 LP.rowIdx = 0;

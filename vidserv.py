@@ -95,10 +95,18 @@ class HTMLController(Controller):
         return res
 
 class FrontPage(HTMLController):
+    @authenticated()
     def respond(self, req):
-        recent_videos = json.dumps(vidquery.recentSampleGet(self.mem))
+        recentVideos = json.dumps(vidquery.recentSampleGet(self.mem))
+        tagsTagged = {'tags':[],'tagged':{}}
+        if req.userID:
+            tagsTagged = vidmapper.listUserTagsTagged(
+                viddb.get_conn(),
+                req.userID)
+
         return self.template("landing_page",
-                             recent_videos = recent_videos)
+                             recent_videos = recentVideos,
+                             **tagsTagged)
 
 class Browse(HTMLController):
 
@@ -122,22 +130,17 @@ class Browse(HTMLController):
             playlist = vidmapper.retrieveVideos(conn,
                                                 playlist)
 
-        tags = {}
-        tagged = {}
+        tagsTagged = {'tags':[],'tagged':{}}
         if req.userID:
-            tags = vidmapper.listUserTags(
+            tagsTagged = vidmapper.listUserTagsTagged(
                 conn,
                 req.userID)
-            for k, v in dict(tags).iteritems():
-                for yid in v:
-                    tagged[yid] = tagged.get(yid,[]) + [k];
 
         return self.template("browse",
                              artistVids = artistVids,
                              artist = artist,
                              playlist = playlist,
-                             tags = tags,
-                             tagged = tagged
+                             **tagsTagged
                              )
         
 class UserLogin(JSONController):
@@ -258,14 +261,9 @@ class LoadTags(JSONController):
     ''' List of created tags and tagged videos '''
     @authenticated(required=True)
     def respond(self, req):
-        tagged = {}
-        tags = vidmapper.listUserTags(
+        return vidmapper.listUserTagsTagged(
             viddb.get_conn(),
             req.userID)
-        for k, v in dict(tags).iteritems():
-            for yid in v:
-                tagged[yid] = tagged.get(yid,[]) + [k];
-        return {'tags':tags,'tagged':tagged}
 
 
 class SaveVideo(JSONController):

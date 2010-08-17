@@ -11,32 +11,7 @@ You are the VJ with youvj!
 
 #def body()
 <div id="container">
-  <div id="top-nav">
-    <div id="login">
-    </div>
-    <div id="top-nav-search">
-      <form class="browse">
-	<input type="text" id="browseInput"/>
-	<input type="submit" id="browse-button" value="Search"/>
-      </form>
-    </div>
-    <div id="top-nav-tags">
-    </div>
-
-    <div class="clear"></div>
-  </div>
-  <div id="tabs">
-    <ul>
-      <li class="search-tab"
-	  onclick="UVJ.navbar.setActive('search')">
-	Search
-      </li>
-      <li class="tag-tab inactive"
-	  onclick="UVJ.navbar.setActive('tags')">
-	Tags
-      </li>
-    </ul>
-  </div>
+  $topnav()
   <div class="clear"></div>
   <div id="middle">
     <div id="player-container"></div>
@@ -64,9 +39,8 @@ You are the VJ with youvj!
   </div>
 </div><!-- #container -->
 <script>
+  $topnav_js()
   UVJ.artistVids = $json.dumps($artistVids);
-  UVJ.tag.cache.tags = $json.dumps($tags);
-  UVJ.tag.cache.tagged = $json.dumps($tagged);
   UVJ.artist = "$artist";
 
   UVJ.playlist.stepSize = 165 * 4;
@@ -123,8 +97,6 @@ jQuery(document).ready(function(){
     });
 
     UVJ.playlist.configure();
-    UVJ.user.updateLoginStatus();
-    jQuery('#browseInput').defaultValue('Artist Name');
     if( UVJ.artist && UVJ.artist.length ){
     	jQuery('#browseInput').removeClass('default-value').val(UVJ.artist);
     }
