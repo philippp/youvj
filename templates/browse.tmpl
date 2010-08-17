@@ -118,6 +118,11 @@ jQuery(document).ready(function(){
     UVJ.init.c_domain = ".${config.hostname}";
     UVJ.playlist.addFromInfo(UVJ.init.pl);
 
+    if( window.location.hash.substr(0, 5) == "#tag-" ){
+	var hash = window.location.hash;
+	var tagName = decodeURI(hash.substr(5,hash.length))
+	UVJ.tag.go_to( tagName );
+    }
   });
 </script>
 #end def

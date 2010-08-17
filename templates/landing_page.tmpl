@@ -32,6 +32,11 @@ var recent_videos = $recent_videos;
 
 $topnav_js()
 
+UVJ.navbar.addTag.clicked = function( tagName ){
+    var tagName = encodeURI(tagName);
+    window.location = '${config.domain}/browse#tag-'+tagName;
+}
+
 var LP = {};
 LP.rowIdx = 0;
 

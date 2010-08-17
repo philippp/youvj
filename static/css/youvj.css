@@ -42,6 +42,7 @@ height: 150px;
 }
 
 #tabs {
+   display: none;
    margin-left: 50px;
 }
 

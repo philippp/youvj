@@ -109,6 +109,7 @@ UVJ.navbar = {};
 UVJ.navbar.setActive = function(activate){
   if( activate == 'tags' ){
     UVJ.navbar.refreshTags();
+    $('#similar-artists').hide();
     $('#top-nav-tags').show();
     $('#top-nav-search').hide();
     $('li.search-tab').addClass('inactive');
@@ -116,6 +117,8 @@ UVJ.navbar.setActive = function(activate){
   }
   else if( activate == 'search' ){
     UVJ.navbar.refreshTags();
+    jQuery('#browseInput').defaultValue('Artist Name');
+    $('#similar-artists').show();
     $('#top-nav-tags').hide();
     $('#top-nav-search').show();
     $('li.search-tab').removeClass('inactive');
@@ -129,13 +132,16 @@ UVJ.navbar.addTag = function(tagList, tagName, youtubeID){
   var newTag = $('<span class="tag"></span>').append(
     $('<span class="tag-name tag-'+safeTag+'">'+tagName+'</span>').click(
       function(){
-        UVJ.thumbs.load_ytids(UVJ.tag.get(tagName));
+        UVJ.navbar.addTag.clicked( tagName );
       }
     )
   );
   tagList.append(newTag);
 };
 
+UVJ.navbar.addTag.clicked = function( tagName ){
+  UVJ.thumbs.load_ytids(UVJ.tag.get(tagName));
+};
 
 UVJ.navbar.refreshTags = function(){
   var tagElem = $('#top-nav-tags').empty();
@@ -151,7 +157,7 @@ UVJ.navbar.refreshTags = function(){
               var sT = t.replace(/[^a-zA-Z0-9]/, '');
               $(".tag-name", tagElem).removeClass('selected');
               $("#tag-"+sT, tagElem).addClass('selected');
-              UVJ.thumbs.load_ytids(UVJ.tag.get(t));
+              UVJ.navbar.addTag.clicked(t);
             };
           })(tagName)
         )
@@ -534,6 +540,9 @@ UVJ.tag.cache._remove = function( youtubeID, tagName ){
   }
 };
 
+/**
+ * Add a tag to a video. Updates JS cache and DB store
+ */
 UVJ.tag.add = function( videoInfo, tagName, onSuccess ){
   UVJ.api.saveVideo(videoInfo);
   var onAdd = function(resp){
@@ -543,6 +552,9 @@ UVJ.tag.add = function( videoInfo, tagName, onSuccess ){
   UVJ.api.tagVideo( videoInfo['youtube_id'], tagName, onAdd );
 };
 
+/**
+ * Removes a tag from a video. Updates JS cache and DB store
+ */
 UVJ.tag.remove = function( youtubeID, tagName, onSuccess ){
   var onRemove = function(resp){
     UVJ.tag.cache._remove( youtubeID, tagName );
@@ -552,6 +564,9 @@ UVJ.tag.remove = function( youtubeID, tagName, onSuccess ){
 
 };
 
+/**
+ * Get list of youtube IDs associated with a tag
+ */
 UVJ.tag.get = function( tagName ){
   var cacheTags = UVJ.tag.cache.tags;
   var tagIdx = -1;
@@ -562,6 +577,9 @@ UVJ.tag.get = function( tagName ){
   return [];
 };
 
+/**
+ * Load the tags into the JS cache and into an onSuccess callback.
+ */
 UVJ.tag.load = function( onSuccess ){
   UVJ.api.loadTags( function(resp){
                       UVJ.tag.cache.tags = resp['tags'];
@@ -570,6 +588,11 @@ UVJ.tag.load = function( onSuccess ){
                     } );
 };
 
+UVJ.tag.go_to = function( tagName ){
+  UVJ.navbar.setActive('tags');
+  var safeTag = tagName.replace(/[^a-zA-Z0-9]/i, '');
+  $('#tag-'+safeTag).click();
+};
 
 UVJ.thumbs = {};
 

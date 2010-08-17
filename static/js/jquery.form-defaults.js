@@ -8,7 +8,7 @@ jQuery.fn.defaultValue = function(text){
     var fld_current=this;
 
     //Set value initially if none are specified
-    if(this.value=='') {
+    if(this.value=='' || this.value==text ) {
       $(this).addClass('default-value');
       this.value=text;
     } else {
