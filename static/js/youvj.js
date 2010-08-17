@@ -152,7 +152,7 @@ UVJ.navbar.refreshTags = function(){
     var safeTag = tagName.replace(/[^a-zA-Z0-9]/, '');
     tagElem.append(
       $('<span class="tag"></span>').append(
-        $('<a class="tag-name" id="tag-'+safeTag+'">'+tagName+'</a>').click(
+        $('<a class="tag-name" id="tag-'+safeTag+'" href="#tag-'+safeTag+'">'+tagName+'</a>').click(
           (function(t){
             return function(){
               var sT = t.replace(/[^a-zA-Z0-9]/, '');
