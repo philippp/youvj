@@ -10,7 +10,7 @@ import urllib2
 
 import gogreen.wsgi
 import vidserv
-import config
+from configs import config
 import magic
 import daemon
 from webob import Request, Response

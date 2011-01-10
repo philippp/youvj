@@ -4,7 +4,7 @@ import random
 import time
 import operator
 
-import config
+from configs import config
 
 BASE64_BLOCK_SIZE = 8
 BASE64_PADDING_CHARACTER = '='

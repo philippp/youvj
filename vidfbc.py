@@ -38,7 +38,7 @@ import os.path
 import time
 import urllib
 import vidserv
-import config
+from configs import config
 import json
 from twisted.web2 import http
 

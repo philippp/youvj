@@ -8,7 +8,7 @@ import pdb
 import time
 import urllib2
 
-import config
+from configs import config
 import genres
 import lastfm
 import pylast

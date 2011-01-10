@@ -1,4 +1,4 @@
-import config
+from configs import config
 import pylast
 
 def get_similar(artist_name):

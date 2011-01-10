@@ -1,4 +1,4 @@
-import config
+from configs import config
 import MySQLdb
 
 COLS = {
