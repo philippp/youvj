@@ -121,7 +121,7 @@ class Browse(HTMLController):
         ip_addr = getattr(req.remote_addr,'host','67.207.139.31')
 
         artistVids = artist and vidquery.fetchCached(self.mem, artist) or []
-        if len( artistVids ) >= 4:
+        if len( artistVids ) >= 4 and req.args.get('sample',''):
             vidquery.recentSampleAdd(self.mem, artist)
 
         playlist = req.cookies.get('pl', [])
