@@ -1,4 +1,38 @@
 mtv for y3k
-requires:
- unix file package w/ magic, magic python bindings
- gogreen w/ wsgi branch
+
+Software package dependencies (assuming a blank Ubuntu install):
+  gdata (http://code.google.com/p/gdata-python-client/downloads/list)
+  python-magic (apt-get install python-magic)
+  webob (easy_install webob==dev)
+  gogreen (https://github.com/slideinc/gogreen)
+   '-greenlet (easy_install greenlet)
+     '-python-dev (apt-get install python-dev)
+  python-memcache (apt-get install python-memcache)
+  Cheetah templating engine (http://pypi.python.org/pypi/Cheetah/2.4.4#downloads)
+  python-MySQLdb (apt-get install python-MySQLdb)
+    '-mysql-server (apt-get install mysql-server)
+
+
+DB setup:
+  mysql> CREATE DATABASE youvj;
+  mysql> CREATE USER 'youvj'@'localhost' IDENTIFIED BY 'youvj';
+  mysql> GRANT ALL PRIVILEGES ON youvj.* TO 'youvj'@'localhost';
+
+  After the database is created, apply the schemas.
+  For each file in schemas, do this:
+    $ mysql -u youvj -p youvj < schemas/01-log.sql
+
+Hostname setup:
+  If you have a domain name for your system, skip this step. If
+  not, we will have to fake it in order for cookies to work. Open
+  /etc/hosts and add a line like:
+  127.0.0.1	ppp.com
+
+Config setup:
+  The deploy script copies the config file that ends in your hostname
+  over to config.py. Create a config file for your hostname by doing
+  the following:
+
+  $ cp config.py-example config.py-$HOSTNAME
+
+  Edit this file to add your API keys, hostname and path to the source.
