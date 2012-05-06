@@ -1,4 +1,4 @@
 git pull
-cp config.py-$HOSTNAME config.py
+cp configs/config.py-$HOSTNAME configs/config.py
 ./buildtemplates.sh
 ./cycle.sh
